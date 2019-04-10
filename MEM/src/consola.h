@@ -19,6 +19,12 @@
 #include <signal.h>
 
 typedef enum t_tipoComando {
+	select_,
+	insert,
+	create,
+	describe,
+	drop,
+	journal,
 	dump,
 	salir
 } t_tipoComando;

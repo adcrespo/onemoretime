@@ -21,6 +21,8 @@
 #include <commons/config.h>
 #include <commons/collections/list.h>
 
+#define MAX_LINEA 1024
+
 t_log* logger;
 
 int recvMensaje(int client_socket, t_mensaje** msg);

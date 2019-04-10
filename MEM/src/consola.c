@@ -13,9 +13,9 @@
 #include "consola.h"
 
 t_tipoComando buscar_enum(char *sval) {
-	t_tipoComando result = dump;
+	t_tipoComando result = select_;
 	int i = 0;
-	char* comandos_str[] = { "dump", "salir", NULL };
+	char* comandos_str[] = { "select", "insert", "create", "describe", "drop", "journal", "dump", "salir", NULL };
 	if (sval == NULL)
 		return -2;
 	for (i = 0; comandos_str[i] != NULL; ++i, ++result)
@@ -28,7 +28,7 @@ char *character_name_generator(const char *text, int state) {
 	static int list_index, len;
 	char *name;
 
-	char *character_names[] = { "dump", "salir", NULL };
+	char *character_names[] = { "select", "insert", "create", "describe", "drop", "journal", "dump", "salir", NULL };
 
 	if (!state) {
 		list_index = 0;
@@ -67,9 +67,53 @@ void *crearConsola() {
 			continue;
 
 		switch (comando_e) {
+		case select_:
+			if (comando[1] == NULL || comando[2] == NULL) {
+				printf("error: select {tabla} {key}.\n");
+				break;
+			}
+			printf("select...\n");
+			//TODO: select_
+			break;
+		case insert:
+			if (comando[1] == NULL || comando[2] == NULL || comando[3] == NULL) {
+				printf("error: insert {tabla} {key} {\"value\"}.\n");
+				break;
+			}
+			printf("insert...\n");
+			//TODO: insert
+			break;
+		case create:
+			if (comando[1] == NULL || comando[2] == NULL || comando[3] == NULL || comando[4] == NULL) {
+				printf("error: create {tabla} {tipo_consistencia} {numero_particiones} {compaction_time}.\n");
+				break;
+			}
+			printf("create...\n");
+			//TODO: create
+			break;
+		case describe:
+			if (comando[1] == NULL ) {
+				printf("error: describe {tabla} .\n");
+				break;
+			}
+			printf("describe...\n");
+			//TODO: describe
+			break;
+		case drop:
+			if (comando[1] == NULL ) {
+				printf("error: drop {tabla} .\n");
+				break;
+			}
+			printf("drop...\n");
+			//TODO: drop
+			break;
+		case journal:
+			printf("journal...\n");
+			//TODO: journal
+			break;
 		case dump:
 			if (comando[1] == NULL) {
-				printf("Para ejecutar dump necesita brindar un id.\n");
+				printf("error: dump {id}.\n");
 				break;
 			}
 			printf("Dump (process id: %s)...\n",comando[1]);

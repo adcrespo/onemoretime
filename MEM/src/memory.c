@@ -84,9 +84,9 @@ void liberar_memory_spa() {
 	for (i = 0; i < frames_spa_count; i++) {
 		free(list_remove(adm_frame_lista_spa,0));
 	}
-	list_destroy(adm_frame_lista_spa);
+	if(adm_frame_lista_spa!=NULL) list_destroy(adm_frame_lista_spa);
 
-	int countSegLista = list_size(adm_spa_lista);
+	int countSegLista = (adm_spa_lista==NULL)?0:list_size(adm_spa_lista);
 	for (i = 0; i < countSegLista; i++) {
 		t_adm_tabla_segmentos_spa* adm_table = list_remove(adm_spa_lista,0);
 		int countSeg = list_size(adm_table->seg_lista);
@@ -102,14 +102,21 @@ void liberar_memory_spa() {
 		list_destroy(adm_table->seg_lista);
 		free(adm_table);
 	}
-	list_destroy(adm_spa_lista);
+	if(adm_spa_lista!=NULL) list_destroy(adm_spa_lista);
+
+	frames_spa = NULL;
+	frames_spa_count = 0;
+	frame_spa_size = 0;
+
+	adm_spa_lista = NULL;
+	adm_frame_lista_spa = NULL;
 }
 
 void init_memory_spa() {
 
 	int i;
-	frames_spa_count = MEM_CONF.TAM_MEM;
-	frame_spa_size = MEM_CONF.TAM_MEM;
+	frames_spa_count = MEM_CONF.TAM_MEM / MAX_LINEA;
+	frame_spa_size = MAX_LINEA;
 	//TODO: frames_spa_count = FM9_CONF.TAMANIO / FM9_CONF.TAM_PAGINA;
 	//TODO: frame_spa_size = FM9_CONF.TAM_PAGINA;
 
@@ -346,6 +353,12 @@ int escribir_bytes_spa(int pid, int segmento, int offset, int size, char* buffer
 
 void dump_memory_spa(int pid) {
 	int i;
+
+	if(frames_spa == NULL) {
+		printf("FAIL: No esta inicializada la memoria!\n");
+		return;
+	}
+
 	if(!exists_pid_spa(pid)) {
 		printf("FAIL: No existe el ID del proceso!\n");
 		return;

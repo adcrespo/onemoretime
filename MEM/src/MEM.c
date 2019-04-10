@@ -19,9 +19,6 @@
 #include "argparse.h"
 #include "memory.h"
 
-#define MAX_LINEA 1024
-
-
 char* intToChar4(int num){
 	//RECORDAR: liberar el puntero con free()
 	char* n_char = string_new();//malloc(sizeof(int));
