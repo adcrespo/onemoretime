@@ -35,9 +35,28 @@ void get_config(char* path) {
 
 	if(config_has_property(config,"IP_SEEDS")) {
 		//TODO: implementar config con listas
+		char *ipSeeds;
+		int i = 0;
+		ipSeeds=config_get_string_value(config, "IP_SEEDS");
+		MEM_CONF.IP_SEEDS = string_get_string_as_array(ipSeeds);
+		while(MEM_CONF.IP_SEEDS[i] != NULL)
+		{
+			loggear(logger,LOG_LEVEL_INFO,"PUERTO_FS: %s", MEM_CONF.IP_SEEDS[i]);
+			i++;
+		}
+
 	}
 	if(config_has_property(config,"PUERTO_SEEDS")) {
 		//TODO: implementar config con listas
+		char *puertoSeeds;
+		int i = 0;
+		puertoSeeds=config_get_string_value(config, "PUERTO_SEEDS");
+		MEM_CONF.PUERTO_SEEDS = string_get_string_as_array(puertoSeeds);
+		while(MEM_CONF.PUERTO_SEEDS[i] != NULL)
+		{
+			loggear(logger,LOG_LEVEL_INFO,"PUERTO_FS: %s", MEM_CONF.PUERTO_SEEDS[i]);
+			i++;
+		}
 	}
 
 	if(config_has_property(config,"RETARDO_MEM")) {
