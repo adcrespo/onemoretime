@@ -8,13 +8,12 @@
  ============================================================================
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <commons/log.h>
+#include "KERNEL.h"
 
 int main(void) {
 
 	/* 1. Creación de logger */
+	logger = configurar_logger("../log/KERNEL.log");
 
 	/* 2. Carga de configuración desde archivo */
 
@@ -32,8 +31,7 @@ void crear_consola() {
 }
 
 void crear_hilo_consola() {
-	t_log* logger;
-	int thread_consola;
+
 	int hilo_consola = pthread_create(&thread_consola, NULL, crear_consola, NULL);
 	if (hilo_consola == -1) {
 		log_error(logger, "No se pudo generar el hilo para la consola.");
