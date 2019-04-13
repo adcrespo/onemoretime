@@ -25,11 +25,14 @@ endif
 # All Target
 all: KERNEL
 
+dependents:
+	-cd /home/utnso/Repositorios/tp-2019-1c-One-more-time/Shared_Library/Debug && $(MAKE) all
+
 # Tool invocations
-KERNEL: $(OBJS) $(USER_OBJS)
+KERNEL: $(OBJS) $(USER_OBJS) /home/utnso/Repositorios/tp-2019-1c-One-more-time/Shared_Library/Debug/libShared-Library.so
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc -L"/home/utnso/Repositorios/tp-2019-1c-One-more-time/Shared_Library" -o "KERNEL" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc -L"/home/utnso/Repositorios/tp-2019-1c-One-more-time/Shared_Library/Debug" -o "KERNEL" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -39,5 +42,6 @@ clean:
 	-@echo ' '
 
 .PHONY: all clean dependents
+/home/utnso/Repositorios/tp-2019-1c-One-more-time/Shared_Library/Debug/libShared-Library.so:
 
 -include ../makefile.targets

@@ -13,7 +13,7 @@
 int main(void) {
 
 	/* 1. Creación de logger */
-	logger = configurar_logger("../log/KERNEL.log");
+	logger = configurar_logger("../log/KERNEL.log", logger);
 
 	/* 2. Carga de configuración desde archivo */
 
