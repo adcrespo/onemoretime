@@ -13,15 +13,17 @@
 #include <stdlib.h>
 #include <commons/log.h>
 #include <shared.h>
+#include "Auxiliares/Logueo.h"
+#include "Auxiliares/Consola.h"
 
 
 /* Variables globales */
-t_log* logger;
+//t_log* logger;
 pthread_t thread_consola;
 
 
 /* Declaración de Procesos*/
-void crear_consola();
+void cargar_configuracion_kernel();
 void crear_hilo_consola();
 
 

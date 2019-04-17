@@ -13,21 +13,20 @@
 int main(void) {
 
 	/* 1. Creación de logger */
-	logger = configurar_logger("../log/KERNEL.log", logger);
+	logger = configurar_logger("../log/KERNEL.log", "Kernel");
 
 	/* 2. Carga de configuración desde archivo */
+	cargar_configuracion_kernel();
 
 	/* 3. Inicializar variables */
 
 	/* 4. Creación de hilo para consola */
 	crear_hilo_consola();
 
-	puts("Dale que vaaaa"); /* prints Dale que vaaaa */
+	pthread_join(thread_consola, NULL);
+
+	puts("Fin proceso Kernel"); /* prints Proceso Kernel */
 	return EXIT_SUCCESS;
-}
-
-void crear_consola() {
-
 }
 
 void crear_hilo_consola() {
