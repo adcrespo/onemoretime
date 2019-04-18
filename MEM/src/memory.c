@@ -12,11 +12,11 @@
  * ---------------AUXILIARES--------------
  */
 
-bool exists_pid_spa(int pid){
+bool exists_table_spa(char* path_table){
 	int i;
 	for(i=0; i<list_size(adm_frame_lista_spa);i++){
 		t_adm_tabla_frames_spa* adm_table = list_get(adm_frame_lista_spa, i);
-		if (adm_table->pid == pid) return true;
+		if (string_equals_ignore_case(adm_table->path_tabla, path_table)) return true;
 	}
 	return false;
 }
@@ -25,7 +25,7 @@ int get_free_frame() {
 	int i;
 	for(i=0; i<list_size(adm_frame_lista_spa); i++) {
 		t_adm_tabla_frames_spa* adm_table = list_get(adm_frame_lista_spa,i);
-		if(adm_table->pid<0)
+		if(string_equals_ignore_case(adm_table->path_tabla, ""))
 			return i;
 	}
 	return -1;
@@ -34,9 +34,9 @@ int get_free_frame() {
 bool has_available_frames_spa(int n_frames) {
 	bool find(void* element) {
 		t_adm_tabla_frames_spa* adm_table = element;
-		return adm_table->pid < 0;
+		return string_equals_ignore_case(adm_table->path_tabla, "");
 	}
-	t_list* available_pages_list = list_filter(adm_frame_lista_spa, find);
+	t_list* available_pages_list = list_filter(adm_frame_lista_spa, &find);
 	int available_pages = list_size(available_pages_list);
 	list_destroy(available_pages_list);
 	return available_pages >= n_frames;
@@ -126,7 +126,7 @@ void init_memory_spa() {
 
 	for (i = 0; i < frames_spa_count; i++) {
 		t_adm_tabla_frames_spa* adm_table = malloc(sizeof(t_adm_tabla_frames_spa));
-		adm_table->pid = -1;
+		adm_table->path_tabla = string_from_format("");
 		adm_table->segmento = 0;
 		list_add(adm_frame_lista_spa, adm_table);
 	}
@@ -142,12 +142,12 @@ void init_memory_spa() {
 	}*/
 }
 
-void free_spa(int pid, int segmento) {
+void free_spa(char* path_table, int segmento) {
 	int i,j,k;
 
 	bool find(void* element) {
 		t_adm_tabla_segmentos_spa* adm_table = element;
-		return adm_table->pid == pid;
+		return string_equals_ignore_case(adm_table->path_tabla, path_table);
 	}
 
 	bool find2(void* element) {
@@ -178,7 +178,7 @@ void free_spa(int pid, int segmento) {
 		if (adm_table_pag->frame > -1) { // TODO: porque chequeo el numero de frame
 			t_adm_tabla_frames_spa* adm_table_frame = list_get(adm_frame_lista_spa,adm_table_pag->frame);
 
-			adm_table_frame->pid = -1;
+			adm_table_frame->path_tabla = string_from_format("");
 			adm_table_frame->segmento = 0;
 			clean_frame_spa(adm_table_pag->frame);
 
@@ -187,11 +187,11 @@ void free_spa(int pid, int segmento) {
 	}
 
 	if(list_size(list_filter(adm_table->seg_lista,&find2))==0) {
-		loggear(logger,LOG_LEVEL_DEBUG, "%s", "SE LIBERA EL ID DEL PROCESO.");
+		loggear(logger,LOG_LEVEL_DEBUG, "%s", "SE LIBERA LA TABLA.");
 		int countSegLista = list_size(adm_spa_lista);
 		for (i = 0; i < countSegLista; i++) {
 			t_adm_tabla_segmentos_spa* adm_table = list_get(adm_spa_lista,0);
-			if(adm_table->pid == pid){
+			if(string_equals_ignore_case(adm_table->path_tabla,path_table)){
 				int countSeg = list_size(adm_table->seg_lista);
 				for (j = 0; j < countSeg; j++) {
 					t_segmentos_spa* adm_table_spa = list_get(adm_table->seg_lista,0);
@@ -208,12 +208,12 @@ void free_spa(int pid, int segmento) {
 	}
 }
 
-int add_spa(int pid, int n_frames) {
-	loggear(logger,LOG_LEVEL_DEBUG, "segments-pages, pid = '%d', n_frames = '%d'", pid, n_frames);
+int add_spa(char* path_table, int n_frames) {
+	loggear(logger,LOG_LEVEL_DEBUG, "segments-pages, table = '%s', n_frames = '%d'", path_table, n_frames);
 
 	bool find(void* element) {
 		t_adm_tabla_segmentos_spa* adm_table = element;
-		return adm_table->pid == pid;
+		return string_equals_ignore_case(adm_table->path_tabla,path_table);
 	}
 
 	int known_segmentos = 0, known_paginas = 0, i;
@@ -235,7 +235,7 @@ int add_spa(int pid, int n_frames) {
 
 	if(known_segmentos==0) {
 		adm_table_new =  malloc(sizeof(t_adm_tabla_segmentos_spa));
-		adm_table_new->pid = pid;
+		adm_table_new->path_tabla = string_from_format(path_table);
 		adm_table_new->seg_lista = list_create();
 		list_add(adm_spa_lista, adm_table_new);
 	}
@@ -244,7 +244,7 @@ int add_spa(int pid, int n_frames) {
 
 	t_segmentos_spa* adm_table_seg_new;
 
-	adm_table_seg_new = malloc(sizeof(t_paginas_spa));
+	adm_table_seg_new = malloc(sizeof(t_segmentos_spa));
 	adm_table_seg_new->pag_lista = list_create();
 	list_add(adm_table->seg_lista,adm_table_seg_new);
 
@@ -257,14 +257,12 @@ int add_spa(int pid, int n_frames) {
 	loggear(logger,LOG_LEVEL_DEBUG, "%s", "adm_table_seg_new!");
 	for(i=0; i<n_frames; i++) {
 		t_paginas_spa* adm_table_pag_new = malloc(sizeof(t_paginas_spa));
-		loggear(logger,LOG_LEVEL_DEBUG, "get_free_frame!");
 		adm_table_pag_new->frame = get_free_frame();
-		loggear(logger,LOG_LEVEL_DEBUG, "get_free_frame! %d",adm_table_pag_new->frame);
 		list_add(adm_table_seg_new->pag_lista, adm_table_pag_new);
 		known_paginas++;
 		loggear(logger,LOG_LEVEL_DEBUG, "known_paginas %d",known_paginas);
 		t_adm_tabla_frames_spa* adm_table_frames = list_get(adm_frame_lista_spa,adm_table_pag_new->frame);
-		adm_table_frames->pid = pid;
+		adm_table_frames->path_tabla = string_from_format(path_table);
 		adm_table_frames->segmento = known_segmentos;
 		loggear(logger,LOG_LEVEL_DEBUG, "%s", "adm_table_pag_new!");
 	}
@@ -272,10 +270,10 @@ int add_spa(int pid, int n_frames) {
 	return known_segmentos-1;
 }
 
-char* leer_bytes_spa(int pid, int segmento, int offset, int size) {
+char* leer_bytes_spa(char* path_table, int segmento, int offset, int size) {
 	bool find(void* element) {
 		t_adm_tabla_segmentos_spa* adm_table = element;
-		return adm_table->pid == pid;
+		return string_equals_ignore_case(adm_table->path_tabla,path_table);
 	}
 
 	t_adm_tabla_segmentos_spa* adm_table = list_find(adm_spa_lista, &find);
@@ -308,10 +306,10 @@ char* leer_bytes_spa(int pid, int segmento, int offset, int size) {
 	return buffer;
 }
 
-int escribir_bytes_spa(int pid, int segmento, int offset, int size, char* buffer) {
+int escribir_bytes_spa(char* path_table, int segmento, int offset, int size, char* buffer) {
 	bool find(void* element) {
 		t_adm_tabla_segmentos_spa* adm_table = element;
-		return adm_table->pid == pid;
+		return string_equals_ignore_case(adm_table->path_tabla,path_table);
 	}
 
 	t_adm_tabla_segmentos_spa* adm_table = list_find(adm_spa_lista, &find);
@@ -333,7 +331,9 @@ int escribir_bytes_spa(int pid, int segmento, int offset, int size, char* buffer
 
 	int start = 0;
 	if (adm_table_seg != NULL) {
-		int i, page = offset/frame_spa_size, page_offset =  offset%frame_spa_size, end = 0, b = 0;
+		int i, end = 0, b = 0;;
+		int page = offset/frame_spa_size;
+		int page_offset =  offset%frame_spa_size;
 
 		//for (i = page; i < list_size(adm_table_seg->pag_lista); i++) {
 		t_paginas_spa* adm_table_pag = list_get(adm_table_seg->pag_lista,page);
@@ -351,7 +351,7 @@ int escribir_bytes_spa(int pid, int segmento, int offset, int size, char* buffer
 	return start;
 }
 
-void dump_memory_spa(int pid) {
+void dump_memory_spa(char* path_table) {
 	int i;
 
 	if(frames_spa == NULL) {
@@ -359,8 +359,8 @@ void dump_memory_spa(int pid) {
 		return;
 	}
 
-	if(!exists_pid_spa(pid)) {
-		printf("FAIL: No existe el ID del proceso!\n");
+	if(!exists_table_spa(path_table)) {
+		printf("FAIL: No existe la tabla!\n");
 		return;
 	}
 
@@ -368,17 +368,17 @@ void dump_memory_spa(int pid) {
 	char* dump_act_process = string_new();
 	char* dump_mem_content = string_new();
 
-	if (pid == -1) {
+	if (string_equals_ignore_case(path_table,"")) {
 		string_append(&dump_mem_content, frames_spa);
 	} else {
 		for (i = 0; i < list_size(adm_frame_lista_spa); i++) {
 			t_adm_tabla_frames_spa* adm_table = list_get(adm_frame_lista_spa, i);
-			if (adm_table->pid == pid) {
+			if (string_equals_ignore_case(adm_table->path_tabla,path_table)) {
 				char* frame = string_substring(frames_spa,
 						i * frame_spa_size, frame_spa_size);
 				string_append_with_format(&dump_mem_content,
-						"FRAME: %d | PID: %d | SEGMENTO: %d\n%s\n",
-						i, adm_table->pid, adm_table->segmento,
+						"FRAME: %d | TABLA: %s | SEGMENTO: %d\n%s\n",
+						i, adm_table->path_tabla, adm_table->segmento,
 						frame);
 			}
 		}
@@ -386,18 +386,19 @@ void dump_memory_spa(int pid) {
 
 	for (i = 0; i < list_size(adm_spa_lista); i++) {
 		t_adm_tabla_segmentos_spa* adm_table = list_get(adm_spa_lista, i);
-		if (adm_table->pid > 0) {
-			string_append_with_format(&dump_act_process, "ACTIVE PID: %d\n",
-					adm_table->pid);
+		if (!string_equals_ignore_case(adm_table->path_tabla,"")) {
+			string_append_with_format(&dump_act_process, "ACTIVE TABLE: %d\n",
+					adm_table->path_tabla);
 		}
 	}
 
 	for (i = 0; i < frames_spa_count; i++) {
 		t_adm_tabla_frames_spa* adm_table = list_get(adm_frame_lista_spa, i);
-		if (adm_table->pid == pid || pid < 0) {
+		if (string_equals_ignore_case(adm_table->path_tabla,path_table)
+				|| string_equals_ignore_case(path_table,"")) {
 			string_append_with_format(&dump_mem_struct,
-					"FRAME: %d | PID: %d | SEGMENTO: %d\n", i,
-					adm_table->pid, adm_table->segmento);
+					"FRAME: %d | TABLE: %s | SEGMENTO: %d\n", i,
+					adm_table->path_tabla, adm_table->segmento);
 		}
 	}
 
@@ -411,7 +412,7 @@ void dump_memory_spa(int pid) {
 
 
 	printf("%s\n", dump_total);
-	loggear(logger,LOG_LEVEL_DEBUG,"\n>PID: %d\n\n%s\n", pid, dump_total);
+	loggear(logger,LOG_LEVEL_DEBUG,"\n>TABLE: %s\n\n%s\n", path_table, dump_total);
 
 	free(dump_act_process);
 	free(dump_mem_content);

@@ -23,6 +23,7 @@
 #include <sys/types.h>
 #include <pthread.h>
 #include <stdarg.h>
+#include <time.h>
 
 
 /* Estructuras de Hackers */

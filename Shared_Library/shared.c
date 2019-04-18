@@ -284,3 +284,8 @@ t_mensaje* deserializar(void* buffer) {
 
 	return mensaje;
 }
+
+unsigned int obtenerTimeStamp ()
+{
+	return (unsigned)time(NULL);
+}

@@ -16,6 +16,7 @@
 #include <unistd.h> // Para close
 #include <stdint.h>
 #include <commons/collections/list.h>
+#include <commons/string.h>
 
 typedef struct {
 	int frame;
@@ -26,12 +27,12 @@ typedef struct {
 } t_segmentos_spa;
 
 typedef struct {
-	int pid;
+	char* path_tabla;
 	t_list* seg_lista;
 } t_adm_tabla_segmentos_spa;
 
 typedef struct {
-	int pid;
+	char* path_tabla;
 	int segmento;
 } t_adm_tabla_frames_spa;
 
@@ -44,11 +45,11 @@ t_list* adm_frame_lista_spa;
 
 void liberar_memory_spa();
 void init_memory_spa();
-char* leer_bytes_spa(int pid, int segmento, int offset, int size);
-int escribir_bytes_spa(int pid, int segmento, int offset, int size, char* buffer);
-int add_spa(int pid, int n_frames);
-void free_spa(int pid, int segmento);
+char* leer_bytes_spa(char* path_table, int segmento, int offset, int size);
+int escribir_bytes_spa(char* path_table, int segmento, int offset, int size, char* buffer);
+int add_spa(char* path_table, int n_frames);
+void free_spa(char* path_table, int segmento);
 void update_administrative_register_adm_table_spa(t_adm_tabla_segmentos_spa* adm_table);
-void dump_memory_spa(int pid);
+void dump_memory_spa(char* path_table);
 
 #endif /* MEMORY_H_ */
