@@ -13,8 +13,8 @@ void cargar_configuracion_kernel() {
 	config = cargarConfiguracion("../config/KERNEL.config", logger);
 
 	if (config_has_property(config, "IP_MEMORIA")) {
-			// Falta sacar las comillas al IP
 			kernel_conf.ip_memoria = config_get_string_value(config, "IP_MEMORIA");
+			remove_quotes(kernel_conf.ip_memoria);
 			loguear_carga_propiedad("IP_MEMORIA", kernel_conf.ip_memoria);
 		} else {
 			loguear_error_carga_propiedad("IP_MEMORIA");

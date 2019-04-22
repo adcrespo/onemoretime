@@ -31,6 +31,7 @@ typedef enum t_comando_enum {
 
 // Definición de funciones
 void *crear_consola();
+int procesar_comando(char *line);
 t_comando_enum string_to_enum(char*);
 char* enum_to_string(t_comando_enum);
 char **character_name_completion(const char *, int, int);

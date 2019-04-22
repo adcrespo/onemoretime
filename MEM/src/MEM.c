@@ -59,7 +59,7 @@ int main(int argc, char *argv[]) {
 
 	crearHiloConsola();
 
-	connect_to_server(MEM_CONF.IP_FS, MEM_CONF.PUERTO_FS, lis);
+//	connect_to_server(MEM_CONF.IP_FS, MEM_CONF.PUERTO_FS, lis);
 
 	listen_connexions(MEM_CONF.PUERTO);
 

@@ -57,7 +57,7 @@ int procesar_comando(char *line) {
 	switch (comando_e) {
 
 		case _salir:
-			puts("Muchas gracias por utilizar el proceso SAFA. Vuelva pronto!\n");
+			puts("Muchas gracias por utilizar el proceso KERNEL. Vuelva pronto!\n");
 			return -1;
 
 		case _select:

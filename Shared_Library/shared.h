@@ -32,7 +32,7 @@ typedef enum tipoMensaje {
 }t_tipoMensaje;
 
 typedef enum tipoProceso {
-	lis, mem, knl
+	lis, mem, kernel
 } t_tipoProceso;
 
 typedef struct {

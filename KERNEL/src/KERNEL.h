@@ -15,15 +15,21 @@
 #include <shared.h>
 #include "Auxiliares/Logueo.h"
 #include "Auxiliares/Consola.h"
+#include "Auxiliares/Planificador.h"
+#include "Auxiliares/Configuracion.h"
+#include "Auxiliares/Conexion.h"
 
 
 /* Variables globales */
 //t_log* logger;
 pthread_t thread_consola;
 
+int socket_memoria;
+
 
 /* Declaración de Procesos*/
-void cargar_configuracion_kernel();
+//void cargar_configuracion_kernel();
+void inicializar();
 void crear_hilo_consola();
 
 

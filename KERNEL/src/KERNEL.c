@@ -19,14 +19,28 @@ int main(void) {
 	cargar_configuracion_kernel();
 
 	/* 3. Inicializar variables */
+	inicializar();
 
-	/* 4. Creación de hilo para consola */
+	/* 4. Conexión con Memoria */
+	socket_memoria = conectar_a_servidor(kernel_conf.ip_memoria, kernel_conf.puerto_memoria, mem);
+
+	/* 5. Creación de hilo para consola */
 	crear_hilo_consola();
+
 
 	pthread_join(thread_consola, NULL);
 
 	puts("Fin proceso Kernel"); /* prints Proceso Kernel */
 	return EXIT_SUCCESS;
+}
+
+void inicializar() {
+
+	lista_new = list_create();
+	lista_ready = list_create();
+	lista_exec = list_create();
+	lista_exit = list_create();
+
 }
 
 void crear_hilo_consola() {

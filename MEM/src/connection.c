@@ -97,7 +97,8 @@ void procesar(int n_descriptor, fd_set* set_master) {
 	loggear(logger, LOG_LEVEL_INFO,"Procesar mensaje: %d", msg->header.tipoMensaje);
 
 	switch(msg->header.tipoProceso) {
-		case knl:;
+		case kernel:;
+			enviarMensaje(mem, handshake, 0, NULL, n_descriptor, logger, kernel);
 			//procesar_CPU(msg, n_descriptor, set_master);
 			break;
 		case mem:;
