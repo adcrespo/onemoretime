@@ -7,19 +7,6 @@
 
 #include "Consola.h"
 
-char* comandos_str[] = {
-		"select"
-		, "insert"
-		, "create"
-		, "describe"
-		, "drop"
-		, "journal"
-		, "add"
-		, "run"
-		, "metrics"
-		, "salir"
-		, NULL };
-
 void *crear_consola() {
 
 	char * line;
@@ -43,73 +30,73 @@ void *crear_consola() {
 
 int procesar_comando(char *line) {
 
-	char* comando = strtok(line, " ");
-	char* parametro;
+	log_info(logger, "CONSOLA: %s.", line);
 
-	t_comando_enum comando_e = string_to_enum(comando);
+	t_request* request = parsear(line);
 
-	if (comando_e == -1) {
-		log_error(logger, "CONSOLA: Se ingresó un comando desconocido: %s.", comando);
+	if (request->request == -1) {
+
+		log_error(logger, "CONSOLA: Se ingresó un comando desconocido: %s.", line);
+		printf("Se ingresó un comando desconocido: %s.\n", line);
+
 	} else {
-		log_info(logger, "CONSOLA: Se ejecutó el comando %s.", enum_to_string(comando_e));
+
+//		log_info(logger, "CONSOLA: Se ejecutó el comando: %s.", enum_to_string(request->request));
+
+		switch (request->request) {
+
+				case _salir:
+					puts("Muchas gracias por utilizar el proceso KERNEL. Vuelva pronto!\n");
+					return -1;
+
+				case _select:
+					printf("CONSOLA: Se ingresó comando SELECT \n");
+					break;
+
+				case _insert:
+					printf("CONSOLA: Se ingresó comando INSERT \n");
+					break;
+
+				case _create:
+					printf("CONSOLA: Se ingresó comando CREATE \n");
+					break;
+
+				case _describe:
+					printf("CONSOLA: Se ingresó comando DESCRIBE \n");
+					break;
+
+				case _drop:
+					printf("CONSOLA: Se ingresó comando DROP \n");
+					break;
+
+				case _journal:
+					printf("CONSOLA: Se ingresó comando JOURNAL \n");
+					break;
+
+				case _add:
+					printf("CONSOLA: Se ingresó comando ADD \n");
+					break;
+
+				case _run:
+					printf("CONSOLA: Se ingresó comando RUN \n");
+					break;
+
+				case _metrics:
+					printf("CONSOLA: Se ingresó comando METRICS \n");
+					break;
+
+				default:;
+					// No entra por acá porque se valida antes el enum != -1
+					//printf("No se reconoce el comando %s .\n", comando);
+			}
+
+//			printf("Se ingresó el comando: %s. \n", comando);
+
 	}
-
-	switch (comando_e) {
-
-		case _salir:
-			puts("Muchas gracias por utilizar el proceso KERNEL. Vuelva pronto!\n");
-			return -1;
-
-		case _select:
-			break;
-
-		case _insert:
-			break;
-
-		case _create:
-			break;
-
-		case _describe:
-			break;
-
-		case _drop:
-			break;
-
-		case _journal:
-			break;
-
-		case _add:
-			break;
-
-		case _run:
-			break;
-
-		case _metrics:
-			break;
-
-		default:
-			printf("No se reconoce el comando %s .\n", comando);
-	}
-
-	printf("Se ingresó el comando: %s. \n", comando);
 
 	return 0;
 }
 
-
-// Auxiliares
-t_comando_enum string_to_enum(char *sval) {
-	t_comando_enum result = _select;
-	int i = 0;
-	for (i = 0; comandos_str[i] != NULL; ++i, ++result)
-		if (0 == strcmp(sval, comandos_str[i]))
-			return result;
-	return -1;
-}
-
-char* enum_to_string(t_comando_enum comando) {
-	return comandos_str[comando];
-}
 
 char **character_name_completion(const char *text, int start, int end) {
 	rl_attempted_completion_over = 1;
@@ -120,16 +107,16 @@ char *character_name_generator(const char *text, int state) {
 	static int list_index, len;
 	char *name;
 
-	char *character_names[] = { "select"
-			, "insert"
-			, "create"
-			, "describe"
-			, "drop"
-			, "journal"
-			, "add"
-			, "run"
-			, "metrics"
-			, "salir"
+	char *character_names[] = { "SELECT"
+			, "INSERT"
+			, "CREATE"
+			, "DESCRIBE"
+			, "DROP"
+			, "JOURNAL"
+			, "ADD"
+			, "RUN"
+			, "METRICS"
+			, "SALIR"
 			, NULL };
 
 	if (!state) {

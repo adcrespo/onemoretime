@@ -22,7 +22,7 @@ int main(void) {
 	inicializar();
 
 	/* 4. Conexión con Memoria */
-	socket_memoria = conectar_a_servidor(kernel_conf.ip_memoria, kernel_conf.puerto_memoria, mem);
+	//socket_memoria = conectar_a_servidor(kernel_conf.ip_memoria, kernel_conf.puerto_memoria, mem);
 
 	/* 5. Creación de hilo para consola */
 	crear_hilo_consola();
