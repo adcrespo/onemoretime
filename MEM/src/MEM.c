@@ -36,16 +36,17 @@ int main(int argc, char *argv[]) {
 
 	init_memory_spa();
 
-	int paginas1 = add_spa("TABLA1",10); //Siempre devuelve pag o seg + 1 ; si es 0 no reservo nada
+	/*int paginas1 = add_spa("TABLA1",10); //Siempre devuelve pag o seg + 1 ; si es 0 no reservo nada
 	int paginas2 = add_spa("TABLA1",1);
 	int paginas3 = add_spa("TABLA1",1);
+	int paginas4 = add_spa("TABLA2",2);
 	int escrito1 = escribir_bytes_spa("TABLA1",1,1*MAX_LINEA,5,"CHAU\n"); //offset siempre deberia ser multiplo de max_linea
 	int escrito2 = escribir_bytes_spa("TABLA1",0,0,5,"HOLA\n");
-	int escrito3 = escribir_bytes_spa("TABLA1",1,0,5,"COMO\n");
+	int escrito3 = escribir_bytes_spa("TABLA1",0,1*MAX_LINEA,5,"COMO\n");
 	int escrito4 = escribir_bytes_spa("TABLA1",2,2*MAX_LINEA,5,"FAIL\n"); //si es -1 no encontre la pagina
 	int escrito5 = escribir_bytes_spa("TABLA1",1,8*MAX_LINEA,5,"FAIL\n"); //TODO probar cuando la linea supera la pagina
 	char* buffer1 = leer_bytes_spa("TABLA1",0,0,MAX_LINEA); //size siempre deberia ser max_liena y offset siempre deberia ser multiplo de max_linea
-	char* buffer2 = leer_bytes_spa("TABLA1",1,MAX_LINEA,MAX_LINEA);
+	char* buffer2 = leer_bytes_spa("TABLA1",0,MAX_LINEA,MAX_LINEA);
 	char* buffer3 = leer_bytes_spa("TABLA1",1,0,MAX_LINEA);
 	char* buffer4 = leer_bytes_spa("TABLA1",2,2*MAX_LINEA,MAX_LINEA); //si es \0 no encontre la pagina
 	char* buffer5 = leer_bytes_spa("TABLA1",1,8*MAX_LINEA,MAX_LINEA); //TODO probar cuando la linea supera la pagina
@@ -55,7 +56,7 @@ int main(int argc, char *argv[]) {
 	free_spa("TABLA1", 2);
 	free_spa("TABLA1", 0);
 	dump_memory_spa("TABLA1");
-	liberar_memory_spa();
+	liberar_memory_spa();*/
 
 	crearHiloConsola();
 

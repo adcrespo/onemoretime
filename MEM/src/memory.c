@@ -232,21 +232,26 @@ int add_spa(char* path_table, int n_frames) {
 	loggear(logger,LOG_LEVEL_DEBUG, "%s", "TENGO FRAMES DISPONIBLES!");
 
 	t_adm_tabla_segmentos_spa* adm_table_new;
+	t_segmentos_spa* adm_table_seg_new;
 
 	if(known_segmentos==0) {
+		loggear(logger,LOG_LEVEL_DEBUG, "%s", "adm_table_seg_new!");
 		adm_table_new =  malloc(sizeof(t_adm_tabla_segmentos_spa));
 		adm_table_new->path_tabla = string_from_format(path_table);
 		adm_table_new->seg_lista = list_create();
 		list_add(adm_spa_lista, adm_table_new);
+
+		adm_table = list_find(adm_spa_lista, &find);
+		adm_table_seg_new = malloc(sizeof(t_segmentos_spa));
+		adm_table_seg_new->pag_lista = list_create();
+		list_add(adm_table->seg_lista,adm_table_seg_new);
 	}
 
-	adm_table = list_find(adm_spa_lista, &find);
-
-	t_segmentos_spa* adm_table_seg_new;
+	/*adm_table = list_find(adm_spa_lista, &find);
 
 	adm_table_seg_new = malloc(sizeof(t_segmentos_spa));
 	adm_table_seg_new->pag_lista = list_create();
-	list_add(adm_table->seg_lista,adm_table_seg_new);
+	list_add(adm_table->seg_lista,adm_table_seg_new);*/
 
 	known_segmentos = (adm_table == NULL)?0:list_size(adm_table->seg_lista);
 
@@ -254,7 +259,6 @@ int add_spa(char* path_table, int n_frames) {
 	known_paginas = (adm_table_seg_new == NULL)?0:list_size(adm_table_seg_new->pag_lista);
 
 	//t_paginas_spa* adm_table_pag = list_get(adm_table_spa_new->pag_lista, known_paginas-1);
-	loggear(logger,LOG_LEVEL_DEBUG, "%s", "adm_table_seg_new!");
 	for(i=0; i<n_frames; i++) {
 		t_paginas_spa* adm_table_pag_new = malloc(sizeof(t_paginas_spa));
 		adm_table_pag_new->frame = get_free_frame();
