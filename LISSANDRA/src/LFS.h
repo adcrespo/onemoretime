@@ -5,8 +5,8 @@
  *      Author: utnso
  */
 
-#ifndef LISSANDRA_H_
-#define LISSANDRA_H_
+#ifndef LFS_H_
+#define LFS_H_
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -39,4 +39,4 @@ void cargar_conf_lis(){
 
 }
 
-#endif /* LISSANDRA_H_ */
+#endif /* LFS_H_ */

@@ -8,9 +8,11 @@
  ============================================================================
  */
 
-#include "LISSANDRA.h"
+#include "LFS.h"
 
 int main(void) {
+
+	logger = configurar_logger("../log/LIS.log", "Lissandra");
 
 	cargar_conf_lis();
 
