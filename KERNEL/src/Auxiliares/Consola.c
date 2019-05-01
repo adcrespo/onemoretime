@@ -77,6 +77,33 @@ int procesar_comando(char *line) {
 
 			case _run:
 				printf("CONSOLA: Se ingresó comando RUN \n");
+				printf("Parámetro: %s \n", request->parametro1);
+
+				FILE *file;
+				char* linea = string_new();
+				size_t len = 0;
+				int cantidad_lineas = 0;
+//				ssize_t read;
+
+				file = fopen(request->parametro1, "r");
+
+				if (file == NULL) {
+					log_error("CONSOLA: No se puede abrir el archivo: %s", request->parametro1);
+					printf("No se puede abrir el archivo: %s", request->parametro1);
+				}
+
+//				while ((read = getline(&linea, &len, file)) != -1) {
+				while (getline(&linea, &len, file) != -1) {
+					printf("Contenido de línea: %s",linea);
+					cantidad_lineas++;
+				}
+
+				printf("Cantidad de líneas: %d \n",cantidad_lineas);
+
+				fclose(file);
+				if(linea)
+					free(line);
+
 				break;
 
 			case _metrics:
