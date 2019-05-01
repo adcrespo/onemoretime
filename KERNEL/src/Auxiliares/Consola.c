@@ -10,22 +10,22 @@
 void *crear_consola() {
 
 	char * line;
-		rl_attempted_completion_function = character_name_completion;
+	rl_attempted_completion_function = character_name_completion;
 
-		int estado;
+	int estado;
 
-		while (1) {
-			line = readline("Ingrese un comando > ");
-			if (line) {
-				add_history(line);
-			}
-
-			estado = procesar_comando(line);
-
-			if (estado != 0) {
-				return (void*)EXIT_FAILURE;
-			}
+	while (1) {
+		line = readline("Ingrese un comando > ");
+		if (line) {
+			add_history(line);
 		}
+
+		estado = procesar_comando(line);
+
+		if (estado != 0) {
+			return (void*)EXIT_FAILURE;
+		}
+	}
 }
 
 int procesar_comando(char *line) {
@@ -41,54 +41,52 @@ int procesar_comando(char *line) {
 
 	} else {
 
-//		log_info(logger, "CONSOLA: Se ejecutó el comando: %s.", enum_to_string(request->request));
-
 		switch (request->request) {
 
-				case _salir:
-					puts("Muchas gracias por utilizar el proceso KERNEL. Vuelva pronto!\n");
-					return -1;
+			case _salir:
+				puts("Muchas gracias por utilizar el proceso KERNEL. Vuelva pronto!\n");
+				return -1;
 
-				case _select:
-					printf("CONSOLA: Se ingresó comando SELECT \n");
-					break;
+			case _select:
+				printf("CONSOLA: Se ingresó comando SELECT \n");
+				break;
 
-				case _insert:
-					printf("CONSOLA: Se ingresó comando INSERT \n");
-					break;
+			case _insert:
+				printf("CONSOLA: Se ingresó comando INSERT \n");
+				break;
 
-				case _create:
-					printf("CONSOLA: Se ingresó comando CREATE \n");
-					break;
+			case _create:
+				printf("CONSOLA: Se ingresó comando CREATE \n");
+				break;
 
-				case _describe:
-					printf("CONSOLA: Se ingresó comando DESCRIBE \n");
-					break;
+			case _describe:
+				printf("CONSOLA: Se ingresó comando DESCRIBE \n");
+				break;
 
-				case _drop:
-					printf("CONSOLA: Se ingresó comando DROP \n");
-					break;
+			case _drop:
+				printf("CONSOLA: Se ingresó comando DROP \n");
+				break;
 
-				case _journal:
-					printf("CONSOLA: Se ingresó comando JOURNAL \n");
-					break;
+			case _journal:
+				printf("CONSOLA: Se ingresó comando JOURNAL \n");
+				break;
 
-				case _add:
-					printf("CONSOLA: Se ingresó comando ADD \n");
-					break;
+			case _add:
+				printf("CONSOLA: Se ingresó comando ADD \n");
+				break;
 
-				case _run:
-					printf("CONSOLA: Se ingresó comando RUN \n");
-					break;
+			case _run:
+				printf("CONSOLA: Se ingresó comando RUN \n");
+				break;
 
-				case _metrics:
-					printf("CONSOLA: Se ingresó comando METRICS \n");
-					break;
+			case _metrics:
+				printf("CONSOLA: Se ingresó comando METRICS \n");
+				break;
 
-				default:;
-					// No entra por acá porque se valida antes el enum != -1
-					//printf("No se reconoce el comando %s .\n", comando);
-			}
+			default:;
+				// No entra por acá porque se valida antes el enum != -1
+				//printf("No se reconoce el comando %s .\n", comando);
+		}
 
 //			printf("Se ingresó el comando: %s. \n", comando);
 
