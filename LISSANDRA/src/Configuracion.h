@@ -23,7 +23,7 @@ typedef struct {
 t_lfs_config lfs_conf;
 t_config *config;
 
-void cargar_config_lfs();
+void cargar_conf_lfs();
 
 
 #endif /* CONFIGURACION_H_ */
