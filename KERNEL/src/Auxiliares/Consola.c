@@ -79,31 +79,8 @@ int procesar_comando(char *line) {
 				printf("CONSOLA: Se ingresó comando RUN \n");
 				printf("Parámetro: %s \n", request->parametro1);
 
-				FILE *file;
-				char* linea = string_new();
-				size_t len = 0;
-				int cantidad_lineas = 0;
-//				ssize_t read;
-
-				file = fopen(request->parametro1, "r");
-
-				if (file == NULL) {
-					log_error("CONSOLA: No se puede abrir el archivo: %s", request->parametro1);
-					printf("No se puede abrir el archivo: %s", request->parametro1);
-				}
-
-//				while ((read = getline(&linea, &len, file)) != -1) {
-				while (getline(&linea, &len, file) != -1) {
-					printf("Contenido de línea: %s",linea);
-					cantidad_lineas++;
-				}
-
-				printf("Cantidad de líneas: %d \n",cantidad_lineas);
-
-				fclose(file);
-				if(linea)
-					free(line);
-
+				generar_nuevo_proceso(request);
+				abrir_archivo_LQL(request);
 				break;
 
 			case _metrics:
@@ -115,11 +92,35 @@ int procesar_comando(char *line) {
 				//printf("No se reconoce el comando %s .\n", comando);
 		}
 
-//			printf("Se ingresó el comando: %s. \n", comando);
-
 	}
 
 	return 0;
+}
+
+void abrir_archivo_LQL(t_request* request) {
+
+	FILE *file;
+	char* linea = string_new();
+	size_t len = 0;
+	int cantidad_lineas = 0;
+
+	file = fopen(request->parametro1, "r");
+
+	if (file == NULL) {
+		log_error(logger, "CONSOLA: No se puede abrir el archivo: %s", request->parametro1);
+		printf("No se puede abrir el archivo: %s", request->parametro1);
+	}
+
+	while (getline(&linea, &len, file) != -1) {
+		printf("Contenido de línea: %s",linea);
+		cantidad_lineas++;
+	}
+
+	printf("Cantidad de líneas: %d \n",cantidad_lineas);
+
+	fclose(file);
+	if(linea)
+		free(linea);
 }
 
 

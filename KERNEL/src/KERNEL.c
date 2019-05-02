@@ -36,6 +36,8 @@ int main(void) {
 
 void inicializar() {
 
+	cont_id_procesos = 0;
+
 	lista_new = list_create();
 	lista_ready = list_create();
 	lista_exec = list_create();
