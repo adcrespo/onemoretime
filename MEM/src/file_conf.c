@@ -41,7 +41,8 @@ void get_config(char* path) {
 		MEM_CONF.IP_SEEDS = string_get_string_as_array(ipSeeds);
 		while(MEM_CONF.IP_SEEDS[i] != NULL)
 		{
-			loggear(logger,LOG_LEVEL_INFO,"PUERTO_FS: %s", MEM_CONF.IP_SEEDS[i]);
+			remove_quotes(MEM_CONF.IP_SEEDS[i]);
+			loggear(logger,LOG_LEVEL_INFO,"IP_SEEDS: %s", MEM_CONF.IP_SEEDS[i]);
 			i++;
 		}
 
@@ -54,7 +55,8 @@ void get_config(char* path) {
 		MEM_CONF.PUERTO_SEEDS = string_get_string_as_array(puertoSeeds);
 		while(MEM_CONF.PUERTO_SEEDS[i] != NULL)
 		{
-			loggear(logger,LOG_LEVEL_INFO,"PUERTO_FS: %s", MEM_CONF.PUERTO_SEEDS[i]);
+			remove_quotes(MEM_CONF.PUERTO_SEEDS[i]);
+			loggear(logger,LOG_LEVEL_INFO,"PUERTO_SEEDS: %s", MEM_CONF.PUERTO_SEEDS[i]);
 			i++;
 		}
 	}

@@ -12,6 +12,7 @@
 #include <shared.h>
 
 typedef struct {
+	char* ip;
 	int puerto;
 	char* punto_montaje;
 	int retardo;
@@ -23,7 +24,7 @@ typedef struct {
 t_lfs_config lfs_conf;
 t_config *config;
 
-void cargar_config_lfs();
+void cargar_conf_lfs();
 
 
 #endif /* CONFIGURACION_H_ */
