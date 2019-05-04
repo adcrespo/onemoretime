@@ -14,6 +14,10 @@ int main(void) {
 
 	logger = configurar_logger("../log/LIS.log", "Lissandra");
 
+	if (levantar_servidor() == 0) {
+			manejar_conexiones();
+		}
+
 	cargar_conf_lfs();
 
 	crear_hilo_filesystem();
