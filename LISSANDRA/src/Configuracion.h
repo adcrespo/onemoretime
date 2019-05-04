@@ -12,6 +12,7 @@
 #include <shared.h>
 
 typedef struct {
+	char* ip;
 	int puerto;
 	char* punto_montaje;
 	int retardo;
