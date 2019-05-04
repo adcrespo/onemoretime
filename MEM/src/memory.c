@@ -127,7 +127,7 @@ void init_memory_spa() {
 	for (i = 0; i < frames_spa_count; i++) {
 		t_adm_tabla_frames_spa* adm_table = malloc(sizeof(t_adm_tabla_frames_spa));
 		adm_table->path_tabla = string_from_format("");
-		adm_table->segmento = 0;
+		adm_table->pagina = 0;
 		list_add(adm_frame_lista_spa, adm_table);
 	}
 
@@ -142,7 +142,7 @@ void init_memory_spa() {
 	}*/
 }
 
-void free_spa(char* path_table, int segmento) {
+void free_spa(char* path_table, int pagina) {
 	int i,j,k;
 
 	bool find(void* element) {
@@ -163,30 +163,43 @@ void free_spa(char* path_table, int segmento) {
 
 	t_adm_tabla_segmentos_spa* adm_table = list_find(adm_spa_lista, &find);
 
-	t_segmentos_spa* adm_table_seg = (adm_table!=NULL)?list_get(adm_table->seg_lista, segmento):NULL;
+	t_segmentos_spa* adm_table_seg = (adm_table!=NULL)?list_get(adm_table->seg_lista, 0):NULL;
 
+	t_paginas_spa* adm_table_pag = (adm_table!=NULL)&&(adm_table_seg != NULL)?list_get(adm_table_seg->pag_lista, pagina):NULL;
 
-	loggear(logger,LOG_LEVEL_DEBUG, "%s", (adm_table != NULL) && (adm_table_seg != NULL) ?
-				"ENCONTRE SEGMENTOS PARA LIBERAR!" : "NO ENCONTRE SEGMMENTO PARA LIBERAR.");
+	loggear(logger,LOG_LEVEL_DEBUG, "%s", (adm_table != NULL) && (adm_table_seg != NULL) && (adm_table_pag != NULL) ?
+				"ENCONTRE PAGINA PARA LIBERAR!" : "NO ENCONTRE PAGINA PARA LIBERAR.");
 
-	if(adm_table == NULL || adm_table_seg == NULL)
+	if(adm_table == NULL || adm_table_seg == NULL || adm_table_pag == NULL)
 		return;
 
-	int countPaginas = list_size(adm_table_seg->pag_lista);
+	t_adm_tabla_frames_spa* adm_table_frame = list_get(adm_frame_lista_spa,adm_table_pag->frame);
+
+	adm_table_frame->path_tabla = string_from_format("");
+	adm_table_frame->pagina = 0;
+	clean_frame_spa(adm_table_pag->frame);
+
+	adm_table_pag->frame = -1;
+
+	free(list_remove(adm_table_seg->pag_lista,pagina));
+
+	/*int countPaginas = list_size(adm_table_seg->pag_lista);
 	for (i = 0; i < countPaginas; i++) {
-		t_paginas_spa* adm_table_pag = list_get(adm_table_seg->pag_lista, i);
-		if (adm_table_pag->frame > -1) { // TODO: porque chequeo el numero de frame
-			t_adm_tabla_frames_spa* adm_table_frame = list_get(adm_frame_lista_spa,adm_table_pag->frame);
+		t_paginas_spa* adm_table_pag = list_get(adm_table_seg->pag_lista, 0);
 
-			adm_table_frame->path_tabla = string_from_format("");
-			adm_table_frame->segmento = 0;
-			clean_frame_spa(adm_table_pag->frame);
+		t_adm_tabla_frames_spa* adm_table_frame = list_get(adm_frame_lista_spa,adm_table_pag->frame);
 
-			adm_table_pag->frame = -1;
-		}
-	}
+		adm_table_frame->path_tabla = string_from_format("");
+		adm_table_frame->segmento = 0;
+		clean_frame_spa(adm_table_pag->frame);
 
-	if(list_size(list_filter(adm_table->seg_lista,&find2))==0) {
+		adm_table_pag->frame = -1;
+
+		free(list_remove(adm_table_seg->pag_lista,0));
+	}*/
+
+//	if(list_size(list_filter(adm_table->seg_lista,&find2))==0) {
+	if(list_size(adm_table_seg->pag_lista)==0) {
 		loggear(logger,LOG_LEVEL_DEBUG, "%s", "SE LIBERA LA TABLA.");
 		int countSegLista = list_size(adm_spa_lista);
 		for (i = 0; i < countSegLista; i++) {
@@ -208,7 +221,7 @@ void free_spa(char* path_table, int segmento) {
 	}
 }
 
-int add_spa(char* path_table, int n_frames) {
+int add_spa(char* path_table, int n_frames, time_t timestamp) {
 	loggear(logger,LOG_LEVEL_DEBUG, "segments-pages, table = '%s', n_frames = '%d'", path_table, n_frames);
 
 	bool find(void* element) {
@@ -262,12 +275,14 @@ int add_spa(char* path_table, int n_frames) {
 	for(i=0; i<n_frames; i++) {
 		t_paginas_spa* adm_table_pag_new = malloc(sizeof(t_paginas_spa));
 		adm_table_pag_new->frame = get_free_frame();
+		adm_table_pag_new->timestamp = timestamp;
+		adm_table_pag_new->modificado=0;
 		list_add(adm_table_seg_new->pag_lista, adm_table_pag_new);
 		known_paginas++;
 		loggear(logger,LOG_LEVEL_DEBUG, "known_paginas %d",known_paginas);
 		t_adm_tabla_frames_spa* adm_table_frames = list_get(adm_frame_lista_spa,adm_table_pag_new->frame);
 		adm_table_frames->path_tabla = string_from_format(path_table);
-		adm_table_frames->segmento = known_segmentos;
+		adm_table_frames->pagina = known_paginas-1;
 		loggear(logger,LOG_LEVEL_DEBUG, "%s", "adm_table_pag_new!");
 	}
 
@@ -295,7 +310,7 @@ char* leer_bytes_spa(char* path_table, int segmento, int offset, int size) {
 	adm_table_seg = list_get(adm_table->seg_lista,segmento);
 
 	loggear(logger,LOG_LEVEL_DEBUG, "%s",
-				(adm_table_seg != NULL) ? "ENCONTRE EL SEGMENTO!" : "NO ENCONTRE ESL SEGMENTO.");
+				(adm_table_seg != NULL) ? "ENCONTRE EL SEGMENTO!" : "NO ENCONTRE EL SEGMENTO.");
 
 	char* buffer = string_new();
 	if (adm_table_seg != NULL) {
@@ -310,7 +325,7 @@ char* leer_bytes_spa(char* path_table, int segmento, int offset, int size) {
 	return buffer;
 }
 
-int escribir_bytes_spa(char* path_table, int segmento, int offset, int size, char* buffer) {
+int escribir_bytes_spa(char* path_table, int segmento, int offset, int size, char* buffer, unsigned char modificado) {
 	bool find(void* element) {
 		t_adm_tabla_segmentos_spa* adm_table = element;
 		return string_equals_ignore_case(adm_table->path_tabla,path_table);
@@ -347,6 +362,7 @@ int escribir_bytes_spa(char* path_table, int segmento, int offset, int size, cha
 			frames_spa[i] = buffer[b];
 			b++;
 		}
+		adm_table_pag->modificado = modificado;
 		//}
 	}
 	else
@@ -382,7 +398,7 @@ void dump_memory_spa(char* path_table) {
 						i * frame_spa_size, frame_spa_size);
 				string_append_with_format(&dump_mem_content,
 						"FRAME: %d | TABLA: %s | SEGMENTO: %d\n%s\n",
-						i, adm_table->path_tabla, adm_table->segmento,
+						i, adm_table->path_tabla, adm_table->pagina,
 						frame);
 			}
 		}
@@ -402,7 +418,7 @@ void dump_memory_spa(char* path_table) {
 				|| string_equals_ignore_case(path_table,"")) {
 			string_append_with_format(&dump_mem_struct,
 					"FRAME: %d | TABLE: %s | SEGMENTO: %d\n", i,
-					adm_table->path_tabla, adm_table->segmento);
+					adm_table->path_tabla, adm_table->pagina);
 		}
 	}
 
@@ -424,3 +440,23 @@ void dump_memory_spa(char* path_table) {
 	free(dump_total);
 }
 
+t_adm_tabla_frames_spa getPaginaMenorTimestamp() {
+	t_adm_tabla_frames_spa frame_spa = {.path_tabla = string_new(),.pagina=-1};
+	time_t timestamp = 0;
+	int i,j;
+
+	for (i = 0; i < list_size(adm_spa_lista); i++) {
+		t_adm_tabla_segmentos_spa* adm_table = list_get(adm_spa_lista, i);
+		t_segmentos_spa* adm_table_seg = list_get(adm_table->seg_lista, 0);
+		for (j = 0; j < list_size(adm_table_seg->pag_lista); j++) {
+			t_paginas_spa* adm_table_pag = list_get(adm_table_seg->pag_lista,j);
+			if(timestamp==0 || adm_table_pag->timestamp < timestamp) {
+				frame_spa.path_tabla = string_from_format(adm_table->path_tabla);
+				frame_spa.pagina = j;
+				timestamp = adm_table_pag->timestamp;
+			}
+		}
+	}
+
+	return frame_spa;
+}
