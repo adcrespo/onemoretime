@@ -13,7 +13,7 @@
 
 typedef struct {
 	char* ip;
-	int puerto;
+	char* puerto;
 	char* punto_montaje;
 	int retardo;
 	int tamano_value;

@@ -9,7 +9,6 @@
  */
 
 #include "LFS.h"
-#include "Configuracion.h"
 
 int main(void) {
 

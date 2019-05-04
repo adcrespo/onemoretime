@@ -11,7 +11,7 @@ void cargar_conf_lfs(){
 	config = cargarConfiguracion("../config/Lissandra.config", logger);
 
 		if (config_has_property(config, "PUERTO"))
-			lfs_conf.puerto = config_get_int_value(config, "PUERTO");
+			lfs_conf.puerto = config_get_string_value(config, "PUERTO");
 
 		if(config_has_property(config, "PUNTO_MONTAJE"))
 			lfs_conf.punto_montaje = config_get_string_value(config, "PUNTO_MONTAJE");
