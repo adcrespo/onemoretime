@@ -1,5 +1,6 @@
 # Osqui
 language.settings.xml
+KERNEL/Debug/src/subdir.mk
 *.mk
 
 # Prerequisites
