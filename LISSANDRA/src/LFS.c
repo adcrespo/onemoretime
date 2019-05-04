@@ -9,19 +9,20 @@
  */
 
 #include "LFS.h"
+#include "Configuracion.h"
 
 int main(void) {
 
 	logger = configurar_logger("../log/LIS.log", "Lissandra");
 
-	if (levantar_servidor() == 0) {
-			manejar_conexiones();
-		}
 
 	cargar_conf_lfs();
 
+
 	crear_hilo_filesystem();
 	crear_hilo_consola();
+
+	listen_connexions(lfs_conf.puerto);
 	pthread_join(thread_filesystem, NULL);
 
 

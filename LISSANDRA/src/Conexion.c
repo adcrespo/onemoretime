@@ -8,6 +8,7 @@
 #include "Configuracion.h"
 #include "LFS.h"
 #include "Error.h"
+#include "errno.h"
 
 int listen_connexions(char* PUERTO){
 
@@ -58,7 +59,6 @@ void aceptar(int socket_lfs, int* descriptor_mas_alto, fd_set* set_master) {
 }
 
 void procesar(int n_descriptor, fd_set* set_master) {
-	t_mensaje* msg;
 
 
 	loggear(logger, LOG_LEVEL_INFO, "Recibiendo mensaje...");

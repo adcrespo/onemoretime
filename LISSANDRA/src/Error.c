@@ -21,17 +21,9 @@ void _exit_with_error(char* error_msg, void * buffer) {
 
 
 void exit_gracefully(int return_nr) {
-  /*
-          Siempre llamamos a esta funcion para cerrar el programa.
-          Asi solo necesitamos destruir el logger y usar la llamada al
-          sistema exit() para terminar la ejecucion
-  */
 
-  close(socket);
 
-  pthread_mutex_destroy(&lock_socket);
-
-  loggear(logger, LOG_LEVEL_INFO, "********* FIN DEL PROCESO DIEGO *********");
+  loggear(logger, LOG_LEVEL_INFO, "********* FIN DEL PROCESO LISSANDRA *********");
 
   destruir_logger(logger);
   destroy_config(config);
