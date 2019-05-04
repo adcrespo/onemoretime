@@ -21,6 +21,7 @@ int tamanio_bloques;
 int cantidad_bloques;
 char *ruta_metadata;
 char *ruta_bitmap;
+char *bmap;
 
 
 

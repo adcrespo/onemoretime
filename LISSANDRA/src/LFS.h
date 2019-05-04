@@ -14,6 +14,7 @@
 
 #include "Configuracion.h"
 #include "Filesystem.h"
+#include "Consola.h"
 
 t_log *logger;
 
@@ -22,8 +23,10 @@ t_log *logger;
 // Variables globales
 
 pthread_t thread_filesystem;
+pthread_t thread_consola;
 
 void crear_hilo_filesystem();
+void crear_hilo_consola();
 
 
 
