@@ -13,6 +13,7 @@
 void *crear_filesystem();
 void cargar_metadata();
 void cargar_bitmap();
+int validar_tabla(const char*tabla);
 
 t_config *config_metadata;
 t_bitarray *bitmap;
@@ -21,6 +22,7 @@ int tamanio_bloques;
 int cantidad_bloques;
 char *ruta_metadata;
 char *ruta_bitmap;
+char *ruta_tables;
 char *bmap;
 
 

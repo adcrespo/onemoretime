@@ -15,17 +15,23 @@
 #include "Configuracion.h"
 #include "Filesystem.h"
 #include "Consola.h"
+#include "Conexion.h"
 
 t_log *logger;
+t_list *memtable;
+
+typedef struct {
+	char *nombre_tabla;
+     t_list *lista;
+}__attribute__((packed)) t_tabla;
 
 
 
-// Variables globales
-
-pthread_t thread_filesystem;
 pthread_t thread_consola;
 
-void crear_hilo_filesystem();
+
+void prueba_memtable();
+
 void crear_hilo_consola();
 
 

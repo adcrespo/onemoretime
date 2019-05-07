@@ -14,4 +14,8 @@
 
 void *crear_consola();
 
+
+
+
+
 #endif /* CONSOLA_H_ */

@@ -7,16 +7,23 @@
 
 #include "Consola.h"
 
+
+
 void *crear_consola(){
 	printf("Creando consola...\n");
 
-	char *linea;
+	char *line;
 
-	while(1){
-		linea = readline(">");
+	while (1) {
+			line = readline("Ingrese un comando> ");
+			if (line) {
+				add_history(line);
+			}
 
-		if(linea)
-			add_history(linea);
-	}
-
+		}
 }
+
+
+
+
+

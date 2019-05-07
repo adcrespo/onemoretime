@@ -9,9 +9,15 @@
 
 void *crear_filesystem(){
 	printf("Creando filesystem...\n");
+
+	ruta_tables = string_new();
+	string_append(&ruta_tables, lfs_conf.punto_montaje);
+	string_append(&ruta_tables, "Tables/");
+	printf("ruta tablas: %s\n", ruta_tables);
 	cargar_metadata();
 	cargar_bitmap();
 
+	return (void*)1;
 }
 
 void cargar_metadata(){
@@ -59,4 +65,21 @@ void cargar_bitmap(){
 
 		close(bm);
 		free(ruta_bitmap)*/
+}
+
+int validar_tabla(const char *tabla){
+	loggear(logger, LOG_LEVEL_INFO, "Validando tabla: %s", tabla);
+
+
+	char *ruta_tabla = string_from_format("%s%s", ruta_tables, tabla);
+	log_info(logger, "Ruta tabla: %s", ruta_tabla);
+	FILE *fp = fopen(ruta_tabla, "r");
+	free(ruta_tabla);
+
+	if(fp){
+		fclose(fp);
+		return 1;
+	}else {
+		return 0;
+	}
 }
