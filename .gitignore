@@ -58,3 +58,4 @@ dkms.conf
 
 *.xml
 *.log
+*.conf
