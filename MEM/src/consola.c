@@ -10,7 +10,9 @@
 #include "commons/string.h"
 #include "error.h"
 #include "memory.h"
+#include "journaling.h"
 #include "consola.h"
+
 
 t_tipoComando buscar_enum(char *sval) {
 	t_tipoComando result = select_;
@@ -109,7 +111,7 @@ void *crearConsola() {
 			break;
 		case journal:
 			printf("journal...\n");
-			//TODO: journal
+			process_journaling();
 			break;
 		case dump:
 			if (comando[1] == NULL) {
@@ -117,8 +119,7 @@ void *crearConsola() {
 				break;
 			}
 			printf("Dump (process id: %s)...\n",comando[1]);
-			int id_proceso = atoi(comando[1]);
-			dump_memory_spa(id_proceso);
+			dump_memory_spa(comando[1]);
 			break;
 		case salir:
 			exit_gracefully(EXIT_SUCCESS);

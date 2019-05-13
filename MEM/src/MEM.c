@@ -18,6 +18,7 @@
 #include "error.h"
 #include "argparse.h"
 #include "memory.h"
+#include "journaling.h"
 
 char* intToChar4(int num){
 	//RECORDAR: liberar el puntero con free()
@@ -36,7 +37,7 @@ int main(int argc, char *argv[]) {
 
 	init_memory_spa();
 
-	/*int paginas1 = add_spa("TABLA1",10,time(NULL)); //Siempre devuelve pag o seg + 1 ; si es 0 no reservo nada
+	int paginas1 = add_spa("TABLA1",10,time(NULL)); //Siempre devuelve pag o seg + 1 ; si es 0 no reservo nada
 	int paginas2 = add_spa("TABLA1",1,time(NULL));
 	getPaginaMenorTimestamp();
 	int paginas4 = add_spa("TABLA2",2,time(NULL));
@@ -53,7 +54,7 @@ int main(int argc, char *argv[]) {
 	char* buffer4 = leer_bytes_spa("TABLA1",2,2*MAX_LINEA,MAX_LINEA); //si es \0 no encontre la pagina
 	char* buffer5 = leer_bytes_spa("TABLA1",1,8*MAX_LINEA,MAX_LINEA); //TODO probar cuando la linea supera la pagina
 	dump_memory_spa("TABLA1");
-	free_spa("TABLA3", 1);
+	/*free_spa("TABLA3", 1);
 	free_spa("TABLA1", 1);
 	free_spa("TABLA1", 2);
 	free_spa("TABLA1", 0);
@@ -66,7 +67,7 @@ int main(int argc, char *argv[]) {
 	liberar_memory_spa();*/
 
 	crearHiloConsola();
-
+	crearHiloJournaling();
 //	connect_to_server(MEM_CONF.IP_FS, MEM_CONF.PUERTO_FS, lis);
 
 	listen_connexions(MEM_CONF.PUERTO);
