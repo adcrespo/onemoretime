@@ -9,11 +9,12 @@
 #define AUXILIARES_CONSOLA_H_
 
 #include "shared.h"
+#include "parser.h"
 #include <stdlib.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 #include "Logueo.h"
-#include "Parser.h"
+//#include "Parser.h"
 
 
 

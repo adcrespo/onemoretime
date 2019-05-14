@@ -8,7 +8,7 @@
 #ifndef AUXILIARES_PLANIFICADOR_H_
 #define AUXILIARES_PLANIFICADOR_H_
 
-#include "Parser.h"
+#include "parser.h"
 
 /* Definición de tipos */
 
