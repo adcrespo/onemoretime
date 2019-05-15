@@ -18,8 +18,8 @@ int main(void) {
 
 	crear_hilo_consola();
 	crear_filesystem();
+	crear_hilo_conexiones();
 
-	listen_connexions(lfs_conf.puerto);
 	pthread_join(thread_consola, NULL);
 
 
@@ -38,4 +38,11 @@ void crear_hilo_consola() {
 	log_info(logger, "Se generó el hilo para la consola");
 }
 
+void crear_hilo_conexiones() {
 
+	int hilo_conexiones = pthread_create(&thread_conexiones, NULL, listen_connexions, NULL);
+		if (hilo_conexiones == -1) {
+			log_error(logger, "No se pudo generar el hilo para las conexiones");
+		}
+		log_info(logger, "Se generó el hilo para las conexiones");
+}

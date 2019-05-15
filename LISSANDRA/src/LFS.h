@@ -28,12 +28,13 @@ typedef struct {
 
 
 pthread_t thread_consola;
+pthread_t thread_conexiones;
 
 
 void prueba_memtable();
 
 void crear_hilo_consola();
-
+void crear_hilo_conexiones();
 
 
 #endif /* LFS_H_ */

@@ -10,10 +10,10 @@
 #include "Error.h"
 #include "errno.h"
 
-int listen_connexions(char* PUERTO){
+void *listen_connexions(){
 
 	int socket_lfs = definirSocket(logger);
-	if(bindearSocketYEscuchar(socket_lfs,"127.0.0.1",atoi(PUERTO),logger)<= 0)
+	if(bindearSocketYEscuchar(socket_lfs,"127.0.0.1",atoi(lfs_conf.puerto),logger)<= 0)
 		_exit_with_error("BIND",NULL);
 
 	fd_set set_master, set_copia;
@@ -43,7 +43,7 @@ int listen_connexions(char* PUERTO){
 		}
 	}
 
-	return socket_lfs;
+	//return socket_lfs;
 }
 
 void aceptar(int socket_lfs, int* descriptor_mas_alto, fd_set* set_master) {
@@ -59,7 +59,32 @@ void aceptar(int socket_lfs, int* descriptor_mas_alto, fd_set* set_master) {
 }
 
 void procesar(int n_descriptor, fd_set* set_master) {
-
+	t_mensaje* msg;
 
 	loggear(logger, LOG_LEVEL_INFO, "Recibiendo mensaje...");
+
+	if((msg = recibirMensaje(n_descriptor, logger))== NULL) {
+			close(n_descriptor);
+			FD_CLR(n_descriptor, set_master);
+			destruirMensaje(msg);
+			return;
+		}
+
+		loggear(logger, LOG_LEVEL_INFO, "Proceso: %d",msg->header.tipoProceso);
+		loggear(logger, LOG_LEVEL_INFO, "Mensaje: %d",msg->header.tipoMensaje);
+
+		switch(msg->header.tipoProceso) {
+			case mem:;
+			switch(msg->header.tipoMensaje){
+
+				case handshake:
+					loggear(logger, LOG_LEVEL_INFO, "Handshake.");
+					enviarMensaje(socket_lfs, handshake, 0, NULL, n_descriptor, logger, mem);
+					break;
+			}
+			destruirMensaje(msg);
+			break;
+			default:;
+		}
+
 }

@@ -18,7 +18,7 @@
 
 int socket_lfs;
 void aceptar(int socket_lfs, int* descriptor_mas_alto, fd_set* set_master);
-int listen_connexions(char* PUERTO);
+void *listen_connexions();
 void procesar(int n_descriptor, fd_set* set_master);
 
 
