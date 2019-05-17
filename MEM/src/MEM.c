@@ -54,7 +54,7 @@ int main(int argc, char *argv[]) {
 	char* buffer4 = leer_bytes_spa("TABLA1",2,2*MAX_LINEA,MAX_LINEA); //si es \0 no encontre la pagina
 	char* buffer5 = leer_bytes_spa("TABLA1",1,8*MAX_LINEA,MAX_LINEA); //TODO probar cuando la linea supera la pagina
 	dump_memory_spa("TABLA1");
-	/*free_spa("TABLA3", 1);
+	free_spa("TABLA3", 1);
 	free_spa("TABLA1", 1);
 	free_spa("TABLA1", 2);
 	free_spa("TABLA1", 0);
@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
 	free_spa("TABLA2", 1);
 	free_spa("TABLA2", 0);//tantos free como add y siempre indice tiene que ser el numero de pagina (tener en cuenta la re-indexacion
 	dump_memory_spa("TABLA1");
-	liberar_memory_spa();*/
+	//liberar_memory_spa();
 
 	crearHiloConsola();
 	crearHiloJournaling();
