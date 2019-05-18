@@ -13,7 +13,9 @@
 void *crear_filesystem();
 void cargar_metadata();
 void cargar_bitmap();
-int validar_tabla(const char*tabla);
+int ExisteTabla(const char*tabla);
+int ObtenerMetadata(char *tabla);
+int CalcularParticion(int clave, int particiones);
 
 t_config *config_metadata;
 t_bitarray *bitmap;

@@ -32,7 +32,7 @@ int procesar_comando(char *line) {
 
 	log_info(logger, "CONSOLA: %s.", line);
 
-	t_request* request = parsear(line);
+	t_request* request = parsear(line, logger);
 
 	if (request->request == -1) {
 
@@ -122,6 +122,11 @@ void abrir_archivo_LQL(t_request* request) {
 	if(linea)
 		free(linea);
 }
+
+//void generar_nuevo_proceso(t_request* request) {
+//
+//
+//}
 
 
 char **character_name_completion(const char *text, int start, int end) {

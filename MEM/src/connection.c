@@ -8,27 +8,50 @@
 
 #include "connection.h"
 #include "error.h"
+#include "gossiping.h"
 
 
 void aceptar(int socket_fm9, int* descriptor_mas_alto, fd_set* set_master);
 void procesar(int n_descriptor, fd_set* set_master);
 
-int connect_to_server(char* IP, char* PUERTO, int proceso) {
+
+
+int connect_to_server(char* IP, char* PUERTO, int proceso, int flag) {
 
         int socket;
 
         if((socket = definirSocket(logger))<= 0)
                 _exit_with_error(NULL,NULL);
 
-        if(conectarseAServidor(socket, IP, atoi(PUERTO), logger)<=0)
-                _exit_with_error(NULL,NULL);
+        if(flag!=gossiping)
+        {
+        	if(conectarseAServidor(socket, IP, atoi(PUERTO), logger)<=0)
+        		_exit_with_error(NULL,NULL);
+        }
+        else
+        {
+        	if(conectarseAServidor_w_to(socket, IP, atoi(PUERTO), logger)<=0)
+        		return -1;
+        }
+
+        /*if(conectarseAServidor(socket, IP, atoi(PUERTO), logger)<=0)
+        {
+        	if(flag!=gossiping)
+        	{
+        		_exit_with_error(NULL,NULL);
+        	}
+        	else
+        	{
+        		return -1;
+        	}
+        }*/
 
         loggear(logger, LOG_LEVEL_INFO, "INICIO Handshake(%d)...", proceso);
         enviarMensaje(mem, handshake, 0, NULL, socket, logger, proceso);
         t_mensaje* msg = recibirMensaje(socket, logger);
         if(proceso == lis){
-        	int tamanio = *(int*)msg->content;
-        	loggear(logger,LOG_LEVEL_INFO, "el tamanio es %d", tamanio);
+        	int tamanio_value = *(int*)msg->content;
+        	loggear(logger,LOG_LEVEL_INFO, "el tamanio es %d", tamanio_value);
         }
         destruirMensaje(msg);
         loggear(logger, LOG_LEVEL_INFO, "FIN Handshake(%d)", proceso);
@@ -103,6 +126,7 @@ void procesar(int n_descriptor, fd_set* set_master) {
 			break;
 		case mem:;
 			//procesar_CPU(msg, n_descriptor, set_master);
+			enviarMensaje(mem, handshake, 0, NULL, n_descriptor, logger, mem);
 			break;
 		default:
 			loggear(logger,LOG_LEVEL_INFO,"No se reconoce el proceso");

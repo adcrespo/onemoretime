@@ -25,10 +25,20 @@
 #include <stdarg.h>
 #include <time.h>
 
+//#include <unistd.h>
+#include <fcntl.h>
+#include <errno.h>
 
 /* Estructuras de Hackers */
 typedef enum tipoMensaje {
-	handshake
+	handshake,
+	gossipingMsg,
+	describe,
+	selectMsg,
+	insert,
+	create,
+	drop,
+	journal
 }t_tipoMensaje;
 
 typedef enum tipoProceso {
@@ -39,6 +49,7 @@ typedef struct {
 	t_tipoProceso 	tipoProceso;
 	t_tipoMensaje 	tipoMensaje;
 	int32_t 		longitud;
+	int32_t 		error;
 }__attribute__((packed)) t_header;
 
 typedef struct {
@@ -107,6 +118,9 @@ void destroy_config(t_config* config);
 int definirSocket(t_log* logger);
 int bindearSocketYEscuchar(int socket, char *ip, int puerto, t_log* logger);
 int aceptarConexiones(int socket, t_log* logger);
+
+int conectarseAServidor_w_to(int socket, char* ip, int puerto, t_log* logger);
+
 int conectarseAServidor(int socket, char* ip, int puerto, t_log* logger);
 int enviarMensaje(int tipoProcesoEmisor, int tipoMensaje, int len, void* content, int socketReceptor, t_log* logger, int tipoProcesoReceptor);
 t_mensaje* recibirMensaje(int socketEmisor, t_log* logger);

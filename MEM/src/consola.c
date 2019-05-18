@@ -10,7 +10,9 @@
 #include "commons/string.h"
 #include "error.h"
 #include "memory.h"
+#include "journaling.h"
 #include "consola.h"
+
 
 t_tipoComando buscar_enum(char *sval) {
 	t_tipoComando result = select_;
@@ -75,7 +77,7 @@ void *crearConsola() {
 			printf("select...\n");
 			//TODO: select_
 			break;
-		case insert:
+		case insert_:
 			if (comando[1] == NULL || comando[2] == NULL || comando[3] == NULL) {
 				printf("error: insert {tabla} {key} {\"value\"}.\n");
 				break;
@@ -83,7 +85,7 @@ void *crearConsola() {
 			printf("insert...\n");
 			//TODO: insert
 			break;
-		case create:
+		case create_:
 			if (comando[1] == NULL || comando[2] == NULL || comando[3] == NULL || comando[4] == NULL) {
 				printf("error: create {tabla} {tipo_consistencia} {numero_particiones} {compaction_time}.\n");
 				break;
@@ -91,7 +93,7 @@ void *crearConsola() {
 			printf("create...\n");
 			//TODO: create
 			break;
-		case describe:
+		case describe_:
 			if (comando[1] == NULL ) {
 				printf("error: describe {tabla} .\n");
 				break;
@@ -99,7 +101,7 @@ void *crearConsola() {
 			printf("describe...\n");
 			//TODO: describe
 			break;
-		case drop:
+		case drop_:
 			if (comando[1] == NULL ) {
 				printf("error: drop {tabla} .\n");
 				break;
@@ -107,20 +109,19 @@ void *crearConsola() {
 			printf("drop...\n");
 			//TODO: drop
 			break;
-		case journal:
+		case journal_:
 			printf("journal...\n");
-			//TODO: journal
+			process_journaling();
 			break;
-		case dump:
+		case dump_:
 			if (comando[1] == NULL) {
 				printf("error: dump {id}.\n");
 				break;
 			}
 			printf("Dump (process id: %s)...\n",comando[1]);
-			int id_proceso = atoi(comando[1]);
-			dump_memory_spa(id_proceso);
+			dump_memory_spa(comando[1]);
 			break;
-		case salir:
+		case salir_:
 			exit_gracefully(EXIT_SUCCESS);
 			break;
 		default:

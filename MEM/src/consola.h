@@ -20,13 +20,13 @@
 
 typedef enum t_tipoComando {
 	select_,
-	insert,
-	create,
-	describe,
-	drop,
-	journal,
-	dump,
-	salir
+	insert_,
+	create_,
+	describe_,
+	drop_,
+	journal_,
+	dump_,
+	salir_
 } t_tipoComando;
 
 pthread_t consola;

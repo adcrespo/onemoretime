@@ -18,6 +18,8 @@
 #include "error.h"
 #include "argparse.h"
 #include "memory.h"
+#include "journaling.h"
+#include "gossiping.h"
 
 char* intToChar4(int num){
 	//RECORDAR: liberar el puntero con free()
@@ -34,9 +36,11 @@ int main(int argc, char *argv[]) {
 
 	get_config(string_equals_ignore_case(args_configfile,"false")?"../MEM.conf":args_configfile);
 
+	crearListaSeeds();
+
 	init_memory_spa();
 
-	/*int paginas1 = add_spa("TABLA1",10,time(NULL)); //Siempre devuelve pag o seg + 1 ; si es 0 no reservo nada
+	int paginas1 = add_spa("TABLA1",10,time(NULL)); //Siempre devuelve pag o seg + 1 ; si es 0 no reservo nada
 	int paginas2 = add_spa("TABLA1",1,time(NULL));
 	getPaginaMenorTimestamp();
 	int paginas4 = add_spa("TABLA2",2,time(NULL));
@@ -63,10 +67,11 @@ int main(int argc, char *argv[]) {
 	free_spa("TABLA2", 1);
 	free_spa("TABLA2", 0);//tantos free como add y siempre indice tiene que ser el numero de pagina (tener en cuenta la re-indexacion
 	dump_memory_spa("TABLA1");
-	liberar_memory_spa();*/
+	//liberar_memory_spa();
 
 	crearHiloConsola();
-
+	crearHiloJournaling();
+	crearHiloGossiping();
 //	connect_to_server(MEM_CONF.IP_FS, MEM_CONF.PUERTO_FS, lis);
 
 	listen_connexions(MEM_CONF.PUERTO);
