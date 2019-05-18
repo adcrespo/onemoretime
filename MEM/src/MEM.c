@@ -19,6 +19,7 @@
 #include "argparse.h"
 #include "memory.h"
 #include "journaling.h"
+#include "gossiping.h"
 
 char* intToChar4(int num){
 	//RECORDAR: liberar el puntero con free()
@@ -68,6 +69,7 @@ int main(int argc, char *argv[]) {
 
 	crearHiloConsola();
 	crearHiloJournaling();
+	crearHiloGossiping();
 //	connect_to_server(MEM_CONF.IP_FS, MEM_CONF.PUERTO_FS, lis);
 
 	listen_connexions(MEM_CONF.PUERTO);

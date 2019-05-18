@@ -281,7 +281,7 @@ void processGossiping() {
 				///int largoMsj=0;
 				//largoMsj = strlen(mensaje);
 				//ENVIAR LISTA SEEDS
-				envioMsj = enviarMensaje(mem,gossipingMsg,strlen(mensaje),mensaje,socketReceptor,logger,mem);
+				envioMsj = enviarMensaje(mem,gossipingMsg,strlen(mensaje)+1,mensaje,socketReceptor,logger,mem);
 				if(envioMsj < 1 )
 					loggear(logger,LOG_LEVEL_INFO,"NO SE PUDO ENVIAR MSJ %d",envioMsj);
 				else
