@@ -23,7 +23,7 @@
 #include <commons/config.h>
 #include <commons/collections/list.h>
 
-int connect_to_server(char* IP, char* PUERTO, int proceso);
+int connect_to_server(char* IP, char* PUERTO, int proceso, int flag);
 int listen_connexions(char* PUERTO);
 
 #endif /* CONNECTION_H_ */
