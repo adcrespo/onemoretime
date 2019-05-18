@@ -36,6 +36,8 @@ int main(int argc, char *argv[]) {
 
 	get_config(string_equals_ignore_case(args_configfile,"false")?"../MEM.conf":args_configfile);
 
+	crearListaSeeds();
+
 	init_memory_spa();
 
 	int paginas1 = add_spa("TABLA1",10,time(NULL)); //Siempre devuelve pag o seg + 1 ; si es 0 no reservo nada
