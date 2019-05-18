@@ -67,7 +67,8 @@ void cargar_bitmap(){
 		free(ruta_bitmap)*/
 }
 
-int validar_tabla(const char *tabla){
+int ExisteTabla(const char *tabla)
+{
 	loggear(logger, LOG_LEVEL_INFO, "Validando tabla: %s", tabla);
 
 
@@ -76,10 +77,34 @@ int validar_tabla(const char *tabla){
 	FILE *fp = fopen(ruta_tabla, "r");
 	free(ruta_tabla);
 
-	if(fp){
+	if(fp)
+	{
 		fclose(fp);
 		return 1;
-	}else {
+	}else
+	{
 		return 0;
 	}
+}
+
+int ObtenerMetadata(char *tabla)
+{
+	loggear(logger, LOG_LEVEL_INFO, "Obteniendo metadata de tabla: %s", tabla);
+
+	char *rutaMetadata = string_from_format("%s%s/Metadata", ruta_tables, tabla);
+
+	t_config *metadataFile = cargarConfiguracion(rutaMetadata, logger);
+
+	int partitions = config_get_int_value(metadataFile, "PARTITIONS");
+
+	free(rutaMetadata);
+	config_destroy(metadataFile);
+
+	return partitions;
+}
+
+int CalcularParticion(int clave, int particiones)
+{
+	int particion = clave % particiones;
+	return particion;
 }
