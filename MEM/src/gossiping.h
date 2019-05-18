@@ -19,11 +19,28 @@
 #include <pthread.h>
 #include <signal.h>
 
-int crearCliente();
+int crearListaSeeds();
+
+int crearHiloGossiping();
 
 pthread_t cliente;
 
 t_list *LISTA_CONN;
 t_list *LISTA_CONN_PORT;
+
+t_list *LISTA_CONN_LOC;
+t_list *LISTA_CONN_PORT_LOC;
+
+t_list *LISTA_CONN_LOC_MSJ;
+t_list *LISTA_CONN_PORT_LOC_MSJ;
+
+
+
+typedef enum tipoServidor {
+	memoria,gossiping
+} t_tipoServidor;
+
+pthread_mutex_t mutexGossiping;
+pthread_mutex_t mutexprocessGossiping;
 
 #endif /* GOSSIPING_H_ */
