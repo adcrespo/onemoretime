@@ -28,7 +28,14 @@
 
 /* Estructuras de Hackers */
 typedef enum tipoMensaje {
-	handshake
+	handshake,
+	gossiping,
+	describe,
+	selectMsg,
+	insert,
+	create,
+	drop,
+	journal
 }t_tipoMensaje;
 
 typedef enum tipoProceso {
@@ -39,6 +46,7 @@ typedef struct {
 	t_tipoProceso 	tipoProceso;
 	t_tipoMensaje 	tipoMensaje;
 	int32_t 		longitud;
+	int32_t 		error;
 }__attribute__((packed)) t_header;
 
 typedef struct {
