@@ -7,7 +7,7 @@
 
 #include "Filesystem.h"
 
-void *crear_filesystem(){
+void *CrearFileSystem(){
 	printf("Creando filesystem...\n");
 
 	ruta_tables = string_new();
@@ -80,6 +80,7 @@ int ExisteTabla(const char *tabla)
 	if(fp)
 	{
 		fclose(fp);
+		loggear(logger, LOG_LEVEL_WARNING, "La tabla %s ya existe", tabla);
 		return 1;
 	}else
 	{
@@ -108,3 +109,42 @@ int CalcularParticion(int clave, int particiones)
 	int particion = clave % particiones;
 	return particion;
 }
+
+void CrearDirectorioTabla(char *tabla)
+{
+	char *rutaTabla = string_from_format("%s%s", ruta_tables, tabla);
+
+
+	if(mkdir(rutaTabla, 0777) == -1)
+	{
+		//perror("mkdir");
+		loggear(logger, LOG_LEVEL_ERROR, "Error creando directorio para: %s", tabla);
+	} else
+	{
+		loggear(logger, LOG_LEVEL_INFO, "Directorio de %s creado", tabla);
+	}
+
+	free(rutaTabla);
+}
+
+void CrearMetadataTabla(char *tabla, char *consistencia, int particiones, int tiempoCompactacion)
+{
+	loggear(logger, LOG_LEVEL_INFO, "Creando metadata para: %s", tabla);
+	char *rutaMetadataTabla = string_from_format("%s%s/Metadata", ruta_tables, tabla);
+
+	FILE *file = fopen(rutaMetadataTabla, "w");
+
+	char *tipoConsistencia = string_from_format("CONSISTENCY=%s\n", consistencia);
+	fputs(tipoConsistencia, file);
+	char *partitions = string_from_format("PARTITIONS=%d\n", particiones);
+	fputs(partitions, file);
+	char *compactationTime = string_from_format("COMPACTATION_TIME=%d\n", tiempoCompactacion);
+	fputs(compactationTime, file);
+
+
+	free(tipoConsistencia);
+	free(partitions);
+	free(compactationTime);
+	fclose(file);
+}
+

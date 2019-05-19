@@ -16,6 +16,9 @@
 #include "Filesystem.h"
 #include "Consola.h"
 #include "Conexion.h"
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
 
 t_log *logger;
 t_list *memtable;
@@ -33,7 +36,7 @@ pthread_t thread_conexiones;
 
 void prueba_memtable();
 
-void crear_hilo_consola();
+void CrearHiloConsola();
 void crear_hilo_conexiones();
 
 
