@@ -8,49 +8,55 @@
 #include "Filesystem.h"
 
 void *CrearFileSystem(){
-	printf("Creando filesystem...\n");
+	loggear(logger, LOG_LEVEL_INFO, "Creando fileSystem");
 
-	ruta_tables = string_new();
-	string_append(&ruta_tables, lfs_conf.punto_montaje);
-	string_append(&ruta_tables, "Tables/");
-	printf("ruta tablas: %s\n", ruta_tables);
-	cargar_metadata();
-	cargar_bitmap();
+	rutaTablas = string_new();
+	string_append(&rutaTablas, lfs_conf.punto_montaje);
+	string_append(&rutaTablas, "Tables/");
+	loggear(logger, LOG_LEVEL_INFO, "Ruta de tablas: %s", rutaTablas);
+	rutaBloques = string_new();
+	string_append(&rutaBloques, lfs_conf.punto_montaje);
+	string_append(&rutaBloques, "Bloques/");
+	loggear(logger, LOG_LEVEL_INFO, "Ruta de bloques: %s", rutaBloques);
+	//CargarMetadata();
+	CargarBitmap();
 
 	return (void*)1;
 }
 
-void cargar_metadata(){
-	ruta_metadata = string_new();
-	string_append(&ruta_metadata, lfs_conf.punto_montaje);
-	string_append(&ruta_metadata, "Metadata/");
-	string_append(&ruta_metadata, "Metadata.bin");
-	printf("Ruta Metadata: %s \n", ruta_metadata);
+void CargarMetadata(){
+	rutaMetadata = string_new();
+	string_append(&rutaMetadata, lfs_conf.punto_montaje);
+	string_append(&rutaMetadata, "Metadata/");
+	string_append(&rutaMetadata, "Metadata.bin");
+	loggear(logger, LOG_LEVEL_INFO, "Ruta Metadata: %s \n", rutaMetadata);
 
-	/*config_metadata = cargarConfiguracion(ruta_metadata, logger);
+	config_metadata = cargarConfiguracion(rutaMetadata, logger);
 
-			if(config_has_property(config_metadata,"BLOCK_SIZE")) {
-				tamanio_bloques= config_get_int_value(config_metadata, "BLOCK_SIZE");
-				loggear(logger, LOG_LEVEL_INFO, "Tamanio de bloques: %d", tamanio_bloques);
-			}
+	if(config_has_property(config_metadata,"BLOCK_SIZE"))
+	{
+		tamanio_bloques= config_get_int_value(config_metadata, "BLOCK_SIZE");
+		loggear(logger, LOG_LEVEL_INFO, "Tamanio de bloques: %d", tamanio_bloques);
+	}
 
-			if(config_has_property(config_metadata,"BLOCKS")) {
-				cantidad_bloques= config_get_int_value(config_metadata, "BLOCKS");
-				loggear(logger, LOG_LEVEL_INFO, "Cantidad de bloques: %d", cantidad_bloques);
-						}
+	if(config_has_property(config_metadata,"BLOCKS"))
+	{
+		cantidad_bloques= config_get_int_value(config_metadata, "BLOCKS");
+		loggear(logger, LOG_LEVEL_INFO, "Cantidad de bloques: %d", cantidad_bloques);
+	}
 
-	config_destroy(config_metadata);*/
+	config_destroy(config_metadata);
 
 }
 
-void cargar_bitmap(){
-	ruta_bitmap = string_new();
-	string_append(&ruta_bitmap, lfs_conf.punto_montaje);
-	string_append(&ruta_bitmap, "Metadata/");
-	string_append(&ruta_bitmap, "Bitmap.bin");
-	printf("Ruta bitmap: %s \n", ruta_bitmap);
+void CargarBitmap(){
+	rutaBitmap = string_new();
+	string_append(&rutaBitmap, lfs_conf.punto_montaje);
+	string_append(&rutaBitmap, "Metadata/");
+	string_append(&rutaBitmap, "Bitmap.bin");
+	loggear(logger, LOG_LEVEL_INFO, "Ruta Bitmap: %s", rutaBitmap);
 
-	/*int bm = open(ruta_bitmap, O_RDWR);
+	/*int bm = open(rutaBitmap, O_RDWR);
 		struct stat mystat;
 
 		if(fstat(bm, &mystat) < 0){
@@ -72,7 +78,7 @@ int ExisteTabla(const char *tabla)
 	loggear(logger, LOG_LEVEL_INFO, "Validando tabla: %s", tabla);
 
 
-	char *ruta_tabla = string_from_format("%s%s", ruta_tables, tabla);
+	char *ruta_tabla = string_from_format("%s%s", rutaTablas, tabla);
 	log_info(logger, "Ruta tabla: %s", ruta_tabla);
 	FILE *fp = fopen(ruta_tabla, "r");
 	free(ruta_tabla);
@@ -92,7 +98,7 @@ int ObtenerMetadata(char *tabla)
 {
 	loggear(logger, LOG_LEVEL_INFO, "Obteniendo metadata de tabla: %s", tabla);
 
-	char *rutaMetadata = string_from_format("%s%s/Metadata", ruta_tables, tabla);
+	char *rutaMetadata = string_from_format("%s%s/Metadata", rutaTablas, tabla);
 
 	t_config *metadataFile = cargarConfiguracion(rutaMetadata, logger);
 
@@ -112,7 +118,7 @@ int CalcularParticion(int clave, int particiones)
 
 void CrearDirectorioTabla(char *tabla)
 {
-	char *rutaTabla = string_from_format("%s%s", ruta_tables, tabla);
+	char *rutaTabla = string_from_format("%s%s", rutaTablas, tabla);
 
 
 	if(mkdir(rutaTabla, 0777) == -1)
@@ -130,7 +136,7 @@ void CrearDirectorioTabla(char *tabla)
 void CrearMetadataTabla(char *tabla, char *consistencia, int particiones, int tiempoCompactacion)
 {
 	loggear(logger, LOG_LEVEL_INFO, "Creando metadata para: %s", tabla);
-	char *rutaMetadataTabla = string_from_format("%s%s/Metadata", ruta_tables, tabla);
+	char *rutaMetadataTabla = string_from_format("%s%s/Metadata", rutaTablas, tabla);
 
 	FILE *file = fopen(rutaMetadataTabla, "w");
 

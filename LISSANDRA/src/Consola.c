@@ -10,7 +10,7 @@
 
 
 void *crear_consola(){
-	printf("Creando consola...\n");
+
 
 	char *line;
 

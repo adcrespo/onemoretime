@@ -14,14 +14,13 @@ int main(void) {
 
 	logger = configurar_logger("../log/LIS.log", "Lissandra");
 
-	cargar_conf_lfs();
+	CargarConfigLFS();
+	CrearFileSystem();
+	CrearHiloConsola();
+	CrearHiloConexiones();
 
-	crear_hilo_consola();
-	crear_filesystem();
-	crear_hilo_conexiones();
 
 	pthread_join(thread_consola, NULL);
-
 
 	return EXIT_SUCCESS;
 }
@@ -29,7 +28,7 @@ int main(void) {
 
 
 
-void crear_hilo_consola() {
+void CrearHiloConsola() {
 
 	int hilo_consola = pthread_create(&thread_consola, NULL, crear_consola, NULL);
 	if (hilo_consola == -1) {
@@ -38,7 +37,7 @@ void crear_hilo_consola() {
 	log_info(logger, "Se generó el hilo para la consola");
 }
 
-void crear_hilo_conexiones() {
+void CrearHiloConexiones() {
 
 	int hilo_conexiones = pthread_create(&thread_conexiones, NULL, listen_connexions, NULL);
 		if (hilo_conexiones == -1) {

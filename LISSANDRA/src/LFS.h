@@ -34,10 +34,9 @@ pthread_t thread_consola;
 pthread_t thread_conexiones;
 
 
-void prueba_memtable();
 
 void CrearHiloConsola();
-void crear_hilo_conexiones();
+void CrearHiloConexiones();
 
 
 #endif /* LFS_H_ */
