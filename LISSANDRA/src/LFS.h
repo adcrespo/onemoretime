@@ -24,7 +24,7 @@ t_log *logger;
 t_list *memtable;
 
 typedef struct {
-	char *nombre_tabla;
+	char nombre_tabla[20];
      t_list *lista;
 }__attribute__((packed)) t_tabla;
 
@@ -37,6 +37,7 @@ pthread_t thread_conexiones;
 
 void CrearHiloConsola();
 void CrearHiloConexiones();
+
 
 
 #endif /* LFS_H_ */

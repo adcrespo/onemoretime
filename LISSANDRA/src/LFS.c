@@ -15,6 +15,8 @@ int main(void) {
 	logger = configurar_logger("../log/LIS.log", "Lissandra");
 
 	CargarConfigLFS();
+
+	Inicializar();
 	CrearFileSystem();
 	CrearHiloConsola();
 	CrearHiloConexiones();
@@ -24,7 +26,6 @@ int main(void) {
 
 	return EXIT_SUCCESS;
 }
-
 
 
 
@@ -44,4 +45,9 @@ void CrearHiloConexiones() {
 			log_error(logger, "No se pudo generar el hilo para las conexiones");
 		}
 		log_info(logger, "Se generó el hilo para las conexiones");
+}
+
+void Inicializar()
+{
+	memtable = list_create();
 }

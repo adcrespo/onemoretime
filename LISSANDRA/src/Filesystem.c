@@ -154,3 +154,27 @@ void CrearMetadataTabla(char *tabla, char *consistencia, int particiones, int ti
 	fclose(file);
 }
 
+t_tabla* BuscarTablaMemtable(char *nombre)
+{
+
+	int EsLaTabla(t_tabla *tabla)
+	{
+		return string_equals_ignore_case(nombre,tabla->nombre_tabla);
+	}
+
+	loggear(logger, LOG_LEVEL_INFO, "Buscando %s en Memtable\n", nombre);
+	return list_find(memtable, (void*)EsLaTabla);
+}
+
+void AlocarTabla(char *tabla)
+{
+	t_tabla *listaTabla = malloc(sizeof(t_tabla));
+	char *nombre = string_new();
+	string_append(&nombre, tabla);
+	strcpy(listaTabla->nombre_tabla, nombre);
+	listaTabla->lista = list_create();
+	list_add(memtable, listaTabla);
+	int cantidad = list_size(memtable);
+
+}
+
