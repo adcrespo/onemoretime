@@ -86,7 +86,7 @@ int ExisteTabla(const char *tabla)
 	if(fp)
 	{
 		fclose(fp);
-		loggear(logger, LOG_LEVEL_WARNING, "La tabla %s ya existe", tabla);
+		loggear(logger, LOG_LEVEL_WARNING, "La tabla %s existe en el FileSystem", tabla);
 		return 1;
 	}else
 	{
@@ -162,7 +162,7 @@ t_tabla* BuscarTablaMemtable(char *nombre)
 		return string_equals_ignore_case(nombre,tabla->nombre_tabla);
 	}
 
-	loggear(logger, LOG_LEVEL_INFO, "Buscando %s en Memtable\n", nombre);
+	loggear(logger, LOG_LEVEL_INFO, "Buscando %s en Memtable", nombre);
 	return list_find(memtable, (void*)EsLaTabla);
 }
 
@@ -174,7 +174,37 @@ void AlocarTabla(char *tabla)
 	strcpy(listaTabla->nombre_tabla, nombre);
 	listaTabla->lista = list_create();
 	list_add(memtable, listaTabla);
-	int cantidad = list_size(memtable);
 
 }
 
+void InsertarTabla(t_request *request)
+{
+	//char *nombre = string_new();
+	//string_append(&nombre, request->parametro1);
+
+	//Verifico existencia en el file system
+	if(!ExisteTabla(request->parametro1))
+	{
+		loggear(logger, LOG_LEVEL_ERROR, "%s no existe en el file system", request->parametro1);;
+	}
+
+	//Obtengo metadata
+	int particiones = ObtenerMetadata(request->parametro1);
+
+	//Verifico si no tiene datos a dumpear
+	t_tabla *tabla = malloc(sizeof(t_tabla));
+	tabla = BuscarTablaMemtable(request->parametro1);
+
+	if(tabla == NULL)
+	{
+		//Aloco en memtable como nueva tabla
+		loggear(logger, LOG_LEVEL_INFO, "%s no posee datos a dumpear", request->parametro1);
+		AlocarTabla(request->parametro1);
+	}else
+	{
+		//Alocar en su posicion
+		loggear(logger, LOG_LEVEL_INFO, "Alocando en su pos correspondiente");
+	}
+
+
+}

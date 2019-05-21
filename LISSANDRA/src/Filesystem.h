@@ -18,8 +18,8 @@ int ObtenerMetadata(char *tabla);
 int CalcularParticion(int clave, int particiones);
 void CrearDirectorioTabla(char *tabla);
 void CrearMetadataTabla(char *tabla, char *consistencia, int particiones, int tiempoCompactacion);
-t_tabla* ObtenerTabla(char *nombre);
 void AlocarTabla(char *tabla);
+void InsertarTabla(t_request *request);
 
 t_config *config_metadata;
 t_bitarray *bitmap;

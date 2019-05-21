@@ -16,11 +16,11 @@ int main(void) {
 
 	CargarConfigLFS();
 
+
 	Inicializar();
 	CrearFileSystem();
 	CrearHiloConsola();
 	CrearHiloConexiones();
-
 
 	pthread_join(thread_consola, NULL);
 

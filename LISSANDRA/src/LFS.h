@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <shared.h>
+#include <parser.h>
 
 #include "Configuracion.h"
 #include "Filesystem.h"
@@ -37,7 +38,8 @@ pthread_t thread_conexiones;
 
 void CrearHiloConsola();
 void CrearHiloConexiones();
-
+void Inicializar();
+t_tabla* ObtenerTabla(char *nombre);
 
 
 #endif /* LFS_H_ */
