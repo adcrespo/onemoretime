@@ -24,7 +24,7 @@ typedef struct {
 t_lfs_config lfs_conf;
 t_config *config;
 
-void cargar_conf_lfs();
+void CargarConfigLFS();
 
 
 #endif /* CONFIGURACION_H_ */

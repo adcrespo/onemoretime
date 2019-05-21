@@ -7,7 +7,7 @@
 
 #include "Configuracion.h"
 
-void cargar_conf_lfs(){
+void CargarConfigLFS(){
 	config = cargarConfiguracion("../config/Lissandra.config", logger);
 
 		if (config_has_property(config, "PUERTO"))

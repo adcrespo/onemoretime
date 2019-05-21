@@ -10,21 +10,28 @@
 
 #include "LFS.h"
 
-void *crear_filesystem();
-void cargar_metadata();
-void cargar_bitmap();
+void *CrearFileSystem();
+void CargarMetadata();
+void CargarBitmap();
 int ExisteTabla(const char*tabla);
 int ObtenerMetadata(char *tabla);
 int CalcularParticion(int clave, int particiones);
+void CrearDirectorioTabla(char *tabla);
+void CrearMetadataTabla(char *tabla, char *consistencia, int particiones, int tiempoCompactacion);
+void AlocarTabla(char *tabla);
+void InsertarTabla(t_request *request);
+void CrearBloque(int numero, int bytes);
+
 
 t_config *config_metadata;
 t_bitarray *bitmap;
 
 int tamanio_bloques;
 int cantidad_bloques;
-char *ruta_metadata;
-char *ruta_bitmap;
-char *ruta_tables;
+char *rutaMetadata;
+char *rutaBitmap;
+char *rutaTablas;
+char *rutaBloques;
 char *bmap;
 
 
