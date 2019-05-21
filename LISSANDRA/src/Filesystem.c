@@ -208,3 +208,24 @@ void InsertarTabla(t_request *request)
 
 
 }
+
+
+
+void CrearBloque(int numero, int bytes)
+{
+	loggear(logger, LOG_LEVEL_INFO, "Creando bloque %d.bin", numero);
+	char *rutaBloque = string_from_format("%s/%d.bin", rutaBloques, numero);
+
+	FILE *binFile = fopen(rutaBloque, "w");
+
+	char *bytesAEscribir = malloc(bytes);
+	memset(bytesAEscribir, '\n', bytes);
+	fwrite(bytesAEscribir, bytes, 1, binFile);
+
+	free(rutaBloque);
+	free(bytesAEscribir);
+	fflush(binFile);
+
+
+}
+
