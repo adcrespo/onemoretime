@@ -24,12 +24,14 @@ char* request_str[] = {
 t_request* parsear(char* linea, t_log* logger) {
 
 	t_request* request = malloc(sizeof(t_request));
+	char* parametro_aux = string_new();
 
 	// Inicializo los strings
 	request->parametro1 = string_new();
 	request->parametro2 = string_new();
 	request->parametro3 = string_new();
 	request->parametro4 = string_new();
+	request->es_valido = -1;
 
 	// 1. CHEQUEAR PORQUE CUANDO RECIBO PARAMETRO ENTRE "" NO LO TOMA BIEN -----------------------
 	// 2. CHEQUEAR LOS PARAMETROS NECESARIOS PARA QUE NO FALLE CON SEG FAULT ---------------------
@@ -49,74 +51,236 @@ t_request* parsear(char* linea, t_log* logger) {
 
 				case _salir:
 					// No hacer nada
+
 					break;
 
 				case _select:
-					string_append(&request->parametro1, strtok(NULL, " "));
-					string_append(&request->parametro2, strtok(NULL, " "));
+					// SELECT [NOMBRE_TABLA] [KEY]
+					// SELECT TABLA1 3
+
+					// Validación Parámetro 1
+					parametro_aux = strtok(NULL, " ");
+
+					if(parametro_aux == NULL) {
+						log_error(logger, "Parámetro 1 vacío.");
+						break;
+					}
+
+					string_append(&request->parametro1, parametro_aux);
+
+					// Validación Parámetro 2
+					parametro_aux = strtok(NULL, " ");
+
+					if(parametro_aux == NULL) {
+						log_error(logger, "Parámetro 2 vacío.");
+						break;
+					}
+
+					string_append(&request->parametro2, parametro_aux);
 
 					log_info(logger, "Parámetro 1: %s", request->parametro1);
 					log_info(logger, "Parámetro 2: %s", request->parametro2);
+					request->es_valido = 0;
 					break;
 
 				case _insert:
-					string_append(&request->parametro1, strtok(NULL, " "));
-					string_append(&request->parametro2, strtok(NULL, " "));
-					string_append(&request->parametro3, strtok(NULL, " "));
+					// INSERT [NOMBRE_TABLA] [KEY] “[VALUE]”
+					// INSERT TABLA1 3 “Mi nombre es Lissandra”
+
+					// Validación Parámetro 1
+					parametro_aux = strtok(NULL, " ");
+
+					if(parametro_aux == NULL) {
+						log_error(logger, "Parámetro 1 vacío.");
+						break;
+					}
+
+					string_append(&request->parametro1, parametro_aux);
+
+					// Validación Parámetro 2
+					parametro_aux = strtok(NULL, " ");
+
+					if(parametro_aux == NULL) {
+						log_error(logger, "Parámetro 2 vacío.");
+						break;
+					}
+
+					string_append(&request->parametro2, parametro_aux);
+
+					// Validación Parámetro 3
+					parametro_aux = strtok(NULL, "");
+
+					if(parametro_aux == NULL) {
+						log_error(logger, "Parámetro 3 vacío.");
+						break;
+					}
+
+					string_append(&request->parametro3, parametro_aux);
 
 					log_info(logger, "Parámetro 1: %s", request->parametro1);
 					log_info(logger, "Parámetro 2: %s", request->parametro2);
 					log_info(logger, "Parámetro 3: %s", request->parametro3);
+					request->es_valido = 0;
 					break;
 
 				case _create:
-					string_append(&request->parametro1, strtok(NULL, " "));
-					string_append(&request->parametro2, strtok(NULL, " "));
-					string_append(&request->parametro3, strtok(NULL, " "));
-					string_append(&request->parametro4, strtok(NULL, " "));
+					// CREATE [TABLA] [TIPO_CONSISTENCIA] [NUMERO_PARTICIONES] [COMPACTION_TIME]
+					// CREATE TABLA1 SC 4 60000
+
+					// Validación Parámetro 1
+					parametro_aux = strtok(NULL, " ");
+
+					if(parametro_aux == NULL) {
+						log_error(logger, "Parámetro 1 vacío.");
+						break;
+					}
+
+					string_append(&request->parametro1, parametro_aux);
+
+					// Validación Parámetro 2
+					parametro_aux = strtok(NULL, " ");
+
+					if(parametro_aux == NULL) {
+						log_error(logger, "Parámetro 2 vacío.");
+						break;
+					}
+
+					string_append(&request->parametro2, parametro_aux);
+
+					// Validación Parámetro 3
+					parametro_aux = strtok(NULL, " ");
+
+					if(parametro_aux == NULL) {
+						log_error(logger, "Parámetro 3 vacío.");
+						break;
+					}
+
+					string_append(&request->parametro3, parametro_aux);
+
+					// Validación Parámetro 4
+					parametro_aux = strtok(NULL, " ");
+
+					if(parametro_aux == NULL) {
+						log_error(logger, "Parámetro 4 vacío.");
+						break;
+					}
+
+					string_append(&request->parametro4, parametro_aux);
 
 					log_info(logger, "Parámetro 1: %s", request->parametro1);
 					log_info(logger, "Parámetro 2: %s", request->parametro2);
 					log_info(logger, "Parámetro 3: %s", request->parametro3);
 					log_info(logger, "Parámetro 4: %s", request->parametro4);
+					request->es_valido = 0;
 					break;
 
 				case _describe:
+					// DESCRIBE [NOMBRE_TABLA]
+					// DESCRIBE
+					// DESCRIBE TABLA1
+
 					string_append(&request->parametro1, strtok(NULL, " "));
 
 					log_info(logger, "Parámetro 1: %s", request->parametro1);
+					request->es_valido = 0;
 					break;
 
 				case _drop:
-					string_append(&request->parametro1, strtok(NULL, " "));
+					// DROP [NOMBRE_TABLA]
+					// DROP TABLA1
+
+					// Validación Parámetro 1
+					parametro_aux = strtok(NULL, " ");
+
+					if(parametro_aux == NULL) {
+						log_error(logger, "Parámetro 1 vacío.");
+						break;
+					}
+
+					string_append(&request->parametro1, parametro_aux);
 
 					log_info(logger, "Parámetro 1: %s", request->parametro1);
+					request->es_valido = 0;
 					break;
 
 				case _journal:
 					// No tiene parámetros
+					request->es_valido = 0;
 					break;
 
 				case _add:
-					string_append(&request->parametro1, strtok(NULL, " "));
-					string_append(&request->parametro2, strtok(NULL, " "));
-					string_append(&request->parametro3, strtok(NULL, " "));
-					string_append(&request->parametro4, strtok(NULL, " "));
+					// ADD MEMORY [NÚMERO] TO [CRITERIO]
+					// ADD MEMORY 3 TO SC
+
+					// Validación Parámetro 1
+					parametro_aux = strtok(NULL, " ");
+
+					if(parametro_aux == NULL) {
+						log_error(logger, "Parámetro 1 vacío.");
+						break;
+					}
+
+					string_append(&request->parametro1, parametro_aux);
+
+					// Validación Parámetro 2
+					parametro_aux = strtok(NULL, " ");
+
+					if(parametro_aux == NULL) {
+						log_error(logger, "Parámetro 2 vacío.");
+						break;
+					}
+
+					string_append(&request->parametro2, parametro_aux);
+
+					// Validación Parámetro 3
+					parametro_aux = strtok(NULL, " ");
+
+					if(parametro_aux == NULL) {
+						log_error(logger, "Parámetro 3 vacío.");
+						break;
+					}
+
+					string_append(&request->parametro3, parametro_aux);
+
+					// Validación Parámetro 4
+					parametro_aux = strtok(NULL, " ");
+
+					if(parametro_aux == NULL) {
+						log_error(logger, "Parámetro 4 vacío.");
+						break;
+					}
+
+					string_append(&request->parametro4, parametro_aux);
 
 					log_info(logger, "Parámetro 1: %s", request->parametro1);
 					log_info(logger, "Parámetro 2: %s", request->parametro2);
 					log_info(logger, "Parámetro 3: %s", request->parametro3);
 					log_info(logger, "Parámetro 4: %s", request->parametro4);
+					request->es_valido = 0;
 					break;
 
 				case _run:
-					string_append(&request->parametro1, strtok(NULL, " "));
+					// RUN [PATH]
+					// RUN ../SCRIPTS/SCRIPT.LQL
+
+					// Validación Parámetro 1
+					parametro_aux = strtok(NULL, " ");
+
+					if(parametro_aux == NULL) {
+						log_error(logger, "Parámetro 1 vacío.");
+						break;
+					}
+
+					string_append(&request->parametro1, parametro_aux);
 
 					log_info(logger, "Parámetro 1: %s", request->parametro1);
+					request->es_valido = 0;
 					break;
 
 				case _metrics:
 					// No tiene parámetros
+
+					request->es_valido = 0;
 					break;
 
 				default:

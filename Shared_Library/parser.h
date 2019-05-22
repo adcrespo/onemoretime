@@ -33,6 +33,7 @@ typedef struct {
 	char* parametro2;
 	char* parametro3;
 	char* parametro4;
+	int es_valido;
 } t_request;
 
 
