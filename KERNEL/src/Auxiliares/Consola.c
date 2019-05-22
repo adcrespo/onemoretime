@@ -39,20 +39,29 @@ int procesar_comando(char *line) {
 		log_error(logger, "CONSOLA: Se ingresó un comando desconocido: %s.", line);
 		printf("Se ingresó un comando desconocido: %s.\n", line);
 
+	} else if (request->es_valido == -1) {
+
+		log_error(logger, "CONSOLA: No se ingresaron los parámetros necesarios: %s.\n", line);
+		printf("No se ingresaron los parámetros necesarios: %s.\n", line);
+
 	} else {
 
 		switch (request->request) {
 
 			case _salir:
-				puts("Muchas gracias por utilizar el proceso KERNEL. Vuelva pronto!\n");
+				puts("Muchas gracias por utilizar el proceso KERNEL. Vuelva pronto!");
 				return -1;
 
 			case _select:
-				printf("CONSOLA: Se ingresó comando SELECT \n");
+				printf("Validando existencia de Tabla.\n");
+				printf("Seleccionando Memoria según Criterio.\n");
+				printf("Enviando SELECT a una Memoria.\n");
 				break;
 
 			case _insert:
-				printf("CONSOLA: Se ingresó comando INSERT \n");
+				printf("Validando existencia de Tabla.\n");
+				printf("Seleccionando Memoria según Criterio.\n");
+				printf("Enviando INSERT a una Memoria.\n");
 				break;
 
 			case _create:
@@ -60,11 +69,15 @@ int procesar_comando(char *line) {
 				break;
 
 			case _describe:
-				printf("CONSOLA: Se ingresó comando DESCRIBE \n");
+				printf("Enviando DESCRIBE a una Memoria \n"); /* CAMBIAR SOCKET DE ABAJO */
+				// elegir memoria
+				//enviarMensaje(kernel, describe, sizeof(request), &request, 10/* socket memoria*/, logger, mem);
 				break;
 
 			case _drop:
-				printf("CONSOLA: Se ingresó comando DROP \n");
+				printf("Validando existencia de Tabla.\n");
+				printf("Seleccionando Memoria según Criterio.\n");
+				printf("Enviando DROP a una Memoria.\n");
 				break;
 
 			case _journal:

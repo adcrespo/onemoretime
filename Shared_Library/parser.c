@@ -51,7 +51,7 @@ t_request* parsear(char* linea, t_log* logger) {
 
 				case _salir:
 					// No hacer nada
-
+					request->es_valido = 0;
 					break;
 
 				case _select:
