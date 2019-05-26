@@ -380,6 +380,7 @@ void* serializar(int tipoProceso, int tipoMensaje, int len, void* content) {
 	mensaje.header.tipoProceso = tipoProceso;
 	mensaje.header.tipoMensaje = tipoMensaje;
 	mensaje.header.longitud = len;
+	mensaje.header.error = 0;
 	mensaje.content = content;
 
 	void* buffer = malloc(sizeof(t_header) + len);

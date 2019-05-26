@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
 	logger = configurar_logger_verbose("MEM.log", "MEM", string_equals_ignore_case(args_verbose,"true")?true:false);
 	get_config(string_equals_ignore_case(args_configfile,"false")?"../MEM.conf":args_configfile);
 
-	loggear(logger,LOG_LEVEL_INFO,"IP LOcal %s",getLocalIp());
+	loggear(logger,LOG_LEVEL_INFO,"IP Local %s",getLocalIp());
 	crearListaSeeds();
 
 	init_memory_spa();

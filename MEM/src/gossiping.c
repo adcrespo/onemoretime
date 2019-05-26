@@ -32,6 +32,9 @@ char* getLocalIp()
     FILE *f;
     char line[100] , *p , *c;
 
+    if(MEM_CONF.IP != NULL)
+    	return MEM_CONF.IP;
+
 	f = fopen("/proc/net/route", "r");
 
 	while(fgets(line , 100 , f)) {
@@ -372,7 +375,10 @@ int crearHiloGossiping()
 		_exit_with_error("No se pudo bloquear SIGINT con prthread_sigmask",NULL);
 
 	hilo_cliente = pthread_create(&cliente, NULL, hiloGossiping, (void *) &set);
-	loggear(logger,LOG_LEVEL_INFO,"ERROR_HILO_GOSSIPING: %s", hilo_cliente);
+
+	if (hilo_cliente == -1)
+		loggear(logger,LOG_LEVEL_INFO,"ERROR_HILO_GOSSIPING: %s", hilo_cliente);
+	log_info(logger, "Se generó el hilo para el GOSSIPING.");
 
 	return 1;
 }

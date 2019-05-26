@@ -85,4 +85,10 @@ void get_config(char* path) {
 		MEM_CONF.MEMORY_NUMBER = config_get_int_value(config, "MEMORY_NUMBER");
 		loggear(logger,LOG_LEVEL_INFO,"MEMORY_NUMBER: %d", MEM_CONF.MEMORY_NUMBER);
 	}
+
+	if(config_has_property(config,"IP")) {
+		MEM_CONF.IP = config_get_string_value(config, "IP");
+		remove_quotes(MEM_CONF.IP);
+		loggear(logger,LOG_LEVEL_INFO,"IP: %s", MEM_CONF.IP);
+	}
 }

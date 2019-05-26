@@ -23,6 +23,7 @@ typedef struct  {
   uint32_t RETARDO_JOURNAL;
   uint32_t RETARDO_GOSSIPING;
   uint32_t MEMORY_NUMBER;
+  char *IP;
 } t_MEM_CONF;
 
 t_MEM_CONF MEM_CONF;
