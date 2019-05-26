@@ -182,9 +182,9 @@ int conectarseAServidor_w_to(int socketCon, char* ip, int puerto, t_log* logger)
 	  int valopt;
 	  socklen_t lon;
 
-
+	  soc = socketCon;
 	  // Create socket
-	  soc = socket(AF_INET, SOCK_STREAM, 0);
+	 // soc = socket(AF_INET, SOCK_STREAM, 0);
 	  if (soc < 0) {
 		  loggear(logger, LOG_LEVEL_ERROR, "No se pudo conectar al Servidor.");
 		  return 0;
@@ -277,12 +277,10 @@ int conectarseAServidor_w_to(int socketCon, char* ip, int puerto, t_log* logger)
 	     //fprintf(stderr, "Error fcntl(..., F_SETFL) (%s)\n", strerror(errno));
 	     //exit(0);
 	  }
-	  socketCon = soc;
+	  //socketCon = soc;
 	  return 1;
 	  // I hope that is all
 }
-
-
 
 int conectarseAServidor(int socket, char* ip, int puerto, t_log* logger) {
 

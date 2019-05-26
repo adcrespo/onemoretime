@@ -15,7 +15,6 @@
 char* args_configfile;
 char* args_verbose;
 
-char *getArg(int argc, char** argv, char* key);
 void initArgumentos(int argc, char** argv);
 void destroy_args();
 #endif /* ARGPARSE_H_ */

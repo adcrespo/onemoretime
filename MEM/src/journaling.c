@@ -42,7 +42,7 @@ void process_journaling(){
 	return;
 }
 
-void *crearHiloJournaling() {
+void *crearJournaling() {
 
 	sleep( MEM_CONF.RETARDO_JOURNAL/1000);
 	while (1) {
@@ -53,7 +53,7 @@ void *crearHiloJournaling() {
 	}
 }
 
-int crearJournaling()
+int crearHiloJournaling()
 {
 	pthread_mutex_init (&journalingMutex, NULL);
 
@@ -68,7 +68,7 @@ int crearJournaling()
 	if (s != 0)
 		_exit_with_error("No se pudo bloquear SIGINT con prthread_sigmask",NULL);
 
-	hilo_journaling = pthread_create(&journaling, NULL, crearHiloJournaling, (void *) &set);
+	hilo_journaling = pthread_create(&journaling, NULL, crearJournaling, (void *) &set);
 
 	if (hilo_journaling == -1) {
 			log_error(logger, "No se pudo generar el hilo para la consola.");

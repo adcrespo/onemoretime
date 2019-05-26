@@ -21,7 +21,7 @@
 
 void process_journaling();
 
-void *crearHiloJournaling();
+int crearHiloJournaling();
 
 pthread_t journaling;
 pthread_mutex_t journalingMutex;

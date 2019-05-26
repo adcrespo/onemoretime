@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
 	initArgumentos(argc, argv);
 
 	logger = configurar_logger_verbose("MEM.log", "MEM", string_equals_ignore_case(args_verbose,"true")?true:false);
-
+loggear(logger,LOG_LEVEL_INFO,"COnf: %s", args_configfile);
 	get_config(string_equals_ignore_case(args_configfile,"false")?"../MEM.conf":args_configfile);
 
 	crearListaSeeds();

@@ -125,8 +125,23 @@ void procesar(int n_descriptor, fd_set* set_master) {
 			//procesar_CPU(msg, n_descriptor, set_master);
 			break;
 		case mem:;
+			switch(msg->header.tipoMensaje) {
+				case handshake:;
+					enviarMensaje(mem, handshake, 0, NULL, n_descriptor, logger, mem);
+					//procesar_CPU(msg, n_descriptor, set_master);
+					break;
+				case gossipingMsg:;
+					char *listasIPs = string_new();
+					listasIPs = string_from_format("%s",msg->content);
+					loggear(logger,LOG_LEVEL_DEBUG,"Lista IPs: [%s]",listasIPs);
+					enviarMensaje(mem, gossipingMsg, strlen(listasIPs)+1, listasIPs, n_descriptor, logger, mem);
+					//TODO: actualizar mi lista de seeds
+					break;
+				default:
+					loggear(logger,LOG_LEVEL_INFO,"No se reconoce el Menaje");
+					break;
+			}
 			//procesar_CPU(msg, n_descriptor, set_master);
-			enviarMensaje(mem, handshake, 0, NULL, n_descriptor, logger, mem);
 			break;
 		default:
 			loggear(logger,LOG_LEVEL_INFO,"No se reconoce el proceso");
@@ -135,5 +150,6 @@ void procesar(int n_descriptor, fd_set* set_master) {
 			break;
 	}
 	destruirMensaje(msg);
+	loggear(logger,LOG_LEVEL_DEBUG,"Mensaje destruido");
 }
 
