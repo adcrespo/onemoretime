@@ -18,6 +18,17 @@
 #include <limits.h>
 #include <pthread.h>
 #include <signal.h>
+#include <sys/types.h>
+#include <ifaddrs.h>
+#include <netinet/in.h>
+#include <string.h>
+#include <arpa/inet.h>
+
+char* getLocalIp();
+
+int loggearElementosLista(t_list *LISTA_CONN,t_list *LISTA_CONN_PORT);
+
+int procesarMsjGossiping(char *mensaje, char *primerParser, char *segundoParser);
 
 int crearListaSeeds();
 
@@ -27,13 +38,6 @@ pthread_t cliente;
 
 t_list *LISTA_CONN;
 t_list *LISTA_CONN_PORT;
-
-t_list *LISTA_CONN_LOC;
-t_list *LISTA_CONN_PORT_LOC;
-
-t_list *LISTA_CONN_LOC_MSJ;
-t_list *LISTA_CONN_PORT_LOC_MSJ;
-
 
 
 typedef enum tipoServidor {

@@ -22,6 +22,43 @@
 void handle_alarm( int sig ) {
 	bandera_conexion = true;
 }*/
+char* getLocalIp()
+{
+	char* localIp = string_new();
+	struct ifaddrs * ifAddrStruct=NULL;
+    struct ifaddrs * ifa=NULL;
+    void* tmpAddrPtr=NULL;
+
+    FILE *f;
+    char line[100] , *p , *c;
+
+	f = fopen("/proc/net/route", "r");
+
+	while(fgets(line , 100 , f)) {
+		p = strtok(line , " \t");
+		c = strtok(NULL , " \t");
+		if(p!=NULL && c!=NULL && strcmp(c , "00000000") == 0) break;
+	}
+
+    getifaddrs(&ifAddrStruct);
+
+    for (ifa = ifAddrStruct; ifa != NULL; ifa = ifa->ifa_next) {
+        if (!ifa->ifa_addr) {
+            continue;
+        }
+        if (ifa->ifa_addr->sa_family == AF_INET && strcmp( ifa->ifa_name , p) == 0) { // check it is IP4
+            // is a valid IP4 Address
+            tmpAddrPtr=&((struct sockaddr_in *)ifa->ifa_addr)->sin_addr;
+            char addressBuffer[INET_ADDRSTRLEN];
+            inet_ntop(AF_INET, tmpAddrPtr, addressBuffer, INET_ADDRSTRLEN);
+            printf("%s IP Address %s\n", ifa->ifa_name, addressBuffer);
+            localIp = string_from_format(addressBuffer);
+        }
+    }
+    if (ifAddrStruct!=NULL) freeifaddrs(ifAddrStruct);
+    return localIp;
+}
+
 int loggearElementosLista(t_list *LISTA_CONN,t_list *LISTA_CONN_PORT)
 {
 	int i;
@@ -29,15 +66,15 @@ int loggearElementosLista(t_list *LISTA_CONN,t_list *LISTA_CONN_PORT)
 	char *ipLista;
 	char *puertoLista;
 
-	while(i < LISTA_CONN_LOC->elements_count)
+	while(i < LISTA_CONN->elements_count)
 	{
-		ipLista = list_get(LISTA_CONN_LOC,i);
-		puertoLista =list_get(LISTA_CONN_PORT_LOC,i);
+		ipLista = list_get(LISTA_CONN,i);
+		puertoLista =list_get(LISTA_CONN_PORT,i);
 
-		loggear(logger,LOG_LEVEL_INFO,"CONEXION LISTA SEEDS NUMERO: %d",i+1);
+		loggear(logger,LOG_LEVEL_INFO,"LOG - LISTA SEEDS NUMERO: %d",i+1);
 
-		loggear(logger,LOG_LEVEL_INFO,"LISTA_IP_SEEDS: %s", ipLista);
-		loggear(logger,LOG_LEVEL_INFO,"LISTA_PUERTO_SEEDS: %s", puertoLista);
+		loggear(logger,LOG_LEVEL_INFO,"LOG - LISTA_IP_SEEDS: %s", ipLista);
+		loggear(logger,LOG_LEVEL_INFO,"LOG - LISTA_PUERTO_SEEDS: %s", puertoLista);
 		i++;
 	}
 	return 1;
@@ -59,8 +96,8 @@ char *armarMensajeListaSEEDS()
 	while(j<LISTA_CONN->elements_count)
 	{
 
-		ip = list_get(LISTA_CONN_LOC,j);
-		puerto = list_get(LISTA_CONN_PORT_LOC,j);
+		ip = list_get(LISTA_CONN,j);
+		puerto = list_get(LISTA_CONN_PORT,j);
 
 		if(j==0)
 		{
@@ -85,34 +122,28 @@ char *armarMensajeListaSEEDS()
 
 int actualizaListaSeedConfig(t_list *LISTA_CONN,t_list *LISTA_CONN_PORT, char *ipNueva,char *puertoNuevo)
 {
-	int i=0;
+	int j=0;
 	int existe=0;
-	int control_servidor_lista;
-	int control_puerto_lista;
 	char *ipCompara;
+	char *portCompara;
 
-	//while(MEM_CONF.IP_SEEDS[i] != NULL)
-	//{
-		int j=0;
+	while(j<LISTA_CONN->elements_count)
+	{
 
-		while(j<LISTA_CONN->elements_count)
+		ipCompara = list_get(LISTA_CONN,j);
+		portCompara = list_get(LISTA_CONN_PORT,j);
+		if(string_equals_ignore_case(ipCompara, ipNueva) && string_equals_ignore_case(portCompara, puertoNuevo))
 		{
-
-			ipCompara = list_get(LISTA_CONN,i);
-			if(string_equals_ignore_case(ipCompara, ipNueva))
-			{
-				existe=1;
-				break;
-			}
-			j++;
+			existe=1;
+			break;
 		}
-		if(existe!=1)
-		{
-			control_servidor_lista = list_add(LISTA_CONN,ipNueva);
-			control_puerto_lista = list_add(LISTA_CONN_PORT,puertoNuevo);
-		}
-		//i++;
-	//}
+		j++;
+	}
+	if(existe!=1)
+	{
+		list_add(LISTA_CONN,ipNueva);
+		list_add(LISTA_CONN_PORT,puertoNuevo);
+	}
 
 	return 1;
 }
@@ -126,6 +157,8 @@ int crearListaSeeds()
 	LISTA_CONN_PORT = list_create();
 
 	loggear(logger,LOG_LEVEL_INFO,"Creando lista de SEEDS");
+
+	actualizaListaSeedConfig(LISTA_CONN,LISTA_CONN_PORT,getLocalIp(),MEM_CONF.PUERTO);
 
 	while(MEM_CONF.IP_SEEDS[i] != NULL)
 	{
@@ -200,11 +233,13 @@ int procesarMsjGossiping(char *mensaje, char *primerParser, char *segundoParser)
 			}
 
 			//AGREGAR A LISTA LOCAL DE PROCESO DE MSJ
-			actualizaListaSeedConfig(LISTA_CONN_LOC_MSJ,LISTA_CONN_PORT_LOC_MSJ, ip,puerto);
+			pthread_mutex_lock(&mutexGossiping);
+			actualizaListaSeedConfig(LISTA_CONN,LISTA_CONN_PORT, ip,puerto);
+			pthread_mutex_unlock(&mutexGossiping);
 
 			i++;
 		}
-		loggearElementosLista(LISTA_CONN_LOC_MSJ,LISTA_CONN_PORT_LOC_MSJ);
+		loggearElementosLista(LISTA_CONN,LISTA_CONN_PORT);
 	}
 	else
 	{
@@ -222,7 +257,7 @@ int procesarMsjGossiping(char *mensaje, char *primerParser, char *segundoParser)
 
 
 void processGossiping() {
-	int i =0;
+	int i;
 	int socketReceptor=0;
 	char *ipLista;
 	char *puertoLista;
@@ -244,29 +279,17 @@ void processGossiping() {
 	//sleep(15);
 	//while (1)
 	//{
-		i=0;
+		i=1;
 
 		mensaje = string_new();
 
-		//mensaje = armarMensajeListaSEEDS();
-
-		//loggear(logger,LOG_LEVEL_INFO,"CREANDO LISTA LOCAL");
-		pthread_mutex_lock(&mutexGossiping);
-		armarListaLocal(LISTA_CONN_LOC,LISTA_CONN_PORT_LOC);
-		pthread_mutex_unlock(&mutexGossiping);
 		mensaje = armarMensajeListaSEEDS();
-		procesarMsjGossiping(mensaje,"|","-");
-		//ipLista = list_get(LISTA_CONN_LOC,i);
-		//puertoLista =list_get(LISTA_CONN_PORT_LOC,i);
-		//loggear(logger,LOG_LEVEL_INFO,"LISTA_IP_SEEDS: %s", ipLista);
-		//loggear(logger,LOG_LEVEL_INFO,"LISTA_PUERTO_SEEDS: %s", puertoLista);
-
 
 		//CONEXION_CON_CADA_MEMORIA
-		while(i < LISTA_CONN_LOC->elements_count)
+		while(i < LISTA_CONN->elements_count)
 		{
-			ipLista = list_get(LISTA_CONN_LOC,i);
-			puertoLista =list_get(LISTA_CONN_PORT_LOC,i);
+			ipLista = list_get(LISTA_CONN,i);
+			puertoLista =list_get(LISTA_CONN_PORT,i);
 
 			loggear(logger,LOG_LEVEL_INFO,"CONEXION LISTA SEEDS NUMERO: %d",i+1);
 
@@ -296,17 +319,15 @@ void processGossiping() {
 				if(msjRecibido != NULL)
 				{
 					//mensaje = string_new();
-					loggear(logger,LOG_LEVEL_INFO,"MSJ ENVIADO CON EXITO %d",envioMsj);
-					procesarMsjGossiping(msjRecibido->content,"|","-");
+					loggear(logger,LOG_LEVEL_INFO,"MSJ RECIBIDO CON EXITO %d",envioMsj);
+					procesarMsjGossiping(msjRecibido->content,"-",":");
 
 				}
 				else
 				{
 					loggear(logger,LOG_LEVEL_INFO,"ERROR MSJ %d",envioMsj);
 				}
-
-
-
+				close(socketReceptor);
 			}
 			else
 			{
@@ -323,13 +344,7 @@ void processGossiping() {
 void *hiloGossiping()
 {
 	//sleep (MEM_CONF.RETARDO_GOSSIPING/1000);
-	LISTA_CONN_LOC=list_create();
-	LISTA_CONN_PORT_LOC=list_create();
 
-	LISTA_CONN_LOC_MSJ=list_create();
-	LISTA_CONN_PORT_LOC_MSJ=list_create();
-
-	//sleep (15);
 	while (1)
 	{
 		loggear(logger,LOG_LEVEL_INFO,"INIT_HILO_GOSSIPING");

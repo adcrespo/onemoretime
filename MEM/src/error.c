@@ -30,13 +30,13 @@ void exit_gracefully(int return_nr) {
           sistema exit() para terminar la ejecucion
   */
 
-	loggear(logger, LOG_LEVEL_INFO, "********* FIN DEL PROCESO FM9 *********");
-
 	liberar_memory_spa();
 
 	destroy_args();
-	destruir_logger(logger);
 	destroy_config(config);
+
+	loggear(logger, LOG_LEVEL_INFO, "********* FIN DEL PROCESO MEM *********");
+	destruir_logger(logger);
 
 	exit(return_nr);
 }

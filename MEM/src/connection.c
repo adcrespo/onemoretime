@@ -133,7 +133,8 @@ void procesar(int n_descriptor, fd_set* set_master) {
 				case gossipingMsg:;
 					char *listasIPs = string_new();
 					listasIPs = string_from_format("%s",msg->content);
-					loggear(logger,LOG_LEVEL_DEBUG,"Lista IPs: [%s]",listasIPs);
+					loggear(logger,LOG_LEVEL_DEBUG,"Lista IPs recibida: [%s]",listasIPs);
+					procesarMsjGossiping(listasIPs,"-",":");
 					enviarMensaje(mem, gossipingMsg, strlen(listasIPs)+1, listasIPs, n_descriptor, logger, mem);
 					//TODO: actualizar mi lista de seeds
 					break;
