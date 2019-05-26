@@ -17,11 +17,6 @@
 #include "gossiping.h"
 #include "commons/collections/list.h"
 
-/*volatile sig_atomic_t bandera_conexion = false;
-
-void handle_alarm( int sig ) {
-	bandera_conexion = true;
-}*/
 char* getLocalIp()
 {
 	char* localIp = string_new();
@@ -176,26 +171,6 @@ int crearListaSeeds()
 	return 1;
 }
 
-
-int armarListaLocal(t_list *LISTA_CONN_LOC,t_list *LISTA_CONN_PORT_LOC)
-{
-	int j=0;
-	char *ipCompara;
-	char *puertoCompara;
-
-	while(j<LISTA_CONN->elements_count)
-	{
-		ipCompara = list_get(LISTA_CONN,j);
-		puertoCompara = list_get(LISTA_CONN_PORT,j);
-
-		actualizaListaSeedConfig(LISTA_CONN_LOC , LISTA_CONN_PORT_LOC , ipCompara , puertoCompara);
-
-		j++;
-	}
-
-	return 1;
-}
-
 int procesarMsjGossiping(char *mensaje, char *primerParser, char *segundoParser)
 {
 	int i;
@@ -261,11 +236,14 @@ int procesarMsjGossiping(char *mensaje, char *primerParser, char *segundoParser)
 
 void processGossiping() {
 	int i;
+	int contadorLista;
 	int socketReceptor=0;
 	char *ipLista;
 	char *puertoLista;
 	char *mensaje;
 	t_mensaje* msjRecibido;
+
+	i=1;
 
 	if(pthread_mutex_trylock(&mutexprocessGossiping))
 	{
@@ -273,76 +251,71 @@ void processGossiping() {
 		return;
 	}
 
-	//LISTA_CONN_LOC=list_create();
-	//LISTA_CONN_PORT_LOC=list_create();
-
 	loggear(logger,LOG_LEVEL_INFO,"Se inicio proceso Gossiping");
 
-	//sleep(MEM_CONF.RETARDO_GOSSIPING);
-	//sleep(15);
-	//while (1)
-	//{
-		i=1;
+	mensaje = string_new();
 
-		mensaje = string_new();
+	pthread_mutex_lock(&mutexGossiping);
+	mensaje = armarMensajeListaSEEDS();
+	pthread_mutex_unlock(&mutexGossiping);
 
-		mensaje = armarMensajeListaSEEDS();
+	pthread_mutex_lock(&mutexGossiping);
+	contadorLista = LISTA_CONN->elements_count;
+	pthread_mutex_unlock(&mutexGossiping);
 
-		//CONEXION_CON_CADA_MEMORIA
-		while(i < LISTA_CONN->elements_count)
+	//CONEXION_CON_CADA_MEMORIA
+	while(i < contadorLista)
+	{
+		pthread_mutex_lock(&mutexGossiping);
+		ipLista = list_get(LISTA_CONN,i);
+		puertoLista =list_get(LISTA_CONN_PORT,i);
+		pthread_mutex_unlock(&mutexGossiping);
+
+		loggear(logger,LOG_LEVEL_INFO,"CONEXION LISTA SEEDS NUMERO: %d",i+1);
+		loggear(logger,LOG_LEVEL_INFO,"LISTA_IP_SEEDS: %s", ipLista);
+		loggear(logger,LOG_LEVEL_INFO,"LISTA_PUERTO_SEEDS: %s", puertoLista);
+
+		socketReceptor=connect_to_server(ipLista,puertoLista,mem,gossiping);
+
+		if(socketReceptor>0)
 		{
-			ipLista = list_get(LISTA_CONN,i);
-			puertoLista =list_get(LISTA_CONN_PORT,i);
+			int envioMsj;
 
-			loggear(logger,LOG_LEVEL_INFO,"CONEXION LISTA SEEDS NUMERO: %d",i+1);
+			//ENVIAR_LISTA_SEEDS
+			envioMsj = enviarMensaje(mem,gossipingMsg,strlen(mensaje)+1,mensaje,socketReceptor,logger,mem);
 
-			loggear(logger,LOG_LEVEL_INFO,"LISTA_IP_SEEDS: %s", ipLista);
-			loggear(logger,LOG_LEVEL_INFO,"LISTA_PUERTO_SEEDS: %s", puertoLista);
+			if(envioMsj < 1 )
+				loggear(logger,LOG_LEVEL_INFO,"NO SE PUDO ENVIAR MSJ %d",envioMsj);
+			else
+				loggear(logger,LOG_LEVEL_INFO,"MSJ ENVIADO CON EXITO %d",envioMsj);
+			free (mensaje);
 
-			socketReceptor=connect_to_server(ipLista,puertoLista,mem,gossiping);
+			//RECIBIR_LISTA_SEEDS
+			msjRecibido = recibirMensaje(socketReceptor,logger);
 
-			if(socketReceptor>0)
+			//PROCESAR_LISTA_SEEDS
+			if(msjRecibido != NULL)
 			{
-				int envioMsj;
-				///int largoMsj=0;
-				//largoMsj = strlen(mensaje);
-				//ENVIAR LISTA SEEDS
-				envioMsj = enviarMensaje(mem,gossipingMsg,strlen(mensaje)+1,mensaje,socketReceptor,logger,mem);
-				if(envioMsj < 1 )
-					loggear(logger,LOG_LEVEL_INFO,"NO SE PUDO ENVIAR MSJ %d",envioMsj);
-				else
-					loggear(logger,LOG_LEVEL_INFO,"MSJ ENVIADO CON EXITO %d",envioMsj);
-
-				//RECIBIR_LISTA_SEEDS
-				free (mensaje);
-				//mensaje = string_new();
-
-				msjRecibido = recibirMensaje(socketReceptor,logger);
-				//PROCESAR_LISTA_SEEDS
-				if(msjRecibido != NULL)
-				{
-					//mensaje = string_new();
-					loggear(logger,LOG_LEVEL_INFO,"MSJ RECIBIDO CON EXITO %d",envioMsj);
-					procesarMsjGossiping(msjRecibido->content,"-",":");
-
-				}
-				else
-				{
-					loggear(logger,LOG_LEVEL_INFO,"ERROR MSJ %d",envioMsj);
-				}
-				close(socketReceptor);
+				loggear(logger,LOG_LEVEL_INFO,"MSJ RECIBIDO CON EXITO %d",envioMsj);
+				procesarMsjGossiping(msjRecibido->content,"-",":");
+				destruirMensaje(msjRecibido);
 			}
 			else
 			{
-				loggear(logger,LOG_LEVEL_INFO,"FALLÓ_CONEXION: %d", socketReceptor);
+				loggear(logger,LOG_LEVEL_INFO,"ERROR MSJ %d",envioMsj);
 			}
-			i++;
-		}
-	pthread_mutex_unlock(&mutexprocessGossiping);
-		//sleep(MEM_CONF.RETARDO_GOSSIPING);
-	//	sleep(15);
 
-//	}
+			close(socketReceptor);
+		}
+		else
+		{
+			loggear(logger,LOG_LEVEL_INFO,"FALLÓ_CONEXION: %d", socketReceptor);
+		}
+		i++;
+	}
+
+	pthread_mutex_unlock(&mutexprocessGossiping);
+
 }
 void *hiloGossiping()
 {
@@ -353,6 +326,7 @@ void *hiloGossiping()
 		loggear(logger,LOG_LEVEL_INFO,"INIT_HILO_GOSSIPING");
 		processGossiping();
 		loggear(logger,LOG_LEVEL_INFO,"END_HILO_GOSSIPING");
+
 		//sleep (MEM_CONF.RETARDO_GOSSIPING/1000);
 		sleep (15);
 	}
