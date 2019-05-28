@@ -248,6 +248,7 @@ void BuscarKey(int key, char *archivo)
 	{
 		fgets(linea, 50, file);
 		elementos = string_split(linea, ";");
+		int cantElementos = ContarElementosArray(elementos);
 
 		if(atoi(elementos[1]) == key)
 		{
@@ -262,17 +263,33 @@ void BuscarKey(int key, char *archivo)
 			printf("Key:%d\n", registro->key);
 			printf("Value:%s\n", registro->value);
 			printf("\n");
-		} else
-		{
-			printf("Key no encontrada");
+
+			free(value);
 		}
 
+		for(int i = 0; i < cantElementos; i++)
+		{
+			free(elementos[i]);
+		}
 
 	}
 
 
+	free(rutaArchivo);
 	fclose(file);
 
 }
 
+
+int ContarElementosArray(char **cadena)
+{
+	int contador = 0;
+
+	while(cadena[contador] != '\0')
+	{
+		contador++;
+	}
+
+	return contador;
+}
 
