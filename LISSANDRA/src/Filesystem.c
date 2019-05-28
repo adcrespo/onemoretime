@@ -229,3 +229,50 @@ void CrearBloque(int numero, int bytes)
 
 }
 
+
+void BuscarKey(int key, char *archivo)
+{
+	char *rutaArchivo = string_from_format("%s/%s", rutaBloques, archivo);
+	char linea[50];
+	char **elementos;
+
+	FILE *file = fopen(rutaArchivo, "r");
+
+	if(file==NULL)
+	{
+		loggear(logger, LOG_LEVEL_ERROR, "Error abriendo archivo %s", file);
+	}
+
+	while(!feof(file))
+
+	{
+		fgets(linea, 50, file);
+		elementos = string_split(linea, ";");
+
+		if(atoi(elementos[1]) == key)
+		{
+			t_registro *registro = malloc(sizeof(t_registro));
+			char *value = string_new();
+			string_append(&value, elementos[2]);
+			registro->timestamp = atoi(elementos[0]);
+			registro->key = atoi(elementos[1]);
+			strcpy(registro->value, value);
+
+			printf("Timestamp:%d\n", registro->timestamp);
+			printf("Key:%d\n", registro->key);
+			printf("Value:%s\n", registro->value);
+			printf("\n");
+		} else
+		{
+			printf("Key no encontrada");
+		}
+
+
+	}
+
+
+	fclose(file);
+
+}
+
+
