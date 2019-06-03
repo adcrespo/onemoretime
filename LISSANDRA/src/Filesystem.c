@@ -188,9 +188,6 @@ void InsertarTabla(t_request *request)
 		loggear(logger, LOG_LEVEL_ERROR, "%s no existe en el file system", request->parametro1);;
 	}
 
-	//Obtengo metadata
-	int particiones = ObtenerMetadata(request->parametro1);
-
 	//Verifico si no tiene datos a dumpear
 	t_tabla *tabla = malloc(sizeof(t_tabla));
 	tabla = BuscarTablaMemtable(request->parametro1);
@@ -229,8 +226,47 @@ void CrearBloque(int numero, int bytes)
 
 }
 
+void BuscarKey(int key, char *tabla)
+{
 
-void BuscarKey(int key, char *archivo)
+	//char *nombreTabla = string_new();
+	//strcpy(nombreTabla,request->parametro1);
+	//int key = atoi(request->parametro2);
+
+	//Verifico existencia en el file system
+	if(!ExisteTabla(tabla))
+	{
+		loggear(logger, LOG_LEVEL_ERROR, "%s no existe en el file system", tabla);;
+	}
+
+	//Obtengo metadata
+	int particiones = ObtenerMetadata(tabla);
+
+	//Calculo particion de la key
+	int particion = CalcularParticion(key, particiones);
+
+	//Obtengo bloques de la particion
+	char *rutaParticion = (string_from_format("%s%s/%d.bin", rutaTablas, tabla, particion));
+
+	t_config *configFile = cargarConfiguracion(rutaParticion, logger);
+	int sizeArchivo = config_get_int_value(configFile, "SIZE");
+	char **blocksArray = config_get_array_value(configFile, "BLOCKS");
+
+	//Escaneo la particion
+	int j = 0;
+	while(blocksArray[j] != NULL)
+	{
+		//BuscarKeyBloque(key, blocksArray[j]);
+		j++;
+	}
+	//Escaneo temporales
+	//Escaneo memtable
+
+
+}
+
+
+void BuscarKeyBloque(int key, char *archivo)
 {
 	char *rutaArchivo = string_from_format("%s/%s", rutaBloques, archivo);
 	char linea[50];

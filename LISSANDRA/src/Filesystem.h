@@ -21,8 +21,10 @@ void CrearMetadataTabla(char *tabla, char *consistencia, int particiones, int ti
 void AlocarTabla(char *tabla);
 void InsertarTabla(t_request *request);
 void CrearBloque(int numero, int bytes);
-void BuscarKey(int key, char *archivo);
+void BuscarKeyBloque(int key, char *archivo);
 int ContarElementosArray(char **cadena);
+void BuscarKeyBloque(int key, char *tabla);
+void BuscarKey(int key, char *tabla);
 
 t_config *config_metadata;
 t_bitarray *bitmap;
