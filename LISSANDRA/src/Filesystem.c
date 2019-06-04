@@ -166,7 +166,7 @@ t_tabla* BuscarTablaMemtable(char *nombre)
 	return list_find(memtable, (void*)EsLaTabla);
 }
 
-void AlocarTabla(char *tabla)
+void AlocarTabla(char *tabla, t_registro *registro)
 {
 	t_tabla *listaTabla = malloc(sizeof(t_tabla));
 	char *nombre = string_new();
@@ -174,13 +174,22 @@ void AlocarTabla(char *tabla)
 	strcpy(listaTabla->nombre_tabla, nombre);
 	listaTabla->lista = list_create();
 	list_add(memtable, listaTabla);
+	list_add(listaTabla->lista, registro);
+	free(nombre);
 
 }
 
 void InsertarTabla(t_request *request)
 {
-	//char *nombre = string_new();
-	//string_append(&nombre, request->parametro1);
+	t_registro *registro = malloc(sizeof(t_registro));
+
+	registro->key = atoi(request->parametro2);
+	strcpy(registro->value, request->parametro3);
+	registro->timestamp = atoi(request->parametro4);
+
+	printf("Registro key %d\n", registro->key);
+	printf("Registro value %s\n", registro->value);
+	printf("Registro timestamp %d\n", registro->timestamp);
 
 	//Verifico existencia en el file system
 	if(!ExisteTabla(request->parametro1))
@@ -188,8 +197,6 @@ void InsertarTabla(t_request *request)
 		loggear(logger, LOG_LEVEL_ERROR, "%s no existe en el file system", request->parametro1);;
 	}
 
-	//Obtengo metadata
-	int particiones = ObtenerMetadata(request->parametro1);
 
 	//Verifico si no tiene datos a dumpear
 	t_tabla *tabla = malloc(sizeof(t_tabla));
@@ -199,14 +206,13 @@ void InsertarTabla(t_request *request)
 	{
 		//Aloco en memtable como nueva tabla
 		loggear(logger, LOG_LEVEL_INFO, "%s no posee datos a dumpear", request->parametro1);
-		AlocarTabla(request->parametro1);
+		AlocarTabla(request->parametro1, registro);
 	}else
 	{
 		//Alocar en su posicion
 		loggear(logger, LOG_LEVEL_INFO, "Alocando en su pos correspondiente");
+		list_add(tabla->lista, registro);
 	}
-
-
 }
 
 
@@ -227,5 +233,108 @@ void CrearBloque(int numero, int bytes)
 	fflush(binFile);
 
 
+}
+
+void BuscarKey(int key, char *tabla)
+{
+
+	//char *nombreTabla = string_new();
+	//strcpy(nombreTabla,request->parametro1);
+	//int key = atoi(request->parametro2);
+
+	//Verifico existencia en el file system
+	if(!ExisteTabla(tabla))
+	{
+		loggear(logger, LOG_LEVEL_ERROR, "%s no existe en el file system", tabla);;
+	}
+
+	//Obtengo metadata
+	int particiones = ObtenerMetadata(tabla);
+
+	//Calculo particion de la key
+	int particion = CalcularParticion(key, particiones);
+
+	//Obtengo bloques de la particion
+	char *rutaParticion = (string_from_format("%s%s/%d.bin", rutaTablas, tabla, particion));
+
+	t_config *configFile = cargarConfiguracion(rutaParticion, logger);
+	int sizeArchivo = config_get_int_value(configFile, "SIZE");
+	char **blocksArray = config_get_array_value(configFile, "BLOCKS");
+
+	//Escaneo la particion
+	int j = 0;
+	while(blocksArray[j] != NULL)
+	{
+		//BuscarKeyBloque(key, blocksArray[j]);
+		j++;
+	}
+	//Escaneo temporales
+	//Escaneo memtable
+
+
+}
+
+
+void BuscarKeyBloque(int key, char *archivo)
+{
+	char *rutaArchivo = string_from_format("%s/%s", rutaBloques, archivo);
+	char linea[50];
+	char **elementos;
+
+	FILE *file = fopen(rutaArchivo, "r");
+
+	if(file==NULL)
+	{
+		loggear(logger, LOG_LEVEL_ERROR, "Error abriendo archivo %s", file);
+	}
+
+	while(!feof(file))
+
+	{
+		fgets(linea, 50, file);
+		elementos = string_split(linea, ";");
+		int cantElementos = ContarElementosArray(elementos);
+
+		if(atoi(elementos[1]) == key)
+		{
+			t_registro *registro = malloc(sizeof(t_registro));
+			char *value = string_new();
+			string_append(&value, elementos[2]);
+			registro->timestamp = atoi(elementos[0]);
+			registro->key = atoi(elementos[1]);
+			strcpy(registro->value, value);
+
+			printf("Timestamp:%d\n", registro->timestamp);
+			printf("Key:%d\n", registro->key);
+			printf("Value:%s\n", registro->value);
+			printf("\n");
+
+			free(value);
+		}
+
+		for(int i = 0; i < cantElementos; i++)
+		{
+			free(elementos[i]);
+		}
+
+	}
+
+
+	free(rutaArchivo);
+	fclose(file);
+
+}
+
+
+int ContarElementosArray(char **cadena)
+{
+	int contador = 0;
+
+	while(cadena[contador] != '\0')
+	{
+		contador++;
+	}
+
+	return contador;
 }
 
