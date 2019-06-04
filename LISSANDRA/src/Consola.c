@@ -67,28 +67,15 @@ int procesar_comando(char *line) {
 						case _insert:
 
 							printf("CONSOLA: Se ingresó comando INSERT \n");
+							printf("Tabla: %s\n", request->parametro1);
+							printf("Key: %s\n", request->parametro2);
+							printf("Value: %s\n", request->parametro3);
+							printf("Timestamp: %s\n", request->parametro4);
+							InsertarTabla(request);
+
 							break;
 
-							/*La operación Insert permite la creación y/o actualización del valor de una key dentro de una tabla.
-							 * Para esto, se utiliza la siguiente nomenclatura:
 
-							INSERT [NOMBRE_TABLA] [KEY] “[VALUE]” [Timestamp]
-
-							Ejemplos:
-							INSERT TABLA1 3 “Mi nombre es Lissandra” 1548421507
-
-							Ó
-							INSERT TABLA1 3 “Mi nombre es Lissandra” 1548421507
-
-
-							Esta operación incluye los siguientes pasos:
-							-Verificar que la tabla exista en el file system. En caso que no exista, informa el error y continúa su ejecución.
-							-Obtener la metadata asociada a dicha tabla.
-							-Verificar si existe en memoria una lista de datos a dumpear. De no existir, alocar dicha memoria.
-							-El parámetro Timestamp es opcional. En caso que un request no lo provea (por ejemplo insertando un valor desde la consola), se usará el valor actual del Epoch UNIX.
-							-Insertar en la memoria temporal del punto anterior una nueva entrada que contenga los datos enviados en la request.
-
-							*/
 
 						case _create:
 

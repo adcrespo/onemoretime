@@ -47,6 +47,7 @@ void CrearHiloConsola();
 void CrearHiloConexiones();
 void Inicializar();
 t_tabla* ObtenerTabla(char *nombre);
+void AlocarTabla(char *tabla, t_registro *registro);
 
 
 

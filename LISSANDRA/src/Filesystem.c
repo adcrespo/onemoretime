@@ -166,7 +166,7 @@ t_tabla* BuscarTablaMemtable(char *nombre)
 	return list_find(memtable, (void*)EsLaTabla);
 }
 
-void AlocarTabla(char *tabla)
+void AlocarTabla(char *tabla, t_registro *registro)
 {
 	t_tabla *listaTabla = malloc(sizeof(t_tabla));
 	char *nombre = string_new();
@@ -174,19 +174,29 @@ void AlocarTabla(char *tabla)
 	strcpy(listaTabla->nombre_tabla, nombre);
 	listaTabla->lista = list_create();
 	list_add(memtable, listaTabla);
+	list_add(listaTabla->lista, registro);
+	free(nombre);
 
 }
 
 void InsertarTabla(t_request *request)
 {
-	//char *nombre = string_new();
-	//string_append(&nombre, request->parametro1);
+	t_registro *registro = malloc(sizeof(t_registro));
+
+	registro->key = atoi(request->parametro2);
+	strcpy(registro->value, request->parametro3);
+	registro->timestamp = atoi(request->parametro4);
+
+	printf("Registro key %d\n", registro->key);
+	printf("Registro value %s\n", registro->value);
+	printf("Registro timestamp %d\n", registro->timestamp);
 
 	//Verifico existencia en el file system
 	if(!ExisteTabla(request->parametro1))
 	{
 		loggear(logger, LOG_LEVEL_ERROR, "%s no existe en el file system", request->parametro1);;
 	}
+
 
 	//Verifico si no tiene datos a dumpear
 	t_tabla *tabla = malloc(sizeof(t_tabla));
@@ -196,14 +206,13 @@ void InsertarTabla(t_request *request)
 	{
 		//Aloco en memtable como nueva tabla
 		loggear(logger, LOG_LEVEL_INFO, "%s no posee datos a dumpear", request->parametro1);
-		AlocarTabla(request->parametro1);
+		AlocarTabla(request->parametro1, registro);
 	}else
 	{
 		//Alocar en su posicion
 		loggear(logger, LOG_LEVEL_INFO, "Alocando en su pos correspondiente");
+		list_add(tabla->lista, registro);
 	}
-
-
 }
 
 
