@@ -18,6 +18,8 @@
 #include "Filesystem.h"
 #include "Consola.h"
 #include "Conexion.h"
+#include "Dump.h"
+#include "Error.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -40,11 +42,12 @@ typedef struct {
 
 pthread_t thread_consola;
 pthread_t thread_conexiones;
-
+pthread_t thread_dump;
 
 
 void CrearHiloConsola();
 void CrearHiloConexiones();
+void CrearHiloDump();
 void Inicializar();
 t_tabla* ObtenerTabla(char *nombre);
 void AlocarTabla(char *tabla, t_registro *registro);
