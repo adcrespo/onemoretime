@@ -50,7 +50,7 @@ int connect_to_server(char* IP, char* PUERTO, int proceso, int flag) {
         enviarMensaje(mem, handshake, 0, NULL, socket, logger, proceso);
         t_mensaje* msg = recibirMensaje(socket, logger);
         if(proceso == lis){
-        	int tamanio_value = *(int*)msg->content;
+        	tamanio_value = *(int*)msg->content;
         	loggear(logger,LOG_LEVEL_INFO, "el tamanio es %d", tamanio_value);
         }
         destruirMensaje(msg);

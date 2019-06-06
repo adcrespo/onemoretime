@@ -23,6 +23,8 @@
 #include <commons/config.h>
 #include <commons/collections/list.h>
 
+int socket_lis;
+
 int connect_to_server(char* IP, char* PUERTO, int proceso, int flag);
 int listen_connexions(char* PUERTO);
 
