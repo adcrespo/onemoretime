@@ -175,6 +175,8 @@ void AlocarTabla(char *tabla, t_registro *registro)
 	listaTabla->lista = list_create();
 	list_add(memtable, listaTabla);
 	list_add(listaTabla->lista, registro);
+	int a = list_size(memtable);
+	printf("Tamanio memtable :%d\n", a);
 	free(nombre);
 
 }
