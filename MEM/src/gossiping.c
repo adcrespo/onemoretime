@@ -288,7 +288,7 @@ void processGossiping() {
 				loggear(logger,LOG_LEVEL_INFO,"NO SE PUDO ENVIAR MSJ %d",envioMsj);
 			else
 				loggear(logger,LOG_LEVEL_INFO,"MSJ ENVIADO CON EXITO %d",envioMsj);
-			free (mensaje);
+			//free (mensaje);
 
 			//RECIBIR_LISTA_SEEDS
 			msjRecibido = recibirMensaje(socketReceptor,logger);
@@ -313,6 +313,7 @@ void processGossiping() {
 		}
 		i++;
 	}
+	free (mensaje);
 
 	pthread_mutex_unlock(&mutexprocessGossiping);
 

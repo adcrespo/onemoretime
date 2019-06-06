@@ -12,7 +12,8 @@
 #include "memory.h"
 #include "journaling.h"
 #include "consola.h"
-
+#include "memory.h"
+#include "connection.h"
 
 t_tipoComando buscar_enum(char *sval) {
 	t_tipoComando result = select_;
@@ -69,12 +70,31 @@ void *crearConsola() {
 			continue;
 
 		switch (comando_e) {
-		case select_:
+		case select_:;
 			if (comando[1] == NULL || comando[2] == NULL) {
 				printf("error: select {tabla} {key}.\n");
 				break;
 			}
 			printf("select...\n");
+			loggear(logger,LOG_LEVEL_INFO,"Buscando la tabla");
+			int paginaTabla = getPaginaForKey(comando[1], atoi(comando[2]));
+			if(paginaTabla!=-1){
+				loggear(logger,LOG_LEVEL_INFO,"Encontre la pagina en memoria (%d)",paginaTabla);
+				char* buffer = leer_bytes_spa(comando[1],paginaTabla,0,MAX_LINEA);
+				printf("Row: %s\n",buffer);
+				free(buffer);
+			}else{
+				loggear(logger,LOG_LEVEL_INFO,"Tengo que buscar en lissandra (%d)",paginaTabla);
+
+				int largo_content = sizeof(int) + strlen(comando[1]) + 1 +sizeof(int);
+				void *content = malloc(largo_content);
+				memcpy(content,&largo_content,sizeof(int));
+				memcpy(content+sizeof(int),&comando[1],strlen(comando[1])+1);
+				memcpy(content+sizeof(int)+strlen(comando[1])+1,&comando[2],sizeof(int));
+				enviarMensaje(mem,selectMsg,largo_content,content,socket_lis,logger,lis);
+				t_mensaje* mensaje = recibirMensaje(socket_lis, logger);
+			}
+
 			//TODO: select_
 			break;
 		case insert_:

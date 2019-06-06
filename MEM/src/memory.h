@@ -20,6 +20,12 @@
 #include <time.h>
 
 typedef struct {
+	unsigned int timestamp;
+	unsigned int key;
+	char* value;
+}__attribute__((packed)) t_registro;
+
+typedef struct {
 	int frame;
 	unsigned char modificado;
 	unsigned int timestamp;
@@ -55,5 +61,6 @@ void free_spa(char* path_table, int segmento);
 void update_administrative_register_adm_table_spa(t_adm_tabla_segmentos_spa* adm_table);
 void dump_memory_spa(char* path_table);
 t_adm_tabla_frames_spa getPaginaMenorTimestamp();
+int getPaginaForKey(char *path_table, unsigned int key);
 
 #endif /* MEMORY_H_ */

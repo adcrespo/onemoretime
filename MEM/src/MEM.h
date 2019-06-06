@@ -24,6 +24,7 @@
 
 #define MAX_LINEA 1024
 
+int tamanio_value;
 t_log* logger;
 
 int recvMensaje(int client_socket, t_mensaje** msg);

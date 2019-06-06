@@ -12,6 +12,33 @@
  * ---------------AUXILIARES--------------
  */
 
+char* componer_registro(unsigned int timestamp, unsigned int key, char* value, int largo_value)
+{
+	char* buffer = malloc(sizeof(timestamp)+sizeof(key)+tamanio_value);
+	memset(buffer, 0x00, sizeof(timestamp)+sizeof(key)+tamanio_value);
+	memcpy(buffer,&timestamp,sizeof(timestamp));
+	memcpy(buffer+sizeof(timestamp),&key,sizeof(key));
+	memcpy(buffer+sizeof(timestamp)+sizeof(key),value,largo_value);
+	return buffer;
+}
+
+t_registro* descomponer_registro(char *buffer)
+{
+	t_registro* registro = malloc(sizeof(t_registro));
+	registro->value = malloc(tamanio_value);
+	memcpy(&registro->timestamp,buffer,sizeof(int));
+	memcpy(&registro->key,buffer+sizeof(int),sizeof(int));
+	memcpy(registro->value,buffer+sizeof(int)+sizeof(int),tamanio_value);
+	return registro;
+}
+
+void destruir_registro(t_registro* registro)
+{
+	free(registro->value);
+	free(registro);
+	return;
+}
+
 bool exists_table_spa(char* path_table){
 	int i;
 	for(i=0; i<list_size(adm_frame_lista_spa);i++){
@@ -312,14 +339,15 @@ char* leer_bytes_spa(char* path_table, int segmento, int offset, int size) {
 	loggear(logger,LOG_LEVEL_DEBUG, "%s",
 				(adm_table_seg != NULL) ? "ENCONTRE EL SEGMENTO!" : "NO ENCONTRE EL SEGMENTO.");
 
-	char* buffer = string_new();
+	char* buffer = malloc(size);
+	memset(buffer, 0x00, size);
 	if (adm_table_seg != NULL) {
 		int page = offset/frame_spa_size, page_offset =  offset%frame_spa_size, start = 0;
 
 		//for(i = page; i<list_size(adm_table_seg->pag_lista); i++) {
 		t_paginas_spa* adm_table_pag = list_get(adm_table_seg->pag_lista,page);
 		start = adm_table_pag->frame*frame_spa_size+page_offset;
-		buffer = string_substring(frames_spa, start, size);
+		memcpy(buffer, frames_spa+start, size);
 		//}
 	}
 	return buffer;
@@ -459,4 +487,28 @@ t_adm_tabla_frames_spa getPaginaMenorTimestamp() {
 	}
 
 	return frame_spa;
+}
+
+int getPaginaForKey(char *path_table, unsigned int key) {
+	int j;
+
+	bool find(void* element) {
+		t_adm_tabla_segmentos_spa* adm_table = element;
+		return string_equals_ignore_case(adm_table->path_tabla,path_table);
+	}
+
+	t_adm_tabla_segmentos_spa* adm_table = list_find(adm_spa_lista, &find);
+	t_segmentos_spa* adm_table_seg = list_get(adm_table->seg_lista, 0);
+
+	for (j = 0; j < list_size(adm_table_seg->pag_lista); j++) {
+		char* buffer = leer_bytes_spa(path_table, j, 0, frame_spa_size);
+		t_registro* registro = descomponer_registro(buffer);
+		int r_key = registro->key;
+		destruir_registro(registro);
+		free(buffer);
+		if(r_key == key)
+			return j;
+	}
+
+	return -1;
 }
