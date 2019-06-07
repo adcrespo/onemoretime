@@ -78,26 +78,50 @@ void *crearConsola() {
 			printf("select...\n");
 			loggear(logger,LOG_LEVEL_INFO,"Buscando la tabla");
 			int paginaTabla = getPaginaForKey(comando[1], atoi(comando[2]));
-			if(paginaTabla!=-1){
+			if(paginaTabla>=0){
 				loggear(logger,LOG_LEVEL_INFO,"Encontre la pagina en memoria (%d)",paginaTabla);
 				char* buffer = leer_bytes_spa(comando[1],paginaTabla,0,MAX_LINEA);
-				printf("Row: %s\n",buffer);
+				t_registro* reg = descomponer_registro(buffer);
+				printf("[mem][timestamp:%d][key:%d] %s\n",reg->timestamp, reg->key, reg->value);
 				free(buffer);
+				destruir_registro(reg);
 			}else{
-				loggear(logger,LOG_LEVEL_INFO,"Tengo que buscar en lissandra (%d)",paginaTabla);
+				loggear(logger,LOG_LEVEL_INFO,"Tengo que buscar en lissandra");
 
 				int largo_content = sizeof(int) + strlen(comando[1]) + 1 +sizeof(int);
+				int key = atoi(comando[2]);
 				void *content = malloc(largo_content);
+				memset(content, 0x00, largo_content);
 				memcpy(content,&largo_content,sizeof(int));
-				memcpy(content+sizeof(int),&comando[1],strlen(comando[1])+1);
-				memcpy(content+sizeof(int)+strlen(comando[1])+1,&comando[2],sizeof(int));
+				memcpy(content+sizeof(int),comando[1],strlen(comando[1])+1);
+				memcpy(content+sizeof(int)+strlen(comando[1])+1,&key,sizeof(int));
 				enviarMensaje(mem,selectMsg,largo_content,content,socket_lis,logger,lis);
 				t_mensaje* mensaje = recibirMensaje(socket_lis, logger);
-			}
+				if(mensaje!=NULL && mensaje->header.error != 0) {
+					char* buffer = malloc(mensaje->header.longitud);
+					t_registro* reg = descomponer_registro(buffer);
+					printf("[lis][timestamp:%d][key:%d] %s\n",reg->timestamp, reg->key, reg->value);
+					int segmentoNuevo = add_spa(comando[1],1,reg->timestamp);
+					if(segmentoNuevo<=0) {
+						t_adm_tabla_frames_spa frame_reg = getPaginaMenorTimestamp();
+						segmentoNuevo = frame_reg.pagina;
+						if(segmentoNuevo<=-1) {
+							process_journaling();
+							segmentoNuevo = add_spa(comando[1],1,reg->timestamp);
+						}
+					}
+					if(segmentoNuevo>0)
+						escribir_bytes_spa(comando[1],segmentoNuevo,0,frame_spa_size,buffer,0);
+					else
+						printf("[ERR] No se pudo grabar el registro \n");
 
-			//TODO: select_
+					free(buffer);
+					destruir_registro(reg);
+				}else
+					printf("[ERR] No se pudo conectar a lis \n");
+			}
 			break;
-		case insert_:
+		case insert_:;
 			if (comando[1] == NULL || comando[2] == NULL || comando[3] == NULL) {
 				printf("error: insert {tabla} {key} {\"value\"}.\n");
 				break;
@@ -105,7 +129,7 @@ void *crearConsola() {
 			printf("insert...\n");
 			//TODO: insert
 			break;
-		case create_:
+		case create_:;
 			if (comando[1] == NULL || comando[2] == NULL || comando[3] == NULL || comando[4] == NULL) {
 				printf("error: create {tabla} {tipo_consistencia} {numero_particiones} {compaction_time}.\n");
 				break;
@@ -113,7 +137,7 @@ void *crearConsola() {
 			printf("create...\n");
 			//TODO: create
 			break;
-		case describe_:
+		case describe_:;
 			if (comando[1] == NULL ) {
 				printf("error: describe {tabla} .\n");
 				break;
@@ -121,7 +145,7 @@ void *crearConsola() {
 			printf("describe...\n");
 			//TODO: describe
 			break;
-		case drop_:
+		case drop_:;
 			if (comando[1] == NULL ) {
 				printf("error: drop {tabla} .\n");
 				break;
@@ -129,11 +153,11 @@ void *crearConsola() {
 			printf("drop...\n");
 			//TODO: drop
 			break;
-		case journal_:
+		case journal_:;
 			printf("journal...\n");
 			process_journaling();
 			break;
-		case dump_:
+		case dump_:;
 			if (comando[1] == NULL) {
 				printf("error: dump {id}.\n");
 				break;
@@ -141,10 +165,10 @@ void *crearConsola() {
 			printf("Dump (process id: %s)...\n",comando[1]);
 			dump_memory_spa(comando[1]);
 			break;
-		case salir_:
+		case salir_:;
 			exit_gracefully(EXIT_SUCCESS);
 			break;
-		default:
+		default:;
 			printf("No se reconoce el comando %s .\n", comando[0]);
 		}
 	}

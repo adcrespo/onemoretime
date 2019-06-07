@@ -374,7 +374,7 @@ int escribir_bytes_spa(char* path_table, int segmento, int offset, int size, cha
 	adm_table_seg = list_get(adm_table->seg_lista,segmento);
 
 	loggear(logger,LOG_LEVEL_DEBUG, "%s",
-				(adm_table_seg != NULL) ? "ENCONTRE EL SEGMENTO!" : "NO ENCONTRE ESL SEGMENTO.");
+				(adm_table_seg != NULL) ? "ENCONTRE EL SEGMENTO!" : "NO ENCONTRE EL SEGMENTO.");
 
 	int start = 0;
 	if (adm_table_seg != NULL) {
@@ -498,6 +498,13 @@ int getPaginaForKey(char *path_table, unsigned int key) {
 	}
 
 	t_adm_tabla_segmentos_spa* adm_table = list_find(adm_spa_lista, &find);
+
+	loggear(logger,LOG_LEVEL_DEBUG, "%s",
+					(adm_table != NULL) ? "ENCONTRE EL SEGMENTO FOR KEY!" : "NO ENCONTRE EL SEGMENTO FOR KEY.");
+
+	if(adm_table==NULL)
+		return -2;
+
 	t_segmentos_spa* adm_table_seg = list_get(adm_table->seg_lista, 0);
 
 	for (j = 0; j < list_size(adm_table_seg->pag_lista); j++) {

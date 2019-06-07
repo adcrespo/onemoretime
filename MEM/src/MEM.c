@@ -47,10 +47,10 @@ int main(int argc, char *argv[]) {
 	int paginas3 = add_spa("TABLA1",1,time(NULL));
 	getPaginaMenorTimestamp();
 	int escrito1 = escribir_bytes_spa("TABLA1",1,1*MAX_LINEA,8+strlen("DATO")+1,componer_registro(100,1,"DATO",strlen("DATO")+1),0); //offset siempre deberia ser multiplo de max_linea
-	int escrito2 = escribir_bytes_spa("TABLA1",0,0,8+strlen("HOLA")+1,componer_registro(100,1,"HOLA",strlen("HOLA")+1),0);
-	int escrito3 = escribir_bytes_spa("TABLA1",0,1*MAX_LINEA,8+strlen("COMO")+1,componer_registro(100,1,"COMO",strlen("COMO")+1),0);
-	int escrito4 = escribir_bytes_spa("TABLA1",2,2*MAX_LINEA,8+strlen("FAIL")+1,componer_registro(100,1,"FAIL",strlen("FAIL")+1),0); //si es -1 no encontre la pagina
-	int escrito5 = escribir_bytes_spa("TABLA1",1,8*MAX_LINEA,8+strlen("FAIL")+1,componer_registro(100,1,"FAIL",strlen("FAIL")+1),0); //TODO probar cuando la linea supera la pagina
+	int escrito2 = escribir_bytes_spa("TABLA1",0,0,8+strlen("HOLA")+1,componer_registro(100,2,"HOLA",strlen("HOLA")+1),0);
+	int escrito3 = escribir_bytes_spa("TABLA1",0,1*MAX_LINEA,8+strlen("COMO")+1,componer_registro(100,3,"COMO",strlen("COMO")+1),0);
+	int escrito4 = escribir_bytes_spa("TABLA1",2,2*MAX_LINEA,8+strlen("FAIL")+1,componer_registro(100,4,"FAIL",strlen("FAIL")+1),0); //si es -1 no encontre la pagina
+	int escrito5 = escribir_bytes_spa("TABLA1",1,8*MAX_LINEA,8+strlen("FAIL")+1,componer_registro(100,5,"FAIL",strlen("FAIL")+1),0); //TODO probar cuando la linea supera la pagina
 	char* buffer1 = leer_bytes_spa("TABLA1",0,0,MAX_LINEA); //size siempre deberia ser max_liena y offset siempre deberia ser multiplo de max_linea
 	char* buffer2 = leer_bytes_spa("TABLA1",0,MAX_LINEA,MAX_LINEA);
 	char* buffer3 = leer_bytes_spa("TABLA1",1,0,MAX_LINEA);

@@ -52,6 +52,10 @@ int frame_spa_size;
 t_list* adm_spa_lista;
 t_list* adm_frame_lista_spa;
 
+char* componer_registro(unsigned int timestamp, unsigned int key, char* value, int largo_value);
+t_registro* descomponer_registro(char *buffer);
+void destruir_registro(t_registro* registro);
+
 void liberar_memory_spa();
 void init_memory_spa();
 char* leer_bytes_spa(char* path_table, int segmento, int offset, int size);
