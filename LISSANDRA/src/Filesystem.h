@@ -24,6 +24,7 @@ void BuscarKeyBloque(int key, char *archivo);
 int ContarElementosArray(char **cadena);
 void BuscarKeyBloque(int key, char *tabla);
 void BuscarKey(int key, char *tabla);
+int AgregarBloque();
 
 t_config *config_metadata;
 t_bitarray *bitmap;

@@ -234,7 +234,6 @@ void CrearBloque(int numero, int bytes)
 	free(bytesAEscribir);
 	fflush(binFile);
 
-
 }
 
 void BuscarKey(int key, char *tabla)
@@ -338,5 +337,83 @@ int ContarElementosArray(char **cadena)
 	}
 
 	return contador;
+}
+
+
+int CrearTabla(t_request *request)
+{
+
+	//Verifico existencia en el file system
+	if(ExisteTabla(request->parametro1))
+	{
+		loggear(logger, LOG_LEVEL_ERROR, "%s ya existe en el file system", request->parametro1);
+		return -1;
+	}
+
+	int particiones = atoi(request->parametro3);
+
+	//Creo Directorio
+	CrearDirectorioTabla(request->parametro1);
+
+	//Creo archivo metadata
+	CrearMetadataTabla(request->parametro1, request->parametro2, particiones, atoi(request->parametro4));
+
+	//Creo archivo binarios
+	int particionInicial = 1;
+	for(int i = 0; i < particiones; i++)
+	{
+
+		char *rutaParticion = string_from_format("%s%s/%s%d.bin", rutaTablas, request->parametro1, "part",particionInicial);
+		printf("Abriendo particiones %s\n", rutaParticion);
+		FILE *file = fopen(rutaParticion, "w");
+
+		if(file==NULL)
+		{
+			//loggear(logger, LOG_LEVEL_ERROR, "Error abriendo archivo %s", file);
+			printf("Error abriendo archivo %s\n", rutaParticion);
+		}
+
+
+		char *stringSize = string_from_format("SIZE=%d\n", 0);
+		fputs(stringSize, file);
+		int bloque = AgregarBloque();
+		char *stringBlocks = string_from_format("BLOCKS=[%d]\n", bloque);
+		fputs(stringBlocks, file);
+		fclose(file);
+		free(stringSize);
+		free(stringBlocks);
+		free(rutaParticion);
+		particionInicial++;
+	}
+
+
+	return 0;
+}
+
+int AgregarBloque()
+{
+	//Descomentar cuando se encuentre el bitmap del fs disponible
+	/*size_t sizeBitmap = bitarray_get_max_bit(bitmap);
+	int bloque = 1;
+
+	log_info(logger, "Agregando bloque");
+
+	int count = 0;
+
+	while(count < sizeBitmap && bloque != -1)
+	{
+
+		if(bitarray_test_bit(bitmap, count ) == 0)
+		{
+			bitarray_set_bit(bitmap, count);
+			log_info(logger,"Bloque %d asignado", count);
+			bloque = count;
+			return bloque;
+		}
+		count ++;
+	}*/
+
+	//return bloque;
+	return 1;
 }
 

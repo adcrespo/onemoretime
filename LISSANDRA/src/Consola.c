@@ -79,31 +79,14 @@ int procesar_comando(char *line) {
 
 						case _create:
 
-
-
 							printf("CONSOLA: Se ingresó comando CREATE \n");
+							printf("Tabla: %s\n", request->parametro1);
+							printf("Tipo consistencia: %s\n", request->parametro2);
+							printf("Numero particiones: %s\n", request->parametro3);
+							printf("Compactation time: %s\n", request->parametro4);
+							CrearTabla(request);
 							break;
 
-							/*
-							 La operación Create permite la creación de una nueva tabla dentro del file system.
-							  Para esto, se utiliza la siguiente nomenclatura:
-
-							 CREATE [NOMBRE_TABLA] [TIPO_CONSISTENCIA] [NUMERO_PARTICIONES] [COMPACTION_TIME]
-
-							 Ej:
-							 CREATE TABLA1 SC 4 60000
-
-							 Esta operación incluye los siguientes pasos:
-							 -Verificar que la tabla no exista en el file system.
-							 	 Por convención, una tabla existe si ya hay otra con el mismo nombre.
-							 	 Para dichos nombres de las tablas siempre tomaremos sus valores en UPPERCASE (mayúsculas).
-							 	 En caso que exista, se guardará el resultado en un archivo .log y se retorna un error indicando dicho resultado.
-							 -Crear el directorio para dicha tabla.
-							 -Crear el archivo Metadata asociado al mismo.
-							 -Grabar en dicho archivo los parámetros pasados por el request.
-							 -Crear los archivos binarios asociados a cada partición de la tabla
-							 	 y asignar a cada uno un bloque
-							 */
 
 						case _describe:
 							printf("CONSOLA: Se ingresó comando DESCRIBE \n");
