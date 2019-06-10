@@ -94,20 +94,26 @@ int ExisteTabla(const char *tabla)
 	}
 }
 
-int ObtenerMetadata(char *tabla)
+t_metadata* ObtenerMetadataTabla(char *tabla)
 {
 	loggear(logger, LOG_LEVEL_INFO, "Obteniendo metadata de tabla: %s", tabla);
 
+	t_metadata *metadata = malloc(sizeof(t_metadata));
 	char *rutaMetadata = string_from_format("%s%s/Metadata", rutaTablas, tabla);
 
 	t_config *metadataFile = cargarConfiguracion(rutaMetadata, logger);
 
-	int partitions = config_get_int_value(metadataFile, "PARTITIONS");
-
+	metadata->particiones = config_get_int_value(metadataFile, "PARTITIONS");
+	metadata->compactationTime = config_get_int_value(metadataFile, "COMPACTATION_TIME");
+	char *consistencia = string_new();
+	consistencia = config_get_string_value(metadataFile, "CONSISTENCY");
+	strcpy(metadata->tipoConsistencia, consistencia);
 	free(rutaMetadata);
+	free(consistencia);
 	config_destroy(metadataFile);
 
-	return partitions;
+
+	return metadata;
 }
 
 int CalcularParticion(int clave, int particiones)
@@ -250,7 +256,9 @@ void BuscarKey(int key, char *tabla)
 	}
 
 	//Obtengo metadata
-	int particiones = ObtenerMetadata(tabla);
+	t_metadata *metadata = ObtenerMetadataTabla(tabla);
+	int particiones = metadata->particiones;
+	free(metadata);
 
 	//Calculo particion de la key
 	int particion = CalcularParticion(key, particiones);

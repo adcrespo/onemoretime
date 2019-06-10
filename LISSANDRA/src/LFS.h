@@ -39,6 +39,13 @@ typedef struct {
 	char value[50];
 } t_registro;
 
+typedef struct {
+	char tipoConsistencia[10];
+	int particiones;
+	int compactationTime;
+} t_metadata;
+
+
 
 pthread_t thread_consola;
 pthread_t thread_conexiones;
@@ -51,6 +58,7 @@ void CrearHiloDump();
 void Inicializar();
 t_tabla* ObtenerTabla(char *nombre);
 void AlocarTabla(char *tabla, t_registro *registro);
+t_metadata* ObtenerMetadataTabla(char *tabla);
 
 
 

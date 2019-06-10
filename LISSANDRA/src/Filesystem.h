@@ -14,7 +14,6 @@ void *CrearFileSystem();
 void CargarMetadata();
 void CargarBitmap();
 int ExisteTabla(const char*tabla);
-int ObtenerMetadata(char *tabla);
 int CalcularParticion(int clave, int particiones);
 void CrearDirectorioTabla(char *tabla);
 void CrearMetadataTabla(char *tabla, char *consistencia, int particiones, int tiempoCompactacion);
@@ -25,9 +24,12 @@ int ContarElementosArray(char **cadena);
 void BuscarKeyBloque(int key, char *tabla);
 void BuscarKey(int key, char *tabla);
 int AgregarBloque();
+int CrearTabla(t_request *request);
 
 t_config *config_metadata;
 t_bitarray *bitmap;
+
+
 
 int tamanio_bloques;
 int cantidad_bloques;
