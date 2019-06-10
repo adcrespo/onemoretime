@@ -25,6 +25,7 @@ void BuscarKeyBloque(int key, char *tabla);
 void BuscarKey(int key, char *tabla);
 int AgregarBloque();
 int CrearTabla(t_request *request);
+void ObtenerMetadataCompleto();
 
 t_config *config_metadata;
 t_bitarray *bitmap;

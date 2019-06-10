@@ -110,10 +110,47 @@ t_metadata* ObtenerMetadataTabla(char *tabla)
 	strcpy(metadata->tipoConsistencia, consistencia);
 	free(rutaMetadata);
 	free(consistencia);
-	config_destroy(metadataFile);
+	//config_destroy(metadataFile);
 
 
 	return metadata;
+}
+
+void ObtenerMetadataCompleto()
+{
+
+	DIR *dir;
+	struct dirent *entry;
+
+	if((dir=opendir(rutaTablas)) == NULL)
+	{
+		perror("openndir() error");
+	} else
+	{
+		while((entry = readdir(dir)) != NULL)
+		{
+			if(!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, ".."))
+			{
+
+			} else
+			{
+				printf("Metadata tabla: %s\n", entry->d_name);
+				t_metadata *metadata;
+				metadata = ObtenerMetadataTabla(entry->d_name);
+				int particiones = metadata->particiones;
+				int tiempoCompactacion = metadata->compactationTime;
+				char *consistencia = string_new();
+				strcpy(consistencia, metadata->tipoConsistencia);
+				printf("CONSISTENCY=%s\n", consistencia);
+				printf("PARTITIONS=%d\n", particiones);
+				printf("COMPACTATION_TIME=%d\n", tiempoCompactacion);
+				free(consistencia);
+				free(metadata);
+			}
+		}
+
+		closedir(dir);
+	}
 }
 
 int CalcularParticion(int clave, int particiones)
