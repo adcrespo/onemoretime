@@ -9,7 +9,7 @@
 #include "connection.h"
 #include "error.h"
 #include "gossiping.h"
-
+#include "i_kernel_proceso.h"
 
 void aceptar(int socket_fm9, int* descriptor_mas_alto, fd_set* set_master);
 void procesar(int n_descriptor, fd_set* set_master);
@@ -121,8 +121,7 @@ void procesar(int n_descriptor, fd_set* set_master) {
 
 	switch(msg->header.tipoProceso) {
 		case kernel:;
-			enviarMensaje(mem, handshake, 0, NULL, n_descriptor, logger, kernel);
-			//procesar_CPU(msg, n_descriptor, set_master);
+			procesar_KER(msg, n_descriptor, set_master);
 			break;
 		case mem:;
 			switch(msg->header.tipoMensaje) {
@@ -134,7 +133,7 @@ void procesar(int n_descriptor, fd_set* set_master) {
 					char *listasIPs = string_new();
 					listasIPs = string_from_format("%s",msg->content);
 					loggear(logger,LOG_LEVEL_DEBUG,"Lista IPs recibida: [%s]",listasIPs);
-					procesarMsjGossiping(listasIPs,"-",":");
+					procesarMsjGossiping(listasIPs,"-",":",logger);
 					enviarMensaje(mem, gossipingMsg, strlen(listasIPs)+1, listasIPs, n_descriptor, logger, mem);
 					//TODO: actualizar mi lista de seeds
 					break;

@@ -14,6 +14,7 @@
 #include "consola.h"
 #include "memory.h"
 #include "connection.h"
+#include "proceso.h"
 
 t_tipoComando buscar_enum(char *sval) {
 	t_tipoComando result = select_;
@@ -76,58 +77,36 @@ void *crearConsola() {
 				break;
 			}
 			printf("select...\n");
-			loggear(logger,LOG_LEVEL_INFO,"Buscando la tabla");
-			int paginaTabla = getPaginaForKey(comando[1], atoi(comando[2]));
-			if(paginaTabla>=0){
-				loggear(logger,LOG_LEVEL_INFO,"Encontre la pagina en memoria (%d)",paginaTabla);
-				char* buffer = leer_bytes_spa(comando[1],paginaTabla,0,MAX_LINEA);
-				t_registro* reg = descomponer_registro(buffer);
-				printf("[mem][timestamp:%d][key:%d] %s\n",reg->timestamp, reg->key, reg->value);
-				free(buffer);
+			char *buffer_select=NULL;
+			int resultSelect = proceso_select(comando[1],atoi(comando[2]),&buffer_select);
+			if(resultSelect>0){
+				t_registro* reg = descomponer_registro(buffer_select);
+				printf("[OK] [timestamp:%d][key:%d] %s\n",reg->timestamp, reg->key, reg->value);
 				destruir_registro(reg);
-			}else{
-				loggear(logger,LOG_LEVEL_INFO,"Tengo que buscar en lissandra");
-
-				int largo_content = sizeof(int) + strlen(comando[1]) + 1 +sizeof(int);
-				int key = atoi(comando[2]);
-				void *content = malloc(largo_content);
-				memset(content, 0x00, largo_content);
-				memcpy(content,&largo_content,sizeof(int));
-				memcpy(content+sizeof(int),comando[1],strlen(comando[1])+1);
-				memcpy(content+sizeof(int)+strlen(comando[1])+1,&key,sizeof(int));
-				enviarMensaje(mem,selectMsg,largo_content,content,socket_lis,logger,lis);
-				t_mensaje* mensaje = recibirMensaje(socket_lis, logger);
-				if(mensaje!=NULL && mensaje->header.error != 0) {
-					char* buffer = malloc(mensaje->header.longitud);
-					t_registro* reg = descomponer_registro(buffer);
-					printf("[lis][timestamp:%d][key:%d] %s\n",reg->timestamp, reg->key, reg->value);
-					int segmentoNuevo = add_spa(comando[1],1,reg->timestamp);
-					if(segmentoNuevo<=0) {
-						t_adm_tabla_frames_spa frame_reg = getPaginaMenorTimestamp();
-						segmentoNuevo = frame_reg.pagina;
-						if(segmentoNuevo<=-1) {
-							process_journaling();
-							segmentoNuevo = add_spa(comando[1],1,reg->timestamp);
-						}
-					}
-					if(segmentoNuevo>0)
-						escribir_bytes_spa(comando[1],segmentoNuevo,0,frame_spa_size,buffer,0);
-					else
-						printf("[ERR] No se pudo grabar el registro \n");
-
-					free(buffer);
-					destruir_registro(reg);
-				}else
-					printf("[ERR] No se pudo conectar a lis \n");
 			}
+			else
+				printf("[ERR] No se pudo obtener el registro \n");
+			free(buffer_select);
 			break;
 		case insert_:;
 			if (comando[1] == NULL || comando[2] == NULL || comando[3] == NULL) {
 				printf("error: insert {tabla} {key} {\"value\"}.\n");
 				break;
 			}
+			char* registroInsertar = string_new();
+			int i=3;
+			for(i=3;comando[i]!=NULL;i++){
+				string_append_with_format(&registroInsertar,"%s ",comando[i]);
+			}
+			registroInsertar[strlen(registroInsertar)-1]=0x00;
+
 			printf("insert...\n");
-			//TODO: insert
+			int escrito = proceso_insert(comando[1],atoi(comando[2]), registroInsertar);
+			if(escrito >= 0)
+				printf("[OK] Se pudo insertar el registro \n");
+			else
+				printf("[ERR] No se pudo insertar el registro \n");
+			free(registroInsertar);
 			break;
 		case create_:;
 			if (comando[1] == NULL || comando[2] == NULL || comando[3] == NULL || comando[4] == NULL) {
@@ -135,7 +114,11 @@ void *crearConsola() {
 				break;
 			}
 			printf("create...\n");
-			//TODO: create
+			int creado = proceso_create(comando[1],comando[2], atoi(comando[3]), atoi(comando[4]));
+			if(creado >= 0)
+				printf("[OK] Se pudo crear la tabla \n");
+			else
+				printf("[ERR] No se pudo crear la tabla \n");
 			break;
 		case describe_:;
 			if (comando[1] == NULL ) {
@@ -143,7 +126,14 @@ void *crearConsola() {
 				break;
 			}
 			printf("describe...\n");
-			//TODO: describe
+			char* buffer_describe=NULL;
+			int largo_buffer_describe;
+			int describe = proceso_describe(comando[1],&buffer_describe, &largo_buffer_describe);
+			if(describe >= 0)
+				printf("[OK] Se pudo realizar el discribe\n");
+			else
+				printf("[ERR] No se pudo realizar el describe\n");
+			free(buffer_describe);
 			break;
 		case drop_:;
 			if (comando[1] == NULL ) {
@@ -151,15 +141,23 @@ void *crearConsola() {
 				break;
 			}
 			printf("drop...\n");
-			//TODO: drop
+			int drop = proceso_drop(comando[1]);
+			if(drop >= 0)
+				printf("[OK] Se pudo realizar el drop\n");
+			else
+				printf("[ERR] No se pudo realizar el drop\n");
 			break;
 		case journal_:;
 			printf("journal...\n");
-			process_journaling();
+			int journal = proceso_journal();
+			if(journal >= 0)
+				printf("[OK] Se pudo realizar el journal\n");
+			else
+				printf("[ERR] No se pudo realizar el journal\n");
 			break;
 		case dump_:;
 			if (comando[1] == NULL) {
-				printf("error: dump {id}.\n");
+				printf("error: dump {tabla}.\n");
 				break;
 			}
 			printf("Dump (process id: %s)...\n",comando[1]);

@@ -326,6 +326,33 @@ int enviarMensaje(int tipoProcesoEmisor, int tipoMensaje, int len, void* content
 	return 1;
 }
 
+int enviarMensajeConError(int tipoProcesoEmisor, int tipoMensaje, int len, void* content,
+		int socketReceptor, t_log* logger, int tipoProcesoReceptor, int error) {
+
+	void* buffer = serializar(tipoProcesoEmisor, tipoMensaje, len, content);
+
+	if (len > 0 && content != NULL)
+		if (buffer == NULL) {
+			loggear(logger, LOG_LEVEL_ERROR,
+					"No se pudo serializar mensaje (proceso emisor %d).", tipoProcesoEmisor);
+			return -1;
+		}
+
+	if (send(socketReceptor, buffer, sizeof(t_header) + len, 0) <= 0) {
+		free(buffer);
+		loggear(logger, LOG_LEVEL_ERROR,
+				"No se pudo enviar mensaje (proceso emisor %d - proceso receptor %d).",
+				tipoProcesoEmisor, tipoProcesoReceptor);
+		return 0;
+	}
+	/* Cambiar esto porque no está bien */
+	loggear(logger, LOG_LEVEL_INFO, "Se envió mensaje (proceso emisor %d - proceso receptor %d).",
+			tipoProcesoEmisor, tipoProcesoReceptor);
+
+	free(buffer); // Sirver para t_mensaje
+	return 1;
+}
+
 t_mensaje* recibirMensaje(int socketEmisor, t_log* logger) {
 
 	void* buffer = malloc(sizeof(t_header));
@@ -381,6 +408,22 @@ void* serializar(int tipoProceso, int tipoMensaje, int len, void* content) {
 	mensaje.header.tipoMensaje = tipoMensaje;
 	mensaje.header.longitud = len;
 	mensaje.header.error = 0;
+	mensaje.content = content;
+
+	void* buffer = malloc(sizeof(t_header) + len);
+	memcpy(buffer, &(mensaje.header), sizeof(t_header));
+	memcpy(buffer + sizeof(t_header), mensaje.content, len);
+
+	return buffer;
+}
+
+void* serializarConError(int tipoProceso, int tipoMensaje, int len, void* content, int error) {
+
+	t_mensaje mensaje;
+	mensaje.header.tipoProceso = tipoProceso;
+	mensaje.header.tipoMensaje = tipoMensaje;
+	mensaje.header.longitud = len;
+	mensaje.header.error = error;
 	mensaje.content = content;
 
 	void* buffer = malloc(sizeof(t_header) + len);

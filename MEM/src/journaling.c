@@ -14,11 +14,11 @@
 
 #include "journaling.h"
 
-void process_journaling(){
+int process_journaling(){
 	if(pthread_mutex_trylock(&journalingMutex) != 0){
 		loggear(logger,LOG_LEVEL_ERROR,"ERR JOURNALING...");
 		loggear(logger,LOG_LEVEL_INFO,"JOURNALING en ejecución!");
-		return;
+		return -1;
 	}
 
 	loggear(logger,LOG_LEVEL_INFO,"Init JOURNALING...");
@@ -27,19 +27,35 @@ void process_journaling(){
 		t_adm_tabla_segmentos_spa* adm_table = list_get(adm_spa_lista, i);
 		loggear(logger,LOG_LEVEL_INFO,"Analizando Tabla: %s", adm_table->path_tabla);
 		t_segmentos_spa* adm_table_seg = list_get(adm_table->seg_lista, 0);
-		for (j = 0; adm_table_seg!=NULL && j < list_size(adm_table_seg->pag_lista); j++) {
+		for (j = list_size(adm_table_seg->pag_lista)-1; adm_table_seg!=NULL && j >= 0; j--) {
 			t_paginas_spa* adm_table_pag = list_get(adm_table_seg->pag_lista,j);
 			loggear(logger,LOG_LEVEL_INFO,"Pagina: %d, Frame: %d, Modificado: %d, TS: %d",
 					j, adm_table_pag->frame, adm_table_pag->modificado, adm_table_pag->timestamp);
 			if(adm_table_pag->modificado==1) {
 				loggear(logger,LOG_LEVEL_INFO,"Enviando INSERT");
-				//TODO: enviar INSERT
+				char* buffer = leer_bytes_spa(adm_table->path_tabla,0,j*frame_spa_size,frame_spa_size);
+				enviarMensaje(mem,insert,frame_spa_size,buffer,socket_lis,logger,lis);
+				free(buffer);
+				t_mensaje* mensaje = recibirMensaje(socket_lis, logger);
+
+				if(mensaje == NULL) {
+					loggear(logger,LOG_LEVEL_ERROR,"No se pudo recibir mensaje de lis");
+					return -1;
+				}
+				int insert_error = mensaje->header.error;
+				destruirMensaje(mensaje);
+
+				if(insert_error != 0) {
+					loggear(logger,LOG_LEVEL_ERROR,"No se pudo insertar en lis correctamente");
+					return -1;
+				}
+				free_spa(adm_table->path_tabla,j);
 			}
 		}
 	}
 	loggear(logger,LOG_LEVEL_INFO,"End JOURNALING...");
 	pthread_mutex_unlock (&journalingMutex);
-	return;
+	return 1;
 }
 
 void *crearJournaling() {

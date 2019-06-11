@@ -313,7 +313,7 @@ int add_spa(char* path_table, int n_frames, time_t timestamp) {
 		loggear(logger,LOG_LEVEL_DEBUG, "%s", "adm_table_pag_new!");
 	}
 
-	return known_segmentos-1;
+	return known_paginas-1;
 }
 
 char* leer_bytes_spa(char* path_table, int segmento, int offset, int size) {
@@ -337,7 +337,7 @@ char* leer_bytes_spa(char* path_table, int segmento, int offset, int size) {
 	adm_table_seg = list_get(adm_table->seg_lista,segmento);
 
 	loggear(logger,LOG_LEVEL_DEBUG, "%s",
-				(adm_table_seg != NULL) ? "ENCONTRE EL SEGMENTO!" : "NO ENCONTRE EL SEGMENTO.");
+				(adm_table_seg != NULL) ? "ENCONTRE LA PAGINA!" : "NO ENCONTRE LA PAGINA.");
 
 	char* buffer = malloc(size);
 	memset(buffer, 0x00, size);
@@ -374,7 +374,7 @@ int escribir_bytes_spa(char* path_table, int segmento, int offset, int size, cha
 	adm_table_seg = list_get(adm_table->seg_lista,segmento);
 
 	loggear(logger,LOG_LEVEL_DEBUG, "%s",
-				(adm_table_seg != NULL) ? "ENCONTRE EL SEGMENTO!" : "NO ENCONTRE EL SEGMENTO.");
+				(adm_table_seg != NULL) ? "ENCONTRE LA PAGINA!" : "NO ENCONTRE LA PAGINA.");
 
 	int start = 0;
 	if (adm_table_seg != NULL) {
@@ -422,21 +422,17 @@ void dump_memory_spa(char* path_table) {
 		for (i = 0; i < list_size(adm_frame_lista_spa); i++) {
 			t_adm_tabla_frames_spa* adm_table = list_get(adm_frame_lista_spa, i);
 			if (string_equals_ignore_case(adm_table->path_tabla,path_table)) {
-				char* frame = string_substring(frames_spa,
-						i * frame_spa_size, frame_spa_size);
+				void* frame = malloc(frame_spa_size);
+				memset(frame,0x00,frame_spa_size);
+				memcpy(frame,frames_spa+i*frame_spa_size, frame_spa_size);
+				t_registro* registro = descomponer_registro(frame);
 				string_append_with_format(&dump_mem_content,
-						"FRAME: %d | TABLA: %s | SEGMENTO: %d\n%s\n",
+						"FRAME: %d | TABLA: %s | SEGMENTO: %d\n[%d][%d][%s]\n",
 						i, adm_table->path_tabla, adm_table->pagina,
-						frame);
+						registro->timestamp, registro->key,registro->value);
+				free(frame);
+				destruir_registro(registro);
 			}
-		}
-	}
-
-	for (i = 0; i < list_size(adm_spa_lista); i++) {
-		t_adm_tabla_segmentos_spa* adm_table = list_get(adm_spa_lista, i);
-		if (!string_equals_ignore_case(adm_table->path_tabla,"")) {
-			string_append_with_format(&dump_act_process, "ACTIVE TABLE: %d\n",
-					adm_table->path_tabla);
 		}
 	}
 
@@ -450,13 +446,21 @@ void dump_memory_spa(char* path_table) {
 		}
 	}
 
+	for (i = 0; i < list_size(adm_spa_lista); i++) {
+		t_adm_tabla_segmentos_spa* adm_table = list_get(adm_spa_lista, i);
+		if (!string_equals_ignore_case(adm_table->path_tabla,"")) {
+			string_append_with_format(&dump_act_process, "ACTIVE TABLE: %s\n",
+					adm_table->path_tabla);
+		}
+	}
+
 	char* dump_total = string_new();
 	string_append_with_format(&dump_total, "TABLA DE SEGMENTOS:\n%s\n",
 			dump_mem_struct);
-	string_append_with_format(&dump_total, "LISTADO DE PROCESOS ACTIVOS:\n%s\n",
-			dump_act_process);
 	string_append_with_format(&dump_total, "CONTENIDO MEMORIA:\n%s\n\n",
 			dump_mem_content);
+	string_append_with_format(&dump_total, "LISTADO DE TABLAS ACTIVAS:\n%s\n",
+			dump_act_process);
 
 
 	printf("%s\n", dump_total);
@@ -508,14 +512,41 @@ int getPaginaForKey(char *path_table, unsigned int key) {
 	t_segmentos_spa* adm_table_seg = list_get(adm_table->seg_lista, 0);
 
 	for (j = 0; j < list_size(adm_table_seg->pag_lista); j++) {
-		char* buffer = leer_bytes_spa(path_table, j, 0, frame_spa_size);
+		char* buffer = leer_bytes_spa(path_table, 0, j*frame_spa_size, frame_spa_size);
 		t_registro* registro = descomponer_registro(buffer);
 		int r_key = registro->key;
 		destruir_registro(registro);
 		free(buffer);
+		loggear(logger,LOG_LEVEL_DEBUG, "Buscando: %d - Obtenido: %d", key, r_key);
 		if(r_key == key)
 			return j;
 	}
 
+	loggear(logger,LOG_LEVEL_DEBUG, "%s","NO ENCONTRE LA PAGINA FOR KEY!");
 	return -1;
+}
+
+int getSizePagesForTable(char *path_table) {
+	bool find(void* element) {
+		t_adm_tabla_segmentos_spa* adm_table = element;
+		return string_equals_ignore_case(adm_table->path_tabla,path_table);
+	}
+
+	t_adm_tabla_segmentos_spa* adm_table = list_find(adm_spa_lista, &find);
+
+	loggear(logger,LOG_LEVEL_DEBUG, "%s",
+					(adm_table != NULL) ? "ENCONTRE EL SEGMENTO FOR KEY!" : "NO ENCONTRE EL SEGMENTO FOR KEY.");
+
+	if(adm_table==NULL)
+		return -1;
+
+	t_segmentos_spa* adm_table_seg = list_get(adm_table->seg_lista, 0);
+
+	loggear(logger,LOG_LEVEL_DEBUG, "%s",
+					(adm_table_seg != NULL) ? "ENCONTRE PAGINAS FOR KEY!" : "NO ENCONTRE PAGINAS FOR KEY.");
+
+	if(adm_table_seg==NULL)
+		return -1;
+
+	return list_size(adm_table_seg->pag_lista);
 }

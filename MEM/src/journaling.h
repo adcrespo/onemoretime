@@ -19,7 +19,7 @@
 #include <pthread.h>
 #include <signal.h>
 
-void process_journaling();
+int process_journaling();
 
 int crearHiloJournaling();
 
