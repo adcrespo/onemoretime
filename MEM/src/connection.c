@@ -136,15 +136,12 @@ void procesar(int n_descriptor, fd_set* set_master) {
 					listasIPs = string_from_format("%s",msg->content);
 					loggear(logger,LOG_LEVEL_DEBUG,"Lista IPs recibida: [%s]",listasIPs);
 					procesarMsjGossiping(listasIPs,"-",":",logger);
-<<<<<<< HEAD
 
 					pthread_mutex_lock(&mutexGossiping);
 					listasIPs= string_from_format("%s",armarMensajeListaSEEDS(logger));
 					//mensaje = armarMensajeListaSEEDS(logger);
 					pthread_mutex_unlock(&mutexGossiping);
 
-=======
->>>>>>> 76b613284c5b2009ecb06e3bce9ec9a1521e1528
 					enviarMensaje(mem, gossipingMsg, strlen(listasIPs)+1, listasIPs, n_descriptor, logger, mem);
 
 					free(listasIPs);
