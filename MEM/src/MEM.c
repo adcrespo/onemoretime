@@ -35,8 +35,8 @@ int main(int argc, char *argv[]) {
 	logger = configurar_logger_verbose("MEM.log", "MEM", string_equals_ignore_case(args_verbose,"true")?true:false);
 	get_config(string_equals_ignore_case(args_configfile,"false")?"../MEM.conf":args_configfile);
 
-	loggear(logger,LOG_LEVEL_INFO,"IP Local %s",getLocalIp());
-	crearListaSeeds();
+	loggear(logger,LOG_LEVEL_INFO,"IP Local %s",getLocalIp(MEM_CONF.IP));
+	crearListaSeeds(MEM_CONF.IP,MEM_CONF.PUERTO,MEM_CONF.IP_SEEDS,MEM_CONF.PUERTO_SEEDS,logger);
 
 	init_memory_spa();
 
@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
 
 	crearHiloConsola();
 	crearHiloJournaling();
-	crearHiloGossiping();
+	crearHiloGossiping(logger);
 	//socket_lis = connect_to_server(MEM_CONF.IP_FS, MEM_CONF.PUERTO_FS, lis,memoria);
 
 	listen_connexions(MEM_CONF.PUERTO);

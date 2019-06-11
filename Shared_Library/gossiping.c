@@ -75,6 +75,13 @@ int actualizaListaSeedConfig(t_list *LISTA_CONN,t_list *LISTA_CONN_PORT, char *i
 	return 1;
 }
 
+int incializarBitMapConnStatus()
+{
+	for (int i = 0; i< NUM_BIT_MAP; i++)
+		BITMAP_CONN_STATUS[i]=0;
+	return 1;
+}
+
 int crearListaSeeds(char *MEM_CONF_IP,char *MEM_CONF_PUERTO, char **MEM_CONF_IP_SEEDS, char **MEM_CONF_PUERTO_SEEDS, t_log *logger)
 {
 	char *cadena;
@@ -82,10 +89,13 @@ int crearListaSeeds(char *MEM_CONF_IP,char *MEM_CONF_PUERTO, char **MEM_CONF_IP_
 
 	LISTA_CONN = list_create();
 	LISTA_CONN_PORT = list_create();
+	incializarBitMapConnStatus();
+	//LISTA_CONN_STATUS = list_create();
 
 	loggear(logger,LOG_LEVEL_INFO,"Creando lista de SEEDS");
 
 	actualizaListaSeedConfig(LISTA_CONN,LISTA_CONN_PORT,getLocalIp(MEM_CONF_IP),MEM_CONF_PUERTO);
+	BITMAP_CONN_STATUS[0]=CONECTADO;
 
 	while(MEM_CONF_IP_SEEDS[i] != NULL)
 	{
@@ -252,7 +262,8 @@ void processGossiping(t_log *logger) {
 	mensaje = string_new();
 
 	pthread_mutex_lock(&mutexGossiping);
-	mensaje = armarMensajeListaSEEDS(logger);
+	mensaje= string_from_format("%s",armarMensajeListaSEEDS(logger));
+	//mensaje = armarMensajeListaSEEDS(logger);
 	pthread_mutex_unlock(&mutexGossiping);
 
 	pthread_mutex_lock(&mutexGossiping);
@@ -294,10 +305,12 @@ void processGossiping(t_log *logger) {
 				loggear(logger,LOG_LEVEL_INFO,"MSJ RECIBIDO CON EXITO %d",envioMsj);
 				procesarMsjGossiping(msjRecibido->content,"-",":",logger);
 				destruirMensaje(msjRecibido);
+				BITMAP_CONN_STATUS[i]=CONECTADO;
 			}
 			else
 			{
 				loggear(logger,LOG_LEVEL_INFO,"ERROR MSJ %d",envioMsj);
+				BITMAP_CONN_STATUS[i]=DESCONECTADO;
 			}
 
 			close(socketReceptor);
@@ -305,6 +318,7 @@ void processGossiping(t_log *logger) {
 		else
 		{
 			loggear(logger,LOG_LEVEL_INFO,"FALLÓ_CONEXION: %d", socketReceptor);
+			BITMAP_CONN_STATUS[i]=DESCONECTADO;
 		}
 		i++;
 	}

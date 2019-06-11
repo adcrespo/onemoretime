@@ -132,11 +132,21 @@ void procesar(int n_descriptor, fd_set* set_master) {
 					break;
 				case gossipingMsg:;
 					char *listasIPs = string_new();
+
+					//TODO: actualizar mi lista de seeds
 					listasIPs = string_from_format("%s",msg->content);
 					loggear(logger,LOG_LEVEL_DEBUG,"Lista IPs recibida: [%s]",listasIPs);
-					procesarMsjGossiping(listasIPs,"-",":");
+					procesarMsjGossiping(listasIPs,"-",":",logger);
+
+					pthread_mutex_lock(&mutexGossiping);
+					listasIPs= string_from_format("%s",armarMensajeListaSEEDS(logger));
+					//mensaje = armarMensajeListaSEEDS(logger);
+					pthread_mutex_unlock(&mutexGossiping);
+
 					enviarMensaje(mem, gossipingMsg, strlen(listasIPs)+1, listasIPs, n_descriptor, logger, mem);
-					//TODO: actualizar mi lista de seeds
+
+					free(listasIPs);
+
 					break;
 				default:
 					loggear(logger,LOG_LEVEL_INFO,"No se reconoce el Menaje");
