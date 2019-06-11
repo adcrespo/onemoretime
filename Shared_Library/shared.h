@@ -123,12 +123,14 @@ int conectarseAServidor_w_to(int socket, char* ip, int puerto, t_log* logger);
 
 int conectarseAServidor(int socket, char* ip, int puerto, t_log* logger);
 int enviarMensaje(int tipoProcesoEmisor, int tipoMensaje, int len, void* content, int socketReceptor, t_log* logger, int tipoProcesoReceptor);
+int enviarMensajeConError(int tipoProcesoEmisor, int tipoMensaje, int len, void* content, int socketReceptor, t_log* logger, int tipoProcesoReceptor, int error);
 t_mensaje* recibirMensaje(int socketEmisor, t_log* logger);
 void destruirMensaje(t_mensaje* msg);
 void destruirBuffer(void* buffer);
 
 /* Auxiliares */
 void* serializar(int tipoProceso, int tipoMensaje, int len, void* content);
+void* serializarConError(int tipoProceso, int tipoMensaje, int len, void* content, int error);
 t_mensaje* deserializar(void* buffer);
 
 #endif /* SHARED_H_ */
