@@ -15,11 +15,17 @@
 #include "journaling.h"
 
 int process_journaling(){
-	if(pthread_mutex_trylock(&journalingMutex) != 0){
+	/*if(pthread_mutex_trylock(&journalingMutex) != 0){
 		loggear(logger,LOG_LEVEL_ERROR,"ERR JOURNALING...");
 		loggear(logger,LOG_LEVEL_INFO,"JOURNALING en ejecución!");
 		return -1;
-	}
+	}*/
+	pthread_mutex_lock(&journalingMutex);
+	pthread_mutex_lock(&journalingMutexSelect);
+	pthread_mutex_lock(&journalingMutexInsert);
+	pthread_mutex_lock(&journalingMutexCreate);
+	pthread_mutex_lock(&journalingMutexDescribe);
+	pthread_mutex_lock(&journalingMutexDrop);
 
 	loggear(logger,LOG_LEVEL_INFO,"Init JOURNALING...");
 	int i,j;
@@ -33,12 +39,17 @@ int process_journaling(){
 					j, adm_table_pag->frame, adm_table_pag->modificado, adm_table_pag->timestamp);
 			if(adm_table_pag->modificado==1) {
 				loggear(logger,LOG_LEVEL_INFO,"Enviando INSERT");
-				char* buffer = leer_bytes_spa(adm_table->path_tabla,0,j*frame_spa_size,frame_spa_size);
-
 				sleep(MEM_CONF.RETARDO_FS/1000);
-				enviarMensaje(mem,insert,frame_spa_size,buffer,socket_lis,logger,lis);
-				t_mensaje* mensaje = recibirMensaje(socket_lis, logger);
+				char* buffer_leer = leer_bytes_spa(adm_table->path_tabla,0,j*frame_spa_size,frame_spa_size);
+				char* buffer = malloc(MAX_PATH+frame_spa_size);
+				memset(buffer,0x00,MAX_PATH+frame_spa_size);
+				memcpy(buffer,adm_table->path_tabla,strlen(adm_table->path_tabla)<MAX_PATH?strlen(adm_table->path_tabla):MAX_PATH);
+				buffer[MAX_PATH]=0x00;
+				memcpy(buffer+MAX_PATH,buffer_leer,frame_spa_size);
+				enviarMensaje(mem,insert,MAX_PATH+frame_spa_size,buffer,socket_lis,logger,lis);
+				free(buffer_leer);
 				free(buffer);
+				t_mensaje* mensaje = recibirMensaje(socket_lis, logger);
 
 				if(mensaje == NULL) {
 					loggear(logger,LOG_LEVEL_ERROR,"No se pudo recibir mensaje de lis");
@@ -56,7 +67,12 @@ int process_journaling(){
 		}
 	}
 	loggear(logger,LOG_LEVEL_INFO,"End JOURNALING...");
-	pthread_mutex_unlock (&journalingMutex);
+	pthread_mutex_unlock(&journalingMutex);
+	pthread_mutex_unlock(&journalingMutexSelect);
+	pthread_mutex_unlock(&journalingMutexInsert);
+	pthread_mutex_unlock(&journalingMutexCreate);
+	pthread_mutex_unlock(&journalingMutexDescribe);
+	pthread_mutex_unlock(&journalingMutexDrop);
 	return 1;
 }
 
@@ -74,6 +90,11 @@ void *crearJournaling() {
 int crearHiloJournaling()
 {
 	pthread_mutex_init (&journalingMutex, NULL);
+	pthread_mutex_init (&journalingMutexSelect, NULL);
+	pthread_mutex_init (&journalingMutexInsert, NULL);
+	pthread_mutex_init (&journalingMutexCreate, NULL);
+	pthread_mutex_init (&journalingMutexDescribe, NULL);
+	pthread_mutex_init (&journalingMutexDrop, NULL);
 
 	sigset_t set;
 	int s;

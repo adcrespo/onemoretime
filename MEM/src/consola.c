@@ -121,10 +121,8 @@ void *crearConsola() {
 				printf("[ERR] No se pudo crear la tabla \n");
 			break;
 		case describe_:;
-			if (comando[1] == NULL ) {
-				printf("error: describe {tabla} .\n");
-				break;
-			}
+			if (comando[1] == NULL )
+				comando[1] = string_new();
 			printf("describe...\n");
 			char* buffer_describe=NULL;
 			int largo_buffer_describe;
@@ -156,11 +154,9 @@ void *crearConsola() {
 				printf("[ERR] No se pudo realizar el journal\n");
 			break;
 		case dump_:;
-			if (comando[1] == NULL) {
-				printf("error: dump {tabla}.\n");
-				break;
-			}
-			printf("Dump (process id: %s)...\n",comando[1]);
+			if (comando[1] == NULL)
+				comando[1] = string_new();
+			printf("Dump (table: %s)...\n",comando[1]);
 			dump_memory_spa(comando[1]);
 			break;
 		case salir_:;

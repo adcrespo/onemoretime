@@ -39,31 +39,46 @@
 #include <string.h>
 #include <arpa/inet.h>
 
-#define NUM_BIT_MAP 1024
+#define NUM_CONEX 100
 #define DESCONECTADO 0
 #define CONECTADO 1
 
 pthread_t cliente;
 pthread_mutex_t mutexGossiping;
 pthread_mutex_t mutexprocessGossiping;
-t_list *LISTA_CONN;
-t_list *LISTA_CONN_PORT;
+t_list *LISTA_CONECTADOS;
+//t_list *LISTA_CONN;
+//t_list *LISTA_CONN_PORT;
 //t_list *LISTA_CONN_STATUS;
-char BITMAP_CONN_STATUS[NUM_BIT_MAP];
+char BITMAP_CONN_STATUS[NUM_CONEX];
+
+typedef struct tipoSeeds {
+	char numeroMemoria[15];
+	char ip[30];
+	char puerto[15];
+	char estado;
+} t_tipoSeeds;
 
 typedef enum tipoServidor {
 	memoria,gossiping
 } t_tipoServidor;
 
+void processGossiping(t_log *logger,t_list *LISTA_CONN,t_list *LISTA_CONN_PORT);
+
+/*
+ * Devuelve la lista de las MEMORIAS conectadas despues del GOSSIPING
+ */
+t_list *obtenerListaConectados(t_list *LISTA_CONN,t_list *LISTA_CONN_PORT,t_log *logger);
+
 /*
  * Arma la lista de seeds que envia por msj
  */
-char *armarMensajeListaSEEDS(t_log *logger);
+char *armarMensajeListaSEEDS(t_log *logger,t_list *LISTA_CONN,t_list *LISTA_CONN_PORT);
 
 /*
  * Actualiza la lista de seeds que recibe por msj
  */
-int procesarMsjGossiping(char *mensaje, char *primerParser, char *segundoParser, t_log *logger);
+int procesarMsjGossiping(char *mensaje, char *primerParser, char *segundoParser, t_log *logger,t_list *LISTA_CONN,t_list *LISTA_CONN_PORT);
 
 /*
  * Obtiene IP local si no esta en archivo de configuracion
@@ -73,11 +88,11 @@ char* getLocalIp(char *MEM_CONF_IP);
 /*
  * Crea la lista de SEEDS al prinicipio del proceso
  */
-int crearListaSeeds(char *MEM_CONF_IP,char *MEM_CONF_PUERTO, char **MEM_CONF_IP_SEEDS, char **MEM_CONF_PUERTO_SEEDS, t_log *logger);
+int crearListaSeeds(char *MEM_CONF_IP,char *MEM_CONF_PUERTO, char **MEM_CONF_IP_SEEDS, char **MEM_CONF_PUERTO_SEEDS, t_log *logger,t_list *LISTA_CONN,t_list *LISTA_CONN_PORT);
 
 /*
  * Crea el hilo encargado del GOSSIPING
  */
-int crearHiloGossiping(t_log *logger);
+int crearHiloGossiping(t_log *logger,t_list *LISTA_CONN,t_list *LISTA_CONN_PORT,int *hilo_cliente);
 
 #endif /* GOSSIPING_H_ */
