@@ -23,9 +23,13 @@
 #include <time.h>
 
 #define MAX_LINEA 1024
+#define MAX_PATH 50
+#define MAX_CONS 3
 
 int tamanio_value;
 t_log* logger;
+t_list *LISTA_CONN;
+t_list *LISTA_CONN_PORT;
 
 int recvMensaje(int client_socket, t_mensaje** msg);
 int sendMensaje(int client_socket);

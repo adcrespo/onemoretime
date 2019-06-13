@@ -25,5 +25,10 @@ int crearHiloJournaling();
 
 pthread_t journaling;
 pthread_mutex_t journalingMutex;
+pthread_mutex_t journalingMutexSelect;
+pthread_mutex_t journalingMutexInsert;
+pthread_mutex_t journalingMutexCreate;
+pthread_mutex_t journalingMutexDescribe;
+pthread_mutex_t journalingMutexDrop;
 
 #endif /* JOURNALING_H_ */

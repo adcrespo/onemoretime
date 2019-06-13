@@ -407,8 +407,17 @@ void dump_memory_spa(char* path_table) {
 		return;
 	}
 
-	if(!exists_table_spa(path_table)) {
+	if(path_table[0]!=NULL && !exists_table_spa(path_table)) {
 		printf("FAIL: No existe la tabla!\n");
+		return;
+	}
+
+	if(path_table[0]==NULL){
+		for (i = 0; i < list_size(adm_spa_lista); i++) {
+			t_adm_tabla_segmentos_spa* adm_table = list_get(adm_spa_lista, i);
+			if (!string_equals_ignore_case(adm_table->path_tabla,""))
+				printf("ACTIVE TABLE: %s\n",adm_table->path_tabla);
+		}
 		return;
 	}
 

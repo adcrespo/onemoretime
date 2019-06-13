@@ -20,6 +20,7 @@
 #include "memory.h"
 #include "journaling.h"
 #include "gossiping.h"
+#include "gossipingMemoria.h"
 
 char* intToChar4(int num){
 	//RECORDAR: liberar el puntero con free()
@@ -30,13 +31,15 @@ char* intToChar4(int num){
 
 int main(int argc, char *argv[]) {
 
+	LISTA_CONN = list_create();
+	LISTA_CONN_PORT = list_create();
 	tamanio_value = 1016;
 	initArgumentos(argc, argv);
 	logger = configurar_logger_verbose("MEM.log", "MEM", string_equals_ignore_case(args_verbose,"true")?true:false);
 	get_config(string_equals_ignore_case(args_configfile,"false")?"../MEM.conf":args_configfile);
 
-	//loggear(logger,LOG_LEVEL_INFO,"IP Local %s",getLocalIp());
-	crearListaSeeds(MEM_CONF.IP,MEM_CONF.PUERTO,MEM_CONF.IP_SEEDS,MEM_CONF.PUERTO_SEEDS,logger);
+	//GOSSIPING - CREA LISTA DE SEEDS
+	crearListaSeeds(MEM_CONF.IP,MEM_CONF.PUERTO,MEM_CONF.IP_SEEDS,MEM_CONF.PUERTO_SEEDS,logger,LISTA_CONN,LISTA_CONN_PORT);
 
 	init_memory_spa();
 
@@ -72,7 +75,10 @@ int main(int argc, char *argv[]) {
 
 	crearHiloConsola();
 	crearHiloJournaling();
-	crearHiloGossiping(logger);
+
+	//GOSSIPING - CREA HILO ENCARGADO DEL GOSSIPING
+	//crearHiloGossiping(logger,LISTA_CONN,LISTA_CONN_PORT,&hilo_cliente);
+	crearHiloGossipingMemoria();
 	//socket_lis = connect_to_server(MEM_CONF.IP_FS, MEM_CONF.PUERTO_FS, lis,memoria);
 
 	listen_connexions(MEM_CONF.PUERTO);
