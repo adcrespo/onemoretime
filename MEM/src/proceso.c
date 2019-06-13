@@ -11,6 +11,7 @@
 #include "memory.h"
 #include "connection.h"
 #include "journaling.h"
+#include "file_conf.h"
 
 int solicitarPagina(char *tabla, int timestamp) {
 	loggear(logger,LOG_LEVEL_INFO,"Busco pagina");
@@ -30,7 +31,6 @@ int solicitarPagina(char *tabla, int timestamp) {
 	return paginaNueva;
 }
 int proceso_select(char* tabla, int clave, char** buffer) {
-	loggear(logger,LOG_LEVEL_INFO,"Buscando la tabla (%s)",tabla);
 	int paginaTabla = getPaginaForKey(tabla, clave);
 	if(paginaTabla>=0){
 		loggear(logger,LOG_LEVEL_INFO,"Encontre la pagina en memoria (%d)",paginaTabla);
@@ -40,8 +40,6 @@ int proceso_select(char* tabla, int clave, char** buffer) {
 		return -1;
 	}
 
-	loggear(logger,LOG_LEVEL_INFO,"Tengo que buscar en lissandra");
-
 	int largo_content = sizeof(int) + strlen(tabla) + 1 +sizeof(int);
 	void *content = malloc(largo_content);
 
@@ -50,7 +48,7 @@ int proceso_select(char* tabla, int clave, char** buffer) {
 	memcpy(content+sizeof(int),tabla,strlen(tabla)+1);
 	memcpy(content+sizeof(int)+strlen(tabla)+1,&clave,sizeof(int));
 
-	loggear(logger,LOG_LEVEL_INFO,"Mando mensaje a lis");
+	sleep(MEM_CONF.RETARDO_FS/1000);
 	enviarMensaje(mem,selectMsg,largo_content,content,socket_lis,logger,lis);
 	t_mensaje* mensaje = recibirMensaje(socket_lis, logger);
 
@@ -65,17 +63,15 @@ int proceso_select(char* tabla, int clave, char** buffer) {
 
 	t_registro* reg = descomponer_registro(*buffer);
 	int timestamp = reg->timestamp;
-
-	loggear(logger,LOG_LEVEL_INFO,"[lis][timestamp:%d][key:%d] %s\n",reg->timestamp, reg->key, reg->value);
 	destruir_registro(reg);
 
-	loggear(logger,LOG_LEVEL_INFO,"Solicitando pagina");
 	int paginaNueva = solicitarPagina(tabla, timestamp);
 	if(paginaNueva<0){
 		free(*buffer);
 		loggear(logger,LOG_LEVEL_ERROR,"Error en escribir_bytes: %d", paginaNueva);
 		return -1;
 	}
+
 	int escrito = escribir_bytes_spa(tabla,paginaNueva,0,frame_spa_size,*buffer,0);
 	if(escrito<0){
 		free(*buffer);
@@ -137,6 +133,7 @@ int proceso_create(char* tabla,char* tipo_cons, int num_part, int compact_time){
 	memcpy(content+sizeof(int)+strlen(tabla)+1+3,&num_part,sizeof(int));
 	memcpy(content+sizeof(int)+strlen(tabla)+1+3+sizeof(int),&compact_time,sizeof(int));
 
+	sleep(MEM_CONF.RETARDO_FS/1000);
 	enviarMensaje(mem,create,largo_content,content,socket_lis,logger,lis);
 	t_mensaje* mensaje = recibirMensaje(socket_lis, logger);
 
@@ -161,6 +158,7 @@ int proceso_describe(char* tabla, char** buffer, int* largo_buffer){
 	memcpy(content,&largo_content,sizeof(int));
 	memcpy(content+sizeof(int),tabla,strlen(tabla)+1);
 
+	sleep(MEM_CONF.RETARDO_FS/1000);
 	enviarMensaje(mem,create,largo_content,content,socket_lis,logger,lis);
 	t_mensaje* mensaje = recibirMensaje(socket_lis, logger);
 
@@ -198,6 +196,7 @@ int proceso_drop(char* tabla){
 	memcpy(content,&largo_content,sizeof(int));
 	memcpy(content+sizeof(int),tabla,strlen(tabla)+1);
 
+	sleep(MEM_CONF.RETARDO_FS/1000);
 	enviarMensaje(mem,create,largo_content,content,socket_lis,logger,lis);
 	t_mensaje* mensaje = recibirMensaje(socket_lis, logger);
 

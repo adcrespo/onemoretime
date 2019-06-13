@@ -92,3 +92,29 @@ void get_config(char* path) {
 		loggear(logger,LOG_LEVEL_INFO,"IP: %s", MEM_CONF.IP);
 	}
 }
+
+void get_modify_config(char* path) {
+	config = cargarConfiguracion(path,logger);
+
+	memset(&MEM_CONF, 0x00, sizeof(t_MEM_CONF));
+
+	if(config == NULL)
+		_exit_with_error("No se encontro el archivo de configuracion", config);
+
+	if(config_has_property(config,"RETARDO_MEM")) {
+		MEM_CONF.RETARDO_MEM = config_get_int_value(config, "RETARDO_MEM");
+		loggear(logger,LOG_LEVEL_INFO,"RETARDO_MEM: %d", MEM_CONF.RETARDO_MEM);
+	}
+	if(config_has_property(config,"RETARDO_FS")) {
+		MEM_CONF.RETARDO_FS = config_get_int_value(config, "RETARDO_FS");
+		loggear(logger,LOG_LEVEL_INFO,"RETARDO_FS: %d", MEM_CONF.RETARDO_FS);
+	}
+	if(config_has_property(config,"RETARDO_JOURNAL")) {
+		MEM_CONF.RETARDO_JOURNAL = config_get_int_value(config, "RETARDO_JOURNAL");
+		loggear(logger,LOG_LEVEL_INFO,"RETARDO_JOURNAL: %d", MEM_CONF.RETARDO_JOURNAL);
+	}
+	if(config_has_property(config,"RETARDO_GOSSIPING")) {
+		MEM_CONF.RETARDO_GOSSIPING = config_get_int_value(config, "RETARDO_GOSSIPING");
+		loggear(logger,LOG_LEVEL_INFO,"RETARDO_GOSSIPING: %d", MEM_CONF.RETARDO_GOSSIPING);
+	}
+}

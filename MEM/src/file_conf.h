@@ -29,5 +29,6 @@ typedef struct  {
 t_MEM_CONF MEM_CONF;
 
 void get_config(char* path);
+void get_modify_config(char* path);
 
 #endif /* FILE_CONF_H_ */

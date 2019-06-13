@@ -317,6 +317,7 @@ int add_spa(char* path_table, int n_frames, time_t timestamp) {
 }
 
 char* leer_bytes_spa(char* path_table, int segmento, int offset, int size) {
+	sleep(MEM_CONF.RETARDO_MEM/1000);
 	bool find(void* element) {
 		t_adm_tabla_segmentos_spa* adm_table = element;
 		return string_equals_ignore_case(adm_table->path_tabla,path_table);
@@ -354,6 +355,7 @@ char* leer_bytes_spa(char* path_table, int segmento, int offset, int size) {
 }
 
 int escribir_bytes_spa(char* path_table, int segmento, int offset, int size, char* buffer, unsigned char modificado) {
+	sleep(MEM_CONF.RETARDO_MEM/1000);
 	bool find(void* element) {
 		t_adm_tabla_segmentos_spa* adm_table = element;
 		return string_equals_ignore_case(adm_table->path_tabla,path_table);

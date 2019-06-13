@@ -34,9 +34,11 @@ int process_journaling(){
 			if(adm_table_pag->modificado==1) {
 				loggear(logger,LOG_LEVEL_INFO,"Enviando INSERT");
 				char* buffer = leer_bytes_spa(adm_table->path_tabla,0,j*frame_spa_size,frame_spa_size);
+
+				sleep(MEM_CONF.RETARDO_FS/1000);
 				enviarMensaje(mem,insert,frame_spa_size,buffer,socket_lis,logger,lis);
-				free(buffer);
 				t_mensaje* mensaje = recibirMensaje(socket_lis, logger);
+				free(buffer);
 
 				if(mensaje == NULL) {
 					loggear(logger,LOG_LEVEL_ERROR,"No se pudo recibir mensaje de lis");
