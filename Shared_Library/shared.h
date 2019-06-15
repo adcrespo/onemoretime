@@ -58,48 +58,39 @@ typedef struct {
 }__attribute__((packed)) t_mensaje;
 
 
-//typedef struct {
-//	int id_proceso;
-//	char* ruta_archivo;
-//	int program_counter; // no se que onda esto ja
-//	int iniciado; // esto es un flag, se podría usar un semáforo también.
-//	char* tabla_archivos_abiertos; // de momento lo pongo como un char* pero seguro va a array
-//}__attribute__((packed)) t_dtb;
+//Structs para el paso de mensajes
 
+//describe
 typedef struct {
-	int32_t id_proceso;
-	char ruta_archivo[100];
-	int32_t program_counter; // no se que onda esto ja
-	int32_t iniciado; // esto es un flag, se podría usar un semáforo también.
-	int32_t tabla_archivos_abiertos[50]; // de momento lo pongo como un char* pero seguro va a array
-}__attribute__((packed)) t_dtb;
+	char 		nombreTabla[50];
+}__attribute__((packed)) t_describe;
 
-typedef struct{
-	int32_t id_proceso;
-	char ruta_archivo[100];
-}__attribute__((packed)) t_idRuta;
-
-
-//Structs protocolo CPU-DAM-MDJ
-
-
+//select
 typedef struct {
-	char path[50];
-	int cantBytes;
-} t_newFile;
+	char 		nombreTabla[50];
+	int 		key;
+}__attribute__((packed)) t_select;
 
+//insert
 typedef struct {
-	char path[50];
-	int offset;
-	int size;
-} t_dataFile;
+	char 		nombreTabla[50];
+	long 		timestamp;
+	int 		key;
+	char 		value[128];
+}__attribute__((packed)) t_insert;
 
+//create
 typedef struct {
-	char path[50];
-	int offset;
-	int size;
-	void *buffer;
-} t_saveFile;
+	char 		nombreTabla[50];
+	char 		tipo_cons[3];
+	int 		num_part;
+	int 		comp_time;
+}__attribute__((packed)) t_create;
+
+//drop
+typedef struct {
+	char 		nombreTabla[50];
+}__attribute__((packed)) t_drop;
 
 /* Definición */
 
