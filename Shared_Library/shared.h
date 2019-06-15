@@ -29,6 +29,8 @@
 #include <fcntl.h>
 #include <errno.h>
 
+#define VALUE 128
+
 /* Estructuras de Hackers */
 typedef enum tipoMensaje {
 	handshake,
@@ -76,7 +78,7 @@ typedef struct {
 	char 		nombreTabla[50];
 	long 		timestamp;
 	int 		key;
-	char 		value[128];
+	char 		value[VALUE];
 }__attribute__((packed)) t_insert;
 
 //create
@@ -91,6 +93,13 @@ typedef struct {
 typedef struct {
 	char 		nombreTabla[50];
 }__attribute__((packed)) t_drop;
+
+//registro
+typedef struct {
+	long timestamp;
+	int key;
+	char value[VALUE];
+} t_registro;
 
 /* Definición */
 
