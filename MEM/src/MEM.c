@@ -20,8 +20,8 @@
 #include "memory.h"
 #include "journaling.h"
 #include "gossiping.h"
-#include "inotify.h"
 #include "gossipingMemoria.h"
+#include "inotifyMemoria.h"
 
 char* intToChar4(int num){
 	//RECORDAR: liberar el puntero con free()

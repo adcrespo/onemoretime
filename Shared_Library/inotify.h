@@ -1,7 +1,7 @@
 /*
  * inotify.h
  *
- *  Created on: 12 jun. 2019
+ *  Created on: 13 jun. 2019
  *      Author: utnso
  */
 
@@ -20,6 +20,7 @@
 
 pthread_t inotify;
 
-int crearHiloInotify();
+int inotifyInit(char* args_configfile);
+int inotifyEvent(int inotifyFd);
 
 #endif /* INOTIFY_H_ */
