@@ -504,7 +504,7 @@ int procesarMsjGossipingStruct(char *mensaje, char *primerParser, char *segundoP
 			if(parserIpPuerto[2] != NULL)
 			{
 				puerto = string_new();
-				puerto = parserIpPuerto[1];
+				puerto = parserIpPuerto[2];
 			}
 			else
 			{
