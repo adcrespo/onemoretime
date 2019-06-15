@@ -61,6 +61,20 @@ void get_config(char* path) {
 		}
 	}
 
+	if(config_has_property(config,"MEMORY_NUMBER_SEEDS")) {
+			//TODO: implementar config con listas
+			char *puertoSeeds;
+			int i = 0;
+			puertoSeeds=config_get_string_value(config, "MEMORY_NUMBER_SEEDS");
+			MEM_CONF.MEMORY_NUMBER_SEEDS = string_get_string_as_array(puertoSeeds);
+			while(MEM_CONF.MEMORY_NUMBER_SEEDS[i] != NULL)
+			{
+				remove_quotes(MEM_CONF.MEMORY_NUMBER_SEEDS[i]);
+				loggear(logger,LOG_LEVEL_INFO,"PUERTO_SEEDS: %s", MEM_CONF.MEMORY_NUMBER_SEEDS[i]);
+				i++;
+			}
+		}
+
 	if(config_has_property(config,"RETARDO_MEM")) {
 		MEM_CONF.RETARDO_MEM = config_get_int_value(config, "RETARDO_MEM");
 		loggear(logger,LOG_LEVEL_INFO,"RETARDO_MEM: %d", MEM_CONF.RETARDO_MEM);

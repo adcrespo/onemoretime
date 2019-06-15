@@ -53,7 +53,7 @@ t_list *LISTA_CONECTADOS;
 char BITMAP_CONN_STATUS[NUM_CONEX];
 
 typedef struct tipoSeeds {
-	char numeroMemoria[15];
+	int numeroMemoria;
 	char ip[30];
 	char puerto[15];
 	char estado;
@@ -70,10 +70,15 @@ void processGossiping(t_log *logger,t_list *LISTA_CONN,t_list *LISTA_CONN_PORT);
  */
 t_list *obtenerListaConectados(t_list *LISTA_CONN,t_list *LISTA_CONN_PORT,t_log *logger);
 
+char *armarMensajeListaSEEDSStruct(t_log *logger,t_list *LISTA_CONN);
 /*
  * Arma la lista de seeds que envia por msj
  */
 char *armarMensajeListaSEEDS(t_log *logger,t_list *LISTA_CONN,t_list *LISTA_CONN_PORT);
+
+void processGossipingStruct(t_log *logger,t_list *LISTA_CONN);
+
+int procesarMsjGossipingStruct(char *mensaje, char *primerParser, char *segundoParser, t_log *logger,t_list *LISTA_CONN);
 
 /*
  * Actualiza la lista de seeds que recibe por msj
@@ -94,5 +99,10 @@ int crearListaSeeds(char *MEM_CONF_IP,char *MEM_CONF_PUERTO, char **MEM_CONF_IP_
  * Crea el hilo encargado del GOSSIPING
  */
 int crearHiloGossiping(t_log *logger,t_list *LISTA_CONN,t_list *LISTA_CONN_PORT,int *hilo_cliente);
+
+/*
+ * Crea una lista de Struct de SEEDS
+ */
+int crearListaSeedsStruct(char *MEM_CONF_IP,char *MEM_CONF_PUERTO,int MEM_CONF_NUMERO_MEMORIA, char **MEM_CONF_IP_SEEDS, char **MEM_CONF_PUERTO_SEEDS, char **MEM_CONF_MEMORY_NUMBER_SEEDS, t_log *logger,t_list *LISTA_CONN);
 
 #endif /* GOSSIPING_H_ */

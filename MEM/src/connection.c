@@ -135,10 +135,12 @@ void procesar(int n_descriptor, fd_set* set_master) {
 					//TODO: actualizar mi lista de seeds
 					listasIPs = string_from_format("%s",msg->content);
 					loggear(logger,LOG_LEVEL_DEBUG,"Lista IPs recibida: [%s]",listasIPs);
-					procesarMsjGossiping(listasIPs,"-",":",logger,LISTA_CONN,LISTA_CONN_PORT);
+					procesarMsjGossipingStruct(listasIPs,"-",":",logger,LISTA_CONN);
+					//procesarMsjGossiping(listasIPs,"-",":",logger,LISTA_CONN,LISTA_CONN_PORT);
 
 					pthread_mutex_lock(&mutexGossiping);
-					listasIPs= string_from_format("%s",armarMensajeListaSEEDS(logger,LISTA_CONN,LISTA_CONN_PORT));
+					listasIPs= string_from_format("%s",armarMensajeListaSEEDSStruct(logger,LISTA_CONN));
+					//listasIPs= string_from_format("%s",armarMensajeListaSEEDS(logger,LISTA_CONN,LISTA_CONN_PORT));
 					//mensaje = armarMensajeListaSEEDS(logger);
 					pthread_mutex_unlock(&mutexGossiping);
 
