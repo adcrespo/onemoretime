@@ -224,12 +224,12 @@ void AlocarTabla(char *tabla, t_registro *registro)
 
 }
 
-void InsertarTabla(t_request *request)
+int InsertarTabla(t_request *request)
 {
 	t_registro *registro = malloc(sizeof(t_registro));
 
 	registro->key = atoi(request->parametro2);
-	strcpy(registro->value, request->parametro3);
+	memcpy(registro->value, request->parametro3, strlen(request->parametro3)+1);
 	registro->timestamp = atoi(request->parametro4);
 
 	printf("Registro key %d\n", registro->key);
@@ -239,7 +239,8 @@ void InsertarTabla(t_request *request)
 	//Verifico existencia en el file system
 	if(!ExisteTabla(request->parametro1))
 	{
-		loggear(logger, LOG_LEVEL_ERROR, "%s no existe en el file system", request->parametro1);;
+		loggear(logger, LOG_LEVEL_WARNING, "%s no existe en el file system", request->parametro1);
+		return 1;
 	}
 
 
@@ -258,6 +259,8 @@ void InsertarTabla(t_request *request)
 		loggear(logger, LOG_LEVEL_INFO, "Alocando en su pos correspondiente");
 		list_add(tabla->lista, registro);
 	}
+
+	return 0;
 }
 
 

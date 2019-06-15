@@ -8,6 +8,7 @@
 #ifndef CONNECTION_H_
 #define CONNECTION_H_
 
+#include "LFS.h"
 #include <stdio.h>
 #include <openssl/md5.h>
 #include <sys/socket.h>

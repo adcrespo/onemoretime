@@ -79,7 +79,55 @@ void procesar(int n_descriptor, fd_set* set_master) {
 
 				case handshake:
 					loggear(logger, LOG_LEVEL_INFO, "Handshake.");
-					enviarMensaje(socket_lfs, handshake, 0, NULL, n_descriptor, logger, mem);
+					enviarMensaje(lis, handshake, sizeof(lfs_conf.tamano_value), &lfs_conf.tamano_value, n_descriptor, logger, mem);
+					break;
+
+				case insert:
+					loggear(logger, LOG_LEVEL_INFO, "Se recibió un insert");
+					t_insert *msginsert = malloc(sizeof(t_insert));
+					loggear(logger, LOG_LEVEL_INFO, "Malloc ok, msg header long :%d", msg->header.longitud);
+					memcpy(msginsert, msg->content, msg->header.longitud);
+
+					loggear(logger, LOG_LEVEL_INFO, "Nombre Tabla :%s", msginsert->nombreTabla);
+
+					loggear(logger, LOG_LEVEL_INFO, "Timestamp :%d", msginsert->timestamp);
+
+					loggear(logger, LOG_LEVEL_INFO, "Key :%d", msginsert->key);
+
+					loggear(logger, LOG_LEVEL_INFO, "Value :%s", msginsert->value);
+
+					t_request *request = malloc(sizeof(t_request));
+					request->parametro1 = malloc(strlen(msginsert->nombreTabla)+ 1);
+					request->parametro2 = malloc(strlen(string_itoa(msginsert->key)) +1);
+					request->parametro3 = malloc(strlen(msginsert->value)+1);
+					request->parametro4 = malloc(strlen(string_itoa(msginsert->timestamp)) +1);
+
+
+					strcpy(request->parametro1, msginsert->nombreTabla);
+					strcpy(request->parametro2, string_itoa(msginsert->key));
+					strcpy(request->parametro3, msginsert->value);
+					strcpy(request->parametro4, string_itoa(msginsert->timestamp));
+					int resultado = InsertarTabla(request);
+
+					loggear(logger, LOG_LEVEL_WARNING, "Resultado create :%d", resultado);
+					enviarMensajeConError(lis, insert, 0, NULL, n_descriptor, logger, mem, resultado);
+
+					break;
+
+				case create:
+					loggear(logger, LOG_LEVEL_INFO, "Se recibió mensaje create");
+					break;
+
+				case drop:
+					loggear(logger, LOG_LEVEL_INFO, "Se recibió mensaje drop");
+					break;
+
+				case selectMsg:
+					loggear(logger, LOG_LEVEL_INFO, "Se recibió mensaje select");
+					break;
+
+				case describe:
+					loggear(logger, LOG_LEVEL_INFO, "Se recibió mensaje describe");
 					break;
 			}
 			destruirMensaje(msg);
