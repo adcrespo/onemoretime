@@ -7,9 +7,10 @@
 
 #include "gossiping.h"
 
+
+
 int loggearLista(t_list *LISTA_CONN,t_log *logger)
 {
-	char *cadena;
 	t_tipoSeeds *seed;
 	int i=0;
 
@@ -17,17 +18,40 @@ int loggearLista(t_list *LISTA_CONN,t_log *logger)
 	{
 		seed = list_get(LISTA_CONN, i);
 
-		cadena = string_from_format("%s", seed->numeroMemoria);
-		loggear(logger,LOG_LEVEL_INFO,"LISTA_IP_SEEDS_NUMERO[%d]: %s",i, cadena);
-		cadena = string_from_format("%s", seed->ip);
-		loggear(logger,LOG_LEVEL_INFO,"LISTA_IP_SEEDS_IP[%d]: %s",i, cadena);
-		cadena = string_from_format("%s", seed->puerto);
-		loggear(logger,LOG_LEVEL_INFO,"LISTA_IP_SEEDS_PUERTO[%d]: %s",i, cadena);
-		cadena = string_from_format("%s", seed->estado);
-		loggear(logger,LOG_LEVEL_INFO,"LISTA_IP_SEEDS_ESTADO[%d]: %s",i, cadena);
+		loggear(logger,LOG_LEVEL_INFO,"------------------------------");
+		loggear(logger,LOG_LEVEL_INFO,"LISTA_IP_SEEDS_NUMERO[%d]: %d",i, seed->numeroMemoria);
+		loggear(logger,LOG_LEVEL_INFO,"LISTA_IP_SEEDS_IP[%d]: %s",i, seed->ip);
+		loggear(logger,LOG_LEVEL_INFO,"LISTA_IP_SEEDS_PUERTO[%d]: %s",i, seed->puerto);
+		loggear(logger,LOG_LEVEL_INFO,"LISTA_IP_SEEDS_ESTADO[%d]: %d",i, seed->estado);
 
 		i++;
 	}
+	return 1;
+}
+
+int actualizarEstadoListaStruct(t_list *LISTA_CONN,t_log *logger,int posicion,char estado)
+{
+	t_tipoSeeds *seed;
+	t_tipoSeeds *seedsModificado;
+
+	seedsModificado= malloc(sizeof(t_tipoSeeds));
+	seed = list_get(LISTA_CONN,posicion);
+
+
+	seedsModificado->numeroMemoria = seed->numeroMemoria;
+
+	memset(seedsModificado->ip,0x0,sizeof(seedsModificado->ip));
+	strcpy(seedsModificado->ip,seed->ip);
+
+	memset(seedsModificado->puerto,0x0,sizeof(seedsModificado->puerto));
+	strcpy(seedsModificado->puerto,seed->puerto);
+
+	seedsModificado->estado = estado;
+
+	free(list_replace(LISTA_CONN,posicion,seedsModificado));
+
+	loggearLista(LISTA_CONN,logger);
+
 	return 1;
 }
 
@@ -143,6 +167,49 @@ char* getLocalIp(char *MEM_CONF_IP)
     return localIp;
 }
 
+int actualizaListaSeedConfigStruct(t_list *LISTA_CONN, char *ipNueva,char *puertoNuevo,int numeroMemoria,t_log *logger)
+{
+	int j=0;
+	int existe=0;
+	int numeroCompara;
+	t_tipoSeeds *seed;
+	t_tipoSeeds *seedNuevo;
+
+
+	while(j<LISTA_CONN->elements_count)
+	{
+
+		seed = list_get(LISTA_CONN,j);
+		numeroCompara = seed->numeroMemoria;
+
+		if(numeroCompara == numeroMemoria)
+		{
+			existe=1;
+			break;
+		}
+		j++;
+	}
+	if(existe!=1)
+	{
+		seedNuevo= malloc(sizeof(t_tipoSeeds));
+
+		seedNuevo->numeroMemoria = numeroMemoria;
+
+		memset(seedNuevo->ip,0x0,sizeof(seedNuevo->ip));
+		strcpy(seedNuevo->ip,ipNueva);
+
+		memset(seedNuevo->puerto,0x0,sizeof(seedNuevo->puerto));
+		strcpy(seedNuevo->puerto,puertoNuevo);
+
+		seedNuevo->estado = DESCONECTADO;
+
+		list_add(LISTA_CONN,seedNuevo);
+
+	}
+
+	return 1;
+}
+
 int actualizaListaSeedConfig(t_list *LISTA_CONN,t_list *LISTA_CONN_PORT, char *ipNueva,char *puertoNuevo)
 {
 	int j=0;
@@ -205,6 +272,31 @@ int incializarBitMapConnStatus()
 	return 1;
 }
 
+int crearListaSeedsStruct(char *MEM_CONF_IP,char *MEM_CONF_PUERTO,int MEM_CONF_NUMERO_MEMORIA, char **MEM_CONF_IP_SEEDS, char **MEM_CONF_PUERTO_SEEDS, char **MEM_CONF_MEMORY_NUMBER_SEEDS, t_log *logger,t_list *LISTA_CONN)
+{
+	int i=0;
+
+	loggear(logger,LOG_LEVEL_INFO,"Creando lista de SEEDS/PUERTOS...");
+
+	actualizaListaSeedConfigStruct(LISTA_CONN,getLocalIp(MEM_CONF_IP),MEM_CONF_PUERTO,MEM_CONF_NUMERO_MEMORIA,logger);
+	actualizarEstadoListaStruct(LISTA_CONN,logger,i,CONECTADO);
+
+	while(MEM_CONF_IP_SEEDS[i] != NULL)
+	{
+		int memoryNumberSeeds;
+
+		memoryNumberSeeds = atoi(MEM_CONF_MEMORY_NUMBER_SEEDS[i]);
+
+		actualizaListaSeedConfigStruct(LISTA_CONN,MEM_CONF_IP_SEEDS[i],MEM_CONF_PUERTO_SEEDS[i],memoryNumberSeeds,logger);
+
+		i++;
+	}
+
+	loggearLista(LISTA_CONN, logger);
+
+	return 1;
+}
+
 int crearListaSeeds(char *MEM_CONF_IP,char *MEM_CONF_PUERTO, char **MEM_CONF_IP_SEEDS, char **MEM_CONF_PUERTO_SEEDS, t_log *logger,t_list *LISTA_CONN,t_list *LISTA_CONN_PORT)
 {
 	char *cadena;
@@ -257,6 +349,43 @@ int connect_to_server_goss(char* IP, char* PUERTO, int proceso, int flag, t_log 
         destruirMensaje(msg);
         loggear(logger, LOG_LEVEL_INFO, "FIN Handshake(%d)", proceso);
         return socket;
+}
+
+char *armarMensajeListaSEEDSStruct(t_log *logger,t_list *LISTA_CONN)
+{
+	int j=0;
+	int numeroMemoria;
+	char *msj;
+	char *ip;
+	char *puerto;
+	t_tipoSeeds *seed;
+
+	msj = string_new();
+
+	while(j<LISTA_CONN->elements_count)
+	{
+
+		seed = list_get(LISTA_CONN,j);
+
+		numeroMemoria = seed->numeroMemoria;
+		ip = string_from_format("%s", seed->ip);
+		puerto = string_from_format("%s", seed->puerto);
+
+		if(j==0)
+		{
+			msj = string_from_format("%d:%s:%s",numeroMemoria,ip,puerto);
+		}
+		else
+		{
+			msj = string_from_format("%s-%d:%s:%s",msj,numeroMemoria,ip,puerto);
+		}
+
+		j++;
+	}
+
+	loggear(logger,LOG_LEVEL_INFO,"MSJ_GOSSIPING: %s", msj);
+
+	return msj;
 }
 
 char *armarMensajeListaSEEDS(t_log *logger,t_list *LISTA_CONN,t_list *LISTA_CONN_PORT)
@@ -329,7 +458,79 @@ int loggearElementosLista(t_list *LISTA_CONN,t_list *LISTA_CONN_PORT, t_log *log
 	}
 	return 1;
 }
+int procesarMsjGossipingStruct(char *mensaje, char *primerParser, char *segundoParser, t_log *logger,t_list *LISTA_CONN)
+{
+	int i = 0;
+	int numMemoria = 0;
+	char** parser;
+	char** parserIpPuerto;
+	char* ip;
+	char* puerto;
+	char* numeroMemoria;
 
+	if (!string_is_empty(mensaje))
+	{
+
+		parser = string_split(mensaje, primerParser);
+		i=0;
+		while(parser[i]!=NULL)
+		{
+			parserIpPuerto = string_split(parser[i], segundoParser);
+
+
+			if(parserIpPuerto[0] != NULL)
+			{
+				numeroMemoria = string_new();
+				numeroMemoria = parserIpPuerto[0];
+				numMemoria = atoi(numeroMemoria);
+			}
+			else
+			{
+				loggear(logger,LOG_LEVEL_INFO,"ERROR PROCESO MSJ GOSSIPING");
+				return -1;
+			}
+
+
+			if(parserIpPuerto[1] != NULL)
+			{
+				ip = string_new();
+				ip = parserIpPuerto[1];
+			}
+			else
+			{
+				loggear(logger,LOG_LEVEL_INFO,"ERROR PROCESO MSJ GOSSIPING");
+				return -1;
+			}
+			if(parserIpPuerto[2] != NULL)
+			{
+				puerto = string_new();
+				puerto = parserIpPuerto[1];
+			}
+			else
+			{
+				loggear(logger,LOG_LEVEL_INFO,"ERROR PROCESO MSJ GOSSIPING");
+				return -1;
+			}
+
+			loggear(logger,LOG_LEVEL_INFO,"MENSAJE_RECIBIDO: NUMERO_MEMORIA: %d | IP: %s | PUERTO: %s", numMemoria,ip,puerto);
+
+			//AGREGAR A LISTA LOCAL DE PROCESO DE MSJ
+			pthread_mutex_lock(&mutexGossiping);
+			actualizaListaSeedConfigStruct(LISTA_CONN,ip,puerto,numMemoria,logger);
+			pthread_mutex_unlock(&mutexGossiping);
+
+			i++;
+		}
+		loggearLista(LISTA_CONN,logger);
+	}
+	else
+	{
+		loggear(logger,LOG_LEVEL_INFO,"ERROR PROCESO MSJ GOSSIPING");
+		return-1;
+	}
+
+	return 1;
+}
 int procesarMsjGossiping(char *mensaje, char *primerParser, char *segundoParser, t_log *logger,t_list *LISTA_CONN,t_list *LISTA_CONN_PORT)
 {
 	int i;
@@ -399,6 +600,105 @@ int procesarMsjGossiping(char *mensaje, char *primerParser, char *segundoParser,
 
 	return 1;
 }
+
+void processGossipingStruct(t_log *logger,t_list *LISTA_CONN) {
+	int i;
+	int contadorLista;
+	int socketReceptor=0;
+	char *ipLista;
+	char *puertoLista;
+	char *mensaje;
+	t_mensaje* msjRecibido;
+	t_tipoSeeds *seed;
+
+	i=1;
+
+	if(pthread_mutex_trylock(&mutexprocessGossiping))
+	{
+		loggear(logger,LOG_LEVEL_INFO,"ERROR_MUTEX_GOSSIPING");
+		return;
+	}
+
+	loggear(logger,LOG_LEVEL_INFO,"Se inicio proceso Gossiping...");
+
+	mensaje = string_new();
+
+	pthread_mutex_lock(&mutexGossiping);
+	mensaje= string_from_format("%s",armarMensajeListaSEEDSStruct(logger,LISTA_CONN));
+	pthread_mutex_unlock(&mutexGossiping);
+
+	pthread_mutex_lock(&mutexGossiping);
+	contadorLista = LISTA_CONN->elements_count;
+	pthread_mutex_unlock(&mutexGossiping);
+
+	//CONEXION_CON_CADA_MEMORIA
+	while(i < contadorLista)
+	{
+		pthread_mutex_lock(&mutexGossiping);
+		seed = list_get(LISTA_CONN,i);
+		ipLista = string_from_format("%s", seed->ip);
+		puertoLista = string_from_format("%s", seed->puerto);
+		pthread_mutex_unlock(&mutexGossiping);
+
+		loggear(logger,LOG_LEVEL_INFO,"CONEXION LISTA SEEDS NUMERO: %d",i+1);
+		loggear(logger,LOG_LEVEL_INFO,"LISTA_IP_SEEDS: %s", ipLista);
+		loggear(logger,LOG_LEVEL_INFO,"LISTA_PUERTO_SEEDS: %s", puertoLista);
+
+		socketReceptor=connect_to_server_goss(ipLista,puertoLista,mem,gossiping,logger);
+
+		if(socketReceptor>0)
+		{
+			int envioMsj;
+
+			//ENVIAR_LISTA_SEEDS
+			envioMsj = enviarMensaje(mem,gossipingMsg,strlen(mensaje)+1,mensaje,socketReceptor,logger,mem);
+
+			if(envioMsj < 1 )
+				loggear(logger,LOG_LEVEL_INFO,"NO SE PUDO ENVIAR MSJ %d",envioMsj);
+			else
+				loggear(logger,LOG_LEVEL_INFO,"MSJ ENVIADO CON EXITO %d",envioMsj);
+
+			//RECIBIR_LISTA_SEEDS
+			msjRecibido = recibirMensaje(socketReceptor,logger);
+
+			//PROCESAR_LISTA_SEEDS
+			if(msjRecibido != NULL)
+			{
+				loggear(logger,LOG_LEVEL_INFO,"MSJ RECIBIDO CON EXITO %d",envioMsj);
+				procesarMsjGossipingStruct(msjRecibido->content,"-",":",logger,LISTA_CONN);
+				destruirMensaje(msjRecibido);
+				BITMAP_CONN_STATUS[i]=CONECTADO;
+				pthread_mutex_lock(&mutexGossiping);
+				actualizarEstadoListaStruct(LISTA_CONN,logger,i,CONECTADO);
+				pthread_mutex_unlock(&mutexGossiping);
+			}
+			else
+			{
+				loggear(logger,LOG_LEVEL_INFO,"ERROR MSJ %d",envioMsj);
+				BITMAP_CONN_STATUS[i]=DESCONECTADO;
+				pthread_mutex_lock(&mutexGossiping);
+				actualizarEstadoListaStruct(LISTA_CONN,logger,i,DESCONECTADO);
+				pthread_mutex_unlock(&mutexGossiping);
+			}
+
+			close(socketReceptor);
+		}
+		else
+		{
+			loggear(logger,LOG_LEVEL_INFO,"FALLÓ_CONEXION: %d", socketReceptor);
+			BITMAP_CONN_STATUS[i]=DESCONECTADO;
+			pthread_mutex_lock(&mutexGossiping);
+			actualizarEstadoListaStruct(LISTA_CONN,logger,i,DESCONECTADO);
+			pthread_mutex_unlock(&mutexGossiping);
+		}
+		i++;
+	}
+	free (mensaje);
+
+	pthread_mutex_unlock(&mutexprocessGossiping);
+
+}
+
 
 void processGossiping(t_log *logger,t_list *LISTA_CONN,t_list *LISTA_CONN_PORT) {
 	int i;
@@ -493,6 +793,16 @@ void processGossiping(t_log *logger,t_list *LISTA_CONN,t_list *LISTA_CONN_PORT) 
 	pthread_mutex_unlock(&mutexprocessGossiping);
 
 }
+
+
+
+
+
+//--------------------------------------------------------------------------
+//--------------------------------------------------------------------------
+//--------------------------------------------------------------------------
+//--------------------------------------------------------------------------
+
 
 void *hiloGossiping(t_log *logger,t_list *LISTA_CONN,t_list *LISTA_CONN_PORT)
 {

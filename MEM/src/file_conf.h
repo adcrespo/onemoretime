@@ -17,6 +17,7 @@ typedef struct  {
   char *PUERTO_FS;
   char **IP_SEEDS;
   char **PUERTO_SEEDS;
+  char **MEMORY_NUMBER_SEEDS;
   uint32_t RETARDO_MEM;
   uint32_t RETARDO_FS;
   uint32_t TAM_MEM;

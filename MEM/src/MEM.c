@@ -40,7 +40,8 @@ int main(int argc, char *argv[]) {
 	get_config(string_equals_ignore_case(args_configfile,"false")?"../MEM.conf":args_configfile);
 
 	//GOSSIPING - CREA LISTA DE SEEDS
-	crearListaSeeds(MEM_CONF.IP,MEM_CONF.PUERTO,MEM_CONF.IP_SEEDS,MEM_CONF.PUERTO_SEEDS,logger,LISTA_CONN,LISTA_CONN_PORT);
+	crearListaSeedsStruct(MEM_CONF.IP,MEM_CONF.PUERTO,MEM_CONF.MEMORY_NUMBER,MEM_CONF.IP_SEEDS,MEM_CONF.PUERTO_SEEDS,MEM_CONF.MEMORY_NUMBER_SEEDS,logger,LISTA_CONN);
+	//crearListaSeeds(MEM_CONF.IP,MEM_CONF.PUERTO,MEM_CONF.IP_SEEDS,MEM_CONF.PUERTO_SEEDS,logger,LISTA_CONN,LISTA_CONN_PORT);
 
 	init_memory_spa();
 
