@@ -29,6 +29,35 @@ int loggearLista(t_list *LISTA_CONN,t_log *logger)
 	return 1;
 }
 
+int actualizarNumMemoriaListaStruct(t_list *LISTA_CONN,t_log *logger,int posicion,int numMemoria)
+{
+	t_tipoSeeds *seed;
+	t_tipoSeeds *seedsModificado;
+
+	seedsModificado= malloc(sizeof(t_tipoSeeds));
+	seed = list_get(LISTA_CONN,posicion);
+
+
+	if(numMemoria< NUM_CONEX)
+		seedsModificado->numeroMemoria = numMemoria;
+	//seedsModificado->numeroMemoria = seed->numeroMemoria;
+	//seedsModificado->numeroMemoria = numMemoria;
+
+	memset(seedsModificado->ip,0x0,sizeof(seedsModificado->ip));
+	strcpy(seedsModificado->ip,seed->ip);
+
+	memset(seedsModificado->puerto,0x0,sizeof(seedsModificado->puerto));
+	strcpy(seedsModificado->puerto,seed->puerto);
+
+	seedsModificado->estado = seed->estado;
+
+	free(list_replace(LISTA_CONN,posicion,seedsModificado));
+
+	loggearLista(LISTA_CONN,logger);
+
+	return 1;
+}
+
 int actualizarEstadoListaStruct(t_list *LISTA_CONN,t_log *logger,int posicion,char estado)
 {
 	t_tipoSeeds *seed;
@@ -38,7 +67,10 @@ int actualizarEstadoListaStruct(t_list *LISTA_CONN,t_log *logger,int posicion,ch
 	seed = list_get(LISTA_CONN,posicion);
 
 
+	//memset(seedsModificado->numeroMemoria,0x0,sizeof(seedsModificado->numeroMemoria));
 	seedsModificado->numeroMemoria = seed->numeroMemoria;
+	//seedsModificado->numeroMemoria = seed->numeroMemoria;
+	//seedsModificado->numeroMemoria = numMemoria;
 
 	memset(seedsModificado->ip,0x0,sizeof(seedsModificado->ip));
 	strcpy(seedsModificado->ip,seed->ip);
@@ -172,6 +204,8 @@ int actualizaListaSeedConfigStruct(t_list *LISTA_CONN, char *ipNueva,char *puert
 	int j=0;
 	int existe=0;
 	int numeroCompara;
+	char *ipCompara;
+	char *portCompara;
 	t_tipoSeeds *seed;
 	t_tipoSeeds *seedNuevo;
 
@@ -181,9 +215,13 @@ int actualizaListaSeedConfigStruct(t_list *LISTA_CONN, char *ipNueva,char *puert
 
 		seed = list_get(LISTA_CONN,j);
 		numeroCompara = seed->numeroMemoria;
+		ipCompara = string_from_format("%s", seed->ip);
+		portCompara = string_from_format("%s", seed->puerto);
 
-		if(numeroCompara == numeroMemoria)
+		if((numeroCompara == numeroMemoria) ||(string_equals_ignore_case(ipCompara, ipNueva) && string_equals_ignore_case(portCompara, puertoNuevo)))
 		{
+			if(numeroCompara != numeroMemoria && numeroMemoria<NUM_CONEX)
+				actualizarNumMemoriaListaStruct(LISTA_CONN,logger,j,numeroMemoria);
 			existe=1;
 			break;
 		}
@@ -285,7 +323,8 @@ int crearListaSeedsStruct(char *MEM_CONF_IP,char *MEM_CONF_PUERTO,int MEM_CONF_N
 	{
 		int memoryNumberSeeds;
 
-		memoryNumberSeeds = atoi(MEM_CONF_MEMORY_NUMBER_SEEDS[i]);
+		memoryNumberSeeds = NUM_CONEX+i;
+		//memoryNumberSeeds = atoi(MEM_CONF_MEMORY_NUMBER_SEEDS[i]);
 
 		actualizaListaSeedConfigStruct(LISTA_CONN,MEM_CONF_IP_SEEDS[i],MEM_CONF_PUERTO_SEEDS[i],memoryNumberSeeds,logger);
 
@@ -605,6 +644,7 @@ void processGossipingStruct(t_log *logger,t_list *LISTA_CONN) {
 	int i;
 	int contadorLista;
 	int socketReceptor=0;
+	int numeroMemoria;
 	char *ipLista;
 	char *puertoLista;
 	char *mensaje;
@@ -636,11 +676,13 @@ void processGossipingStruct(t_log *logger,t_list *LISTA_CONN) {
 	{
 		pthread_mutex_lock(&mutexGossiping);
 		seed = list_get(LISTA_CONN,i);
+		numeroMemoria = seed->numeroMemoria;
 		ipLista = string_from_format("%s", seed->ip);
 		puertoLista = string_from_format("%s", seed->puerto);
 		pthread_mutex_unlock(&mutexGossiping);
 
 		loggear(logger,LOG_LEVEL_INFO,"CONEXION LISTA SEEDS NUMERO: %d",i+1);
+		loggear(logger,LOG_LEVEL_INFO,"LISTA_MEMORY_NUMBER_SEEDS: %d", numeroMemoria);
 		loggear(logger,LOG_LEVEL_INFO,"LISTA_IP_SEEDS: %s", ipLista);
 		loggear(logger,LOG_LEVEL_INFO,"LISTA_PUERTO_SEEDS: %s", puertoLista);
 
