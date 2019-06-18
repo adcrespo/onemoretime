@@ -29,6 +29,7 @@ void ObtenerMetadataCompleto();
 int DropearTabla(char *nombre);
 int calcularBloques(int bytes);
 void liberarBloques(char **bloques, int cantBloques);
+void liberarMetadata(char **bloques, int cant);
 
 t_config *config_metadata;
 t_bitarray *bitmap;

@@ -478,6 +478,8 @@ int DropearTabla(char *nombre)
 	struct dirent *entry;
 
 	char *path = string_from_format("%s%s", rutaTablas, nombre);
+	char *pathMetadata = string_from_format("%s/Metadata", path);
+
 
 	if((dir=opendir(path)) == NULL)
 		{
@@ -506,6 +508,7 @@ int DropearTabla(char *nombre)
 
 
 					liberarBloques(bloques, cantBloques);
+					liberarMetadata(bloques, cantBloques);
 
 
 					printf("PATHFILE %s\n", pathFile);
@@ -523,7 +526,9 @@ int DropearTabla(char *nombre)
 			closedir(dir);
 		}
 
+	remove(pathMetadata);
 	remove(path);
+	free(pathMetadata);
 	free(path);
 	return 1;
 }
@@ -544,6 +549,18 @@ void liberarBloques(char **bloques, int cantBloques)
 		//int pos = atoi(bloques[i]);
 		//bitarray_clean_bit(bitmap, pos);
 
+	}
+}
+
+void liberarMetadata(char **bloques, int cant)
+{
+	loggear(logger, LOG_LEVEL_INFO, "Eliminando metadata asociada");
+	for(int i = 0; i < cant; i++)
+	{
+		char *pathMeta = string_from_format("%s%d.bin", rutaBloques, atoi(bloques[i]));
+		loggear(logger, LOG_LEVEL_INFO, "Eliminando %s", pathMeta);
+		remove(pathMeta);
+		free(pathMeta);
 
 	}
 }
