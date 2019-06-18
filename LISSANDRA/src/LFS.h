@@ -33,13 +33,6 @@ typedef struct {
      t_list *lista;
 }__attribute__((packed)) t_tabla;
 
-
-typedef struct {
-	int timestamp;
-	int key;
-	char value[50];
-} t_registro;
-
 typedef struct {
 	char tipoConsistencia[10];
 	int particiones;
