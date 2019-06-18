@@ -18,7 +18,7 @@ void *CrearFileSystem(){
 	string_append(&rutaBloques, lfs_conf.punto_montaje);
 	string_append(&rutaBloques, "Bloques/");
 	loggear(logger, LOG_LEVEL_INFO, "Ruta de bloques: %s", rutaBloques);
-	//CargarMetadata();
+	CargarMetadata();
 	CargarBitmap();
 
 	return (void*)1;
@@ -465,3 +465,85 @@ int AgregarBloque()
 	return 1;
 }
 
+int DropearTabla(char *nombre)
+{
+	//Verifico existencia en el file system
+	if(!ExisteTabla(nombre))
+	{
+		loggear(logger, LOG_LEVEL_ERROR, "%s no puede ser dropeada", nombre);
+		return 0;
+	}
+
+	DIR *dir;
+	struct dirent *entry;
+
+	char *path = string_from_format("%s%s", rutaTablas, nombre);
+
+	if((dir=opendir(path)) == NULL)
+		{
+			perror("openndir() error");
+		} else
+		{
+			while((entry = readdir(dir)) != NULL)
+			{
+				if(!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, "..") || !strcmp(entry->d_name, "Metadata"))
+				{
+
+				} else
+				{
+					printf("Archivo: %s\n", entry->d_name);
+					char *pathFile = string_from_format("%s/%s", path, entry->d_name);
+					printf("Abriendo file %s\n", pathFile);
+					t_config *config_file = cargarConfiguracion(pathFile,logger);
+
+
+					int size = config_get_int_value(config_file, "SIZE");
+
+					int cantBloques = calcularBloques(size);
+					char **bloques = malloc(sizeof(int) * cantBloques);
+					bloques = config_get_array_value(config_file, "BLOCKS");
+
+
+
+					liberarBloques(bloques, cantBloques);
+
+
+					printf("PATHFILE %s\n", pathFile);
+					remove(pathFile);
+
+					for(int i = 0; i<= cantBloques; i++)
+					{
+						free(bloques[i]);
+					}
+					free(bloques);
+
+				}
+			}
+
+			closedir(dir);
+		}
+
+	remove(path);
+	free(path);
+	return 1;
+}
+
+
+int calcularBloques(int bytes)
+{
+	int a = (bytes/tamanio_bloques);
+	a++;
+	return a;
+}
+
+void liberarBloques(char **bloques, int cantBloques)
+{
+	for(int i = 0; i < cantBloques; i++)
+	{
+		printf("Eliminando bloque %d\n", atoi(bloques[i]));
+		//int pos = atoi(bloques[i]);
+		//bitarray_clean_bit(bitmap, pos);
+
+
+	}
+}
