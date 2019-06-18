@@ -15,10 +15,14 @@
 #include <string.h>
 #include <signal.h>
 
-pthread_t compactacion;
-int *hilo_compactacion;
+typedef struct {
+	int retardo;
+	char* path_tabla;
+}t_datos_compactacion;
 
-int compactar();
-int crearHiloGossiping();
+pthread_t compactacion;
+int hilo_compactacion;
+
+int crearHiloCompactacion();
 
 #endif /* COMPACTACION_H_ */
