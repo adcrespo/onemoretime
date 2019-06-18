@@ -81,7 +81,7 @@ void *crearConsola() {
 			int resultSelect = proceso_select(comando[1],atoi(comando[2]),&buffer_select);
 			if(resultSelect>0){
 				t_registro* reg = descomponer_registro(buffer_select);
-				printf("[OK] [timestamp:%d][key:%d] %s\n",reg->timestamp, reg->key, reg->value);
+				printf("[OK] [timestamp:%llu][key:%d] %s\n",reg->timestamp, reg->key, reg->value);
 				destruir_registro(reg);
 			}
 			else

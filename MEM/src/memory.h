@@ -20,15 +20,9 @@
 #include <time.h>
 
 typedef struct {
-	unsigned int timestamp;
-	unsigned int key;
-	char* value;
-}__attribute__((packed)) t_registro;
-
-typedef struct {
 	int frame;
 	unsigned char modificado;
-	unsigned int timestamp;
+	unsigned long long timestamp;
 } t_paginas_spa;
 
 typedef struct {
@@ -52,7 +46,7 @@ int frame_spa_size;
 t_list* adm_spa_lista;
 t_list* adm_frame_lista_spa;
 
-char* componer_registro(unsigned int timestamp, unsigned int key, char* value, int largo_value);
+char* componer_registro(unsigned long long timestamp, unsigned int key, char* value, int largo_value);
 t_registro* descomponer_registro(char *buffer);
 void destruir_registro(t_registro* registro);
 
@@ -60,7 +54,7 @@ void liberar_memory_spa();
 void init_memory_spa();
 char* leer_bytes_spa(char* path_table, int segmento, int offset, int size);
 int escribir_bytes_spa(char* path_table, int segmento, int offset, int size, char* buffer, unsigned char modificado);
-int add_spa(char* path_table, int n_frames, time_t timestamp);
+int add_spa(char* path_table, int n_frames, unsigned long long timestamp);
 void free_spa(char* path_table, int segmento);
 void update_administrative_register_adm_table_spa(t_adm_tabla_segmentos_spa* adm_table);
 void dump_memory_spa(char* path_table);

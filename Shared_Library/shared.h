@@ -24,6 +24,7 @@
 #include <pthread.h>
 #include <stdarg.h>
 #include <time.h>
+#include <sys/time.h>
 
 //#include <unistd.h>
 #include <fcntl.h>
@@ -76,7 +77,7 @@ typedef struct {
 //insert
 typedef struct {
 	char 		nombreTabla[50];
-	long 		timestamp;
+	unsigned long long 		timestamp;
 	int 		key;
 	char 		value[VALUE];
 }__attribute__((packed)) t_insert;
@@ -96,10 +97,10 @@ typedef struct {
 
 //registro
 typedef struct {
-	long timestamp;
+	unsigned long long timestamp;
 	int key;
 	char value[VALUE];
-} t_registro;
+}__attribute__((packed)) t_registro;
 
 /* Definición */
 
@@ -132,5 +133,7 @@ void destruirBuffer(void* buffer);
 void* serializar(int tipoProceso, int tipoMensaje, int len, void* content);
 void* serializarConError(int tipoProceso, int tipoMensaje, int len, void* content, int error);
 t_mensaje* deserializar(void* buffer);
+
+unsigned long long obtenerTimeStamp();
 
 #endif /* SHARED_H_ */

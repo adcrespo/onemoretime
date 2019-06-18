@@ -5,6 +5,7 @@
  *      Author: utnso
  */
 #include "MEM.h"
+#include "shared.h"
 
 #include "memory.h"
 #include "file_conf.h"
@@ -12,23 +13,22 @@
  * ---------------AUXILIARES--------------
  */
 
-char* componer_registro(unsigned int timestamp, unsigned int key, char* value, int largo_value)
+char* componer_registro(unsigned long long timestamp, unsigned int key, char value[VALUE], int largo_value)
 {
 	char* buffer = malloc(sizeof(timestamp)+sizeof(key)+tamanio_value);
 	memset(buffer, 0x00, sizeof(timestamp)+sizeof(key)+tamanio_value);
 	memcpy(buffer,&timestamp,sizeof(timestamp));
 	memcpy(buffer+sizeof(timestamp),&key,sizeof(key));
-	memcpy(buffer+sizeof(timestamp)+sizeof(key),value,largo_value);
+	memcpy(buffer+sizeof(timestamp)+sizeof(key),&value,largo_value);
 	return buffer;
 }
 
 t_registro* descomponer_registro(char *buffer)
 {
 	t_registro* registro = malloc(sizeof(t_registro));
-	registro->value = malloc(tamanio_value);
 	memcpy(&registro->timestamp,buffer,sizeof(int));
 	memcpy(&registro->key,buffer+sizeof(int),sizeof(int));
-	memcpy(registro->value,buffer+sizeof(int)+sizeof(int),tamanio_value);
+	memcpy(&registro->value,buffer+sizeof(int)+sizeof(int),tamanio_value);
 	return registro;
 }
 
@@ -142,8 +142,8 @@ void liberar_memory_spa() {
 void init_memory_spa() {
 
 	int i;
-	frames_spa_count = MEM_CONF.TAM_MEM / MAX_LINEA;
-	frame_spa_size = MAX_LINEA;
+	frames_spa_count = MEM_CONF.TAM_MEM / tamanio_value;
+	frame_spa_size = tamanio_value;
 	//TODO: frames_spa_count = FM9_CONF.TAMANIO / FM9_CONF.TAM_PAGINA;
 	//TODO: frame_spa_size = FM9_CONF.TAM_PAGINA;
 
@@ -248,7 +248,7 @@ void free_spa(char* path_table, int pagina) {
 	}
 }
 
-int add_spa(char* path_table, int n_frames, time_t timestamp) {
+int add_spa(char* path_table, int n_frames, unsigned long long timestamp) {
 	loggear(logger,LOG_LEVEL_DEBUG, "segments-pages, table = '%s', n_frames = '%d'", path_table, n_frames);
 
 	bool find(void* element) {
@@ -485,7 +485,7 @@ void dump_memory_spa(char* path_table) {
 
 t_adm_tabla_frames_spa getPaginaMenorTimestamp() {
 	t_adm_tabla_frames_spa frame_spa = {.path_tabla = string_new(),.pagina=-1};
-	time_t timestamp = 0;
+	unsigned long long timestamp = 0;
 	int i,j;
 
 	for (i = 0; i < list_size(adm_spa_lista); i++) {

@@ -53,6 +53,12 @@ int process_journaling(){
 
 				if(mensaje == NULL) {
 					loggear(logger,LOG_LEVEL_ERROR,"No se pudo recibir mensaje de lis");
+					pthread_mutex_unlock(&journalingMutex);
+					pthread_mutex_unlock(&journalingMutexSelect);
+					pthread_mutex_unlock(&journalingMutexInsert);
+					pthread_mutex_unlock(&journalingMutexCreate);
+					pthread_mutex_unlock(&journalingMutexDescribe);
+					pthread_mutex_unlock(&journalingMutexDrop);
 					return -1;
 				}
 				int insert_error = mensaje->header.error;
@@ -60,6 +66,12 @@ int process_journaling(){
 
 				if(insert_error != 0) {
 					loggear(logger,LOG_LEVEL_ERROR,"No se pudo insertar en lis correctamente");
+					pthread_mutex_unlock(&journalingMutex);
+					pthread_mutex_unlock(&journalingMutexSelect);
+					pthread_mutex_unlock(&journalingMutexInsert);
+					pthread_mutex_unlock(&journalingMutexCreate);
+					pthread_mutex_unlock(&journalingMutexDescribe);
+					pthread_mutex_unlock(&journalingMutexDrop);
 					return -1;
 				}
 				free_spa(adm_table->path_tabla,j);

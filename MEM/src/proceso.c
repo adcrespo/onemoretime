@@ -13,7 +13,7 @@
 #include "journaling.h"
 #include "file_conf.h"
 
-int solicitarPagina(char *tabla, int timestamp) {
+int solicitarPagina(char *tabla, unsigned long long timestamp) {
 	loggear(logger,LOG_LEVEL_INFO,"Busco pagina");
 	int paginaNueva = add_spa(tabla,1,timestamp);
 	if(paginaNueva<0) {
@@ -66,7 +66,7 @@ int proceso_select(char* tabla, int clave, char** buffer) {
 	destruirMensaje(mensaje);
 
 	t_registro* reg = descomponer_registro(*buffer);
-	int timestamp = reg->timestamp;
+	unsigned long long timestamp = reg->timestamp;
 	destruir_registro(reg);
 
 	int paginaNueva = solicitarPagina(tabla, timestamp);
@@ -93,7 +93,7 @@ int proceso_select(char* tabla, int clave, char** buffer) {
 int proceso_insert(char* tabla, int clave, char* value) {
 	pthread_mutex_lock(&journalingMutexInsert);
 	int escrito = -1;
-	int timestamp = time(NULL);
+	unsigned long long timestamp = obtenerTimeStamp();
 	char *buffer = componer_registro(timestamp,clave, value, strlen(value));
 	int paginaTabla = getPaginaForKey(tabla, clave);
 	if(paginaTabla>=0){

@@ -34,7 +34,6 @@ int main(int argc, char *argv[]) {
 
 	LISTA_CONN = list_create();
 	LISTA_CONN_PORT = list_create();
-	tamanio_value = 1016;
 	initArgumentos(argc, argv);
 	logger = configurar_logger_verbose("MEM.log", "MEM", string_equals_ignore_case(args_verbose,"true")?true:false);
 	get_config(string_equals_ignore_case(args_configfile,"false")?"../MEM.conf":args_configfile);
@@ -43,13 +42,11 @@ int main(int argc, char *argv[]) {
 	crearListaSeedsStruct(MEM_CONF.IP,MEM_CONF.PUERTO,MEM_CONF.MEMORY_NUMBER,MEM_CONF.IP_SEEDS,MEM_CONF.PUERTO_SEEDS,MEM_CONF.MEMORY_NUMBER_SEEDS,logger,LISTA_CONN);
 	//crearListaSeeds(MEM_CONF.IP,MEM_CONF.PUERTO,MEM_CONF.IP_SEEDS,MEM_CONF.PUERTO_SEEDS,logger,LISTA_CONN,LISTA_CONN_PORT);
 
-	init_memory_spa();
-
-	/*int paginas1 = add_spa("TABLA1",1,time(NULL)); //Siempre devuelve pag; si es 0 no reservo nada
-	int paginas2 = add_spa("TABLA1",1,time(NULL));
+	/*int paginas1 = add_spa("TABLA1",1,obtenerTimeStamp()); //Siempre devuelve pag; si es 0 no reservo nada
+	int paginas2 = add_spa("TABLA1",1,obtenerTimeStamp());
 	getPaginaMenorTimestamp();
-	int paginas4 = add_spa("TABLA2",1,time(NULL));
-	int paginas3 = add_spa("TABLA1",1,time(NULL));
+	int paginas4 = add_spa("TABLA2",1,obtenerTimeStamp());
+	int paginas3 = add_spa("TABLA1",1,obtenerTimeStamp());
 	getPaginaMenorTimestamp();
 	int escrito1 = escribir_bytes_spa("TABLA1",1,1*MAX_LINEA,8+strlen("DATO")+1,componer_registro(100,1,"DATO",strlen("DATO")+1),0); //offset siempre deberia ser multiplo de max_linea
 	int escrito2 = escribir_bytes_spa("TABLA1",0,0,8+strlen("HOLA")+1,componer_registro(100,2,"HOLA",strlen("HOLA")+1),0);
@@ -66,7 +63,7 @@ int main(int argc, char *argv[]) {
 	//free_spa("TABLA1", 1);
 	//free_spa("TABLA1", 2);
 	//free_spa("TABLA1", 0);
-	add_spa("TABLA2",1,time(NULL));
+	add_spa("TABLA2",1,obtenerTimeStamp());
 	getPaginaMenorTimestamp();
 	//free_spa("TABLA2", 0);
 	//free_spa("TABLA2", 1);
@@ -79,7 +76,9 @@ int main(int argc, char *argv[]) {
 	crearHiloJournaling();
 	crearHiloInotify();
 	crearHiloGossipingMemoria();
-	//socket_lis = connect_to_server(MEM_CONF.IP_FS, MEM_CONF.PUERTO_FS, lis,memoria);
+	socket_lis = connect_to_server(MEM_CONF.IP_FS, MEM_CONF.PUERTO_FS, lis,memoria);
+
+	init_memory_spa();
 
 	listen_connexions(MEM_CONF.PUERTO);
 
