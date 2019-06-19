@@ -31,6 +31,7 @@ int calcularBloques(int bytes);
 void liberarBloques(char **bloques, int cantBloques);
 void liberarMetadata(char **bloques, int cant);
 void BuscarKeyMemtable(int key, char *nombre);
+void LevantarHilosCompactacionFS();
 
 t_config *config_metadata;
 t_bitarray *bitmap;

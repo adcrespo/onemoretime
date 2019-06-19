@@ -20,6 +20,7 @@
 #include "Conexion.h"
 #include "Dump.h"
 #include "Error.h"
+#include "Compactacion.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>

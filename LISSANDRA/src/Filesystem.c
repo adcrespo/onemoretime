@@ -466,6 +466,9 @@ int CrearTabla(t_create *msgCreate)
 		particionInicial++;
 	}
 
+	//CreoHiloCompactacion
+	crearHiloCompactacion(msgCreate->comp_time, msgCreate->nombreTabla);
+
 
 	return 0;
 }
@@ -595,4 +598,34 @@ void liberarMetadata(char **bloques, int cant)
 		free(pathMeta);
 
 	}
+}
+
+void LevantarHilosCompactacionFS()
+{
+	DIR *dir;
+	struct dirent *entry;
+
+	if((dir=opendir(rutaTablas)) == NULL)
+		{
+			perror("openndir() error");
+		} else
+		{
+			while((entry = readdir(dir)) != NULL)
+			{
+				if(!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, ".."))
+				{
+
+				} else
+				{
+					printf("%s\n", entry->d_name);
+					char *metadataFile = string_from_format("%s%s/Metadata", rutaTablas, entry->d_name);
+					printf("Ruta de metadata: %s\n", metadataFile);
+					t_config *config_file = cargarConfiguracion(metadataFile,logger);
+
+					int compactationTime = config_get_int_value(config_file, "COMPACTATION_TIME");
+					printf("Tiempo de compactacion tabla %s: %d\n", entry->d_name, compactationTime);
+					crearHiloCompactacion(compactationTime, entry->d_name);
+				}
+			}
+		}
 }
