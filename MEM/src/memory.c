@@ -19,22 +19,21 @@ char* componer_registro(unsigned long long timestamp, unsigned int key, char val
 	memset(buffer, 0x00, sizeof(timestamp)+sizeof(key)+tamanio_value);
 	memcpy(buffer,&timestamp,sizeof(timestamp));
 	memcpy(buffer+sizeof(timestamp),&key,sizeof(key));
-	memcpy(buffer+sizeof(timestamp)+sizeof(key),&value,largo_value);
+	memcpy(buffer+sizeof(timestamp)+sizeof(key),&value[0],largo_value);
 	return buffer;
 }
 
 t_registro* descomponer_registro(char *buffer)
 {
 	t_registro* registro = malloc(sizeof(t_registro));
-	memcpy(&registro->timestamp,buffer,sizeof(int));
-	memcpy(&registro->key,buffer+sizeof(int),sizeof(int));
-	memcpy(&registro->value,buffer+sizeof(int)+sizeof(int),tamanio_value);
+	memcpy(&registro->timestamp,buffer,sizeof(unsigned long long));
+	memcpy(&registro->key,buffer+sizeof(unsigned long long),sizeof(int));
+	memcpy(&registro->value[0],buffer+sizeof(unsigned long long)+sizeof(int),tamanio_value);
 	return registro;
 }
 
 void destruir_registro(t_registro* registro)
 {
-	free(registro->value);
 	free(registro);
 	return;
 }
@@ -142,10 +141,9 @@ void liberar_memory_spa() {
 void init_memory_spa() {
 
 	int i;
-	frames_spa_count = MEM_CONF.TAM_MEM / tamanio_value;
-	frame_spa_size = tamanio_value;
-	//TODO: frames_spa_count = FM9_CONF.TAMANIO / FM9_CONF.TAM_PAGINA;
-	//TODO: frame_spa_size = FM9_CONF.TAM_PAGINA;
+
+	frame_spa_size = tamanio_value + sizeof(unsigned long long) + sizeof(int);
+	frames_spa_count = MEM_CONF.TAM_MEM / frame_spa_size;
 
 	mem_allocate_fullspace_spa();
 

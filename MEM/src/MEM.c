@@ -38,11 +38,11 @@ int main(int argc, char *argv[]) {
 	logger = configurar_logger_verbose("MEM.log", "MEM", string_equals_ignore_case(args_verbose,"true")?true:false);
 	get_config(string_equals_ignore_case(args_configfile,"false")?"../MEM.conf":args_configfile);
 
-	//GOSSIPING - CREA LISTA DE SEEDS
 	crearListaSeedsStruct(MEM_CONF.IP,MEM_CONF.PUERTO,MEM_CONF.MEMORY_NUMBER,MEM_CONF.IP_SEEDS,MEM_CONF.PUERTO_SEEDS,MEM_CONF.MEMORY_NUMBER_SEEDS,logger,LISTA_CONN);
 	//crearListaSeeds(MEM_CONF.IP,MEM_CONF.PUERTO,MEM_CONF.IP_SEEDS,MEM_CONF.PUERTO_SEEDS,logger,LISTA_CONN,LISTA_CONN_PORT);
 
-	/*int paginas1 = add_spa("TABLA1",1,obtenerTimeStamp()); //Siempre devuelve pag; si es 0 no reservo nada
+	/*init_memory_spa();
+	int paginas1 = add_spa("TABLA1",1,obtenerTimeStamp()); //Siempre devuelve pag; si es 0 no reservo nada
 	int paginas2 = add_spa("TABLA1",1,obtenerTimeStamp());
 	getPaginaMenorTimestamp();
 	int paginas4 = add_spa("TABLA2",1,obtenerTimeStamp());
@@ -72,13 +72,15 @@ int main(int argc, char *argv[]) {
 	//dump_memory_spa("TABLA1");
 	//liberar_memory_spa();*/
 
+	tamanio_value = VALUE;
+	//socket_lis = connect_to_server(MEM_CONF.IP_FS, MEM_CONF.PUERTO_FS, lis,memoria);
+
+	init_memory_spa();
+
 	crearHiloConsola();
 	crearHiloJournaling();
 	crearHiloInotify();
 	crearHiloGossipingMemoria();
-	socket_lis = connect_to_server(MEM_CONF.IP_FS, MEM_CONF.PUERTO_FS, lis,memoria);
-
-	init_memory_spa();
 
 	listen_connexions(MEM_CONF.PUERTO);
 
