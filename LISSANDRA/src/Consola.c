@@ -64,11 +64,29 @@ int procesar_comando(char *line) {
 						case _create:
 
 							printf("CONSOLA: Se ingresó comando CREATE \n");
-							printf("Tabla: %s\n", request->parametro1);
-							printf("Tipo consistencia: %s\n", request->parametro2);
-							printf("Numero particiones: %s\n", request->parametro3);
-							printf("Compactation time: %s\n", request->parametro4);
-							CrearTabla(request);
+
+							if(string_is_empty(request->parametro1)
+							  || string_is_empty(request->parametro2)
+							  || string_is_empty(request->parametro3)
+							  || string_is_empty(request->parametro4))
+							{
+								printf("Faltan ingresar datos para la creación de la tabla\n");
+							} else
+							{
+							t_create *msgCreate = malloc(sizeof(t_create));
+							strcpy(msgCreate->nombreTabla, request->parametro1);
+							strcpy(msgCreate->tipo_cons, request->parametro2);
+							msgCreate->num_part = atoi(request->parametro3);
+							msgCreate->comp_time = atoi(request->parametro4);
+
+							printf("Tabla: %s\n", msgCreate->nombreTabla);
+							printf("Tipo consistencia: %s\n", msgCreate->tipo_cons);
+							printf("Numero particiones: %d\n", msgCreate->num_part);
+							printf("Compactation time: %d\n", msgCreate->comp_time);
+
+							CrearTabla(msgCreate);
+							free(msgCreate);
+							}
 							break;
 
 
@@ -96,6 +114,20 @@ int procesar_comando(char *line) {
 
 						case _drop:
 							printf("CONSOLA: Se ingresó comando DROP \n");
+
+							if(string_is_empty(request->parametro1))
+							{
+								printf("Se debe ingresar la tabla a dropear\n");
+
+							}else
+							{
+								int resultado = DropearTabla(request->parametro1);
+								if(resultado) printf("Tabla %s eliminada\n.", request->parametro1);
+								else
+								{
+									printf("La tabla ingresada no existe.\n");
+								}
+							}
 							break;
 
 						default:;

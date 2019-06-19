@@ -323,6 +323,38 @@ void BuscarKey(int key, char *tabla)
 
 }
 
+void BuscarKeyMemtable(int key, char *nombre)
+{
+	printf("Buscando key en memtable de %s\n", nombre);
+	sleep(10);
+
+	t_tabla *tabla = malloc(sizeof(t_tabla));
+	tabla = BuscarTablaMemtable(nombre);
+
+	if(tabla == NULL)
+	{
+	} else
+	{
+		int sizeLista = list_size(tabla->lista);
+
+		t_registro *registro = malloc(sizeof(t_registro));
+		registro = list_get(tabla->lista, 0);
+
+
+		for(int i = 0; i < sizeLista; i++)
+		{
+			t_registro *registroAux = malloc(sizeof(t_registro));
+			registroAux = list_get(tabla->lista, i);
+
+
+			printf("Registro\n key: %d\nvalue: %s\n", registro->key, registro->value);
+			printf("RegistroAux\n key: %d\nvalue: %s\n", registroAux->key, registroAux->value);
+
+		}
+	}
+
+}
+
 
 void BuscarKeyBloque(int key, char *archivo)
 {
@@ -388,30 +420,30 @@ int ContarElementosArray(char **cadena)
 }
 
 
-int CrearTabla(t_request *request)
+int CrearTabla(t_create *msgCreate)
 {
 
 	//Verifico existencia en el file system
-	if(ExisteTabla(request->parametro1))
+	if(ExisteTabla(msgCreate->nombreTabla))
 	{
-		loggear(logger, LOG_LEVEL_ERROR, "%s ya existe en el file system", request->parametro1);
+		loggear(logger, LOG_LEVEL_ERROR, "%s ya existe en el file system", msgCreate->nombreTabla);
 		return -1;
 	}
 
-	int particiones = atoi(request->parametro3);
+	int particiones = msgCreate->num_part;
 
 	//Creo Directorio
-	CrearDirectorioTabla(request->parametro1);
+	CrearDirectorioTabla(msgCreate->nombreTabla);
 
 	//Creo archivo metadata
-	CrearMetadataTabla(request->parametro1, request->parametro2, particiones, atoi(request->parametro4));
+	CrearMetadataTabla(msgCreate->nombreTabla, msgCreate->tipo_cons, particiones, msgCreate->comp_time);
 
 	//Creo archivo binarios
 	int particionInicial = 1;
 	for(int i = 0; i < particiones; i++)
 	{
 
-		char *rutaParticion = string_from_format("%s%s/%s%d.bin", rutaTablas, request->parametro1, "part",particionInicial);
+		char *rutaParticion = string_from_format("%s%s/%s%d.bin", rutaTablas, msgCreate->nombreTabla, "part",particionInicial);
 		printf("Abriendo particiones %s\n", rutaParticion);
 		FILE *file = fopen(rutaParticion, "w");
 

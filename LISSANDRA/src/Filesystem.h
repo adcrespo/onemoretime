@@ -24,12 +24,13 @@ int ContarElementosArray(char **cadena);
 void BuscarKeyBloque(int key, char *tabla);
 void BuscarKey(int key, char *tabla);
 int AgregarBloque();
-int CrearTabla(t_request *request);
+int CrearTabla(t_create *msgCreate);
 void ObtenerMetadataCompleto();
 int DropearTabla(char *nombre);
 int calcularBloques(int bytes);
 void liberarBloques(char **bloques, int cantBloques);
 void liberarMetadata(char **bloques, int cant);
+void BuscarKeyMemtable(int key, char *nombre);
 
 t_config *config_metadata;
 t_bitarray *bitmap;

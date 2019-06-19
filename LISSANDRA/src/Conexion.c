@@ -107,19 +107,38 @@ void procesar(int n_descriptor, fd_set* set_master) {
 					strcpy(request->parametro2, string_itoa(msginsert->key));
 					strcpy(request->parametro3, msginsert->value);
 					strcpy(request->parametro4, string_itoa(msginsert->timestamp));
-					int resultado = InsertarTabla(request);
+					int resultadoInsert = InsertarTabla(request);
 
-					loggear(logger, LOG_LEVEL_WARNING, "Resultado create :%d", resultado);
-					enviarMensajeConError(lis, insert, 0, NULL, n_descriptor, logger, mem, resultado);
+					loggear(logger, LOG_LEVEL_WARNING, "Resultado create :%d", resultadoInsert);
+					enviarMensajeConError(lis, insert, 0, NULL, n_descriptor, logger, mem, resultadoInsert);
 
 					break;
 
 				case create:
 					loggear(logger, LOG_LEVEL_INFO, "Se recibió mensaje create");
+					t_create *msgCreate = malloc(sizeof(t_create));
+
+					memcpy(msgCreate, msg->content, msg->header.longitud);
+
+					int resultadoCreate = CrearTabla(msgCreate);
+					loggear(logger, LOG_LEVEL_WARNING, "Resultado create tabla %s:%d", msgCreate->nombreTabla, resultadoCreate);
+					enviarMensajeConError(lis, insert, 0, NULL, n_descriptor, logger, mem, resultadoCreate);
+					free(msgCreate);
+
+
 					break;
 
 				case drop:
 					loggear(logger, LOG_LEVEL_INFO, "Se recibió mensaje drop");
+
+					t_drop *dropTabla = sizeof(t_drop);
+					memcpy(dropTabla, msg->content, msg->header.longitud);
+
+					int resultadoDrop = DropearTabla(dropTabla->nombreTabla);
+					loggear(logger, LOG_LEVEL_WARNING, "Resultado drop tabla %s:%d", dropTabla->nombreTabla, resultadoDrop);
+					enviarMensajeConError(lis, insert, 0, NULL, n_descriptor, logger, mem, resultadoDrop);
+
+					free(dropTabla);
 					break;
 
 				case selectMsg:
