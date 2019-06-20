@@ -40,6 +40,7 @@
 #include <arpa/inet.h>
 
 #define NUM_CONEX 100
+#define DESCONOCIDO -1
 #define DESCONECTADO 0
 #define CONECTADO 1
 
@@ -47,10 +48,6 @@ pthread_t cliente;
 pthread_mutex_t mutexGossiping;
 pthread_mutex_t mutexprocessGossiping;
 t_list *LISTA_CONECTADOS;
-//t_list *LISTA_CONN;
-//t_list *LISTA_CONN_PORT;
-//t_list *LISTA_CONN_STATUS;
-char BITMAP_CONN_STATUS[NUM_CONEX];
 
 typedef struct tipoSeeds {
 	int numeroMemoria;
@@ -63,46 +60,38 @@ typedef enum tipoServidor {
 	memoria,gossiping
 } t_tipoServidor;
 
-void processGossiping(t_log *logger,t_list *LISTA_CONN,t_list *LISTA_CONN_PORT);
-
-/*
- * Devuelve la lista de las MEMORIAS conectadas despues del GOSSIPING
- */
-t_list *obtenerListaConectados(t_list *LISTA_CONN,t_list *LISTA_CONN_PORT,t_log *logger);
-
-char *armarMensajeListaSEEDSStruct(t_log *logger,t_list *LISTA_CONN);
-/*
- * Arma la lista de seeds que envia por msj
- */
-char *armarMensajeListaSEEDS(t_log *logger,t_list *LISTA_CONN,t_list *LISTA_CONN_PORT);
-
-void processGossipingStruct(t_log *logger,t_list *LISTA_CONN);
-
-int procesarMsjGossipingStruct(char *mensaje, char *primerParser, char *segundoParser, t_log *logger,t_list *LISTA_CONN);
-
-/*
- * Actualiza la lista de seeds que recibe por msj
- */
-int procesarMsjGossiping(char *mensaje, char *primerParser, char *segundoParser, t_log *logger,t_list *LISTA_CONN,t_list *LISTA_CONN_PORT);
-
 /*
  * Obtiene IP local si no esta en archivo de configuracion
  */
 char* getLocalIp(char *MEM_CONF_IP);
 
 /*
- * Crea la lista de SEEDS al prinicipio del proceso
+ * Arma la lista de seeds que envia por msj
  */
-int crearListaSeeds(char *MEM_CONF_IP,char *MEM_CONF_PUERTO, char **MEM_CONF_IP_SEEDS, char **MEM_CONF_PUERTO_SEEDS, t_log *logger,t_list *LISTA_CONN,t_list *LISTA_CONN_PORT);
+char *armarMensajeListaSEEDSStruct(t_log *logger,t_list *LISTA_CONN);
 
 /*
- * Crea el hilo encargado del GOSSIPING
+ * Procesa Msj recibido de Gossiping
  */
-int crearHiloGossiping(t_log *logger,t_list *LISTA_CONN,t_list *LISTA_CONN_PORT,int *hilo_cliente);
+int procesarMsjGossipingStruct(char *mensaje, char *primerParser, char *segundoParser, t_log *logger,t_list *LISTA_CONN);
 
 /*
- * Crea una lista de Struct de SEEDS
+ * Proceso del hilo Gossiping
  */
-int crearListaSeedsStruct(char *MEM_CONF_IP,char *MEM_CONF_PUERTO,int MEM_CONF_NUMERO_MEMORIA, char **MEM_CONF_IP_SEEDS, char **MEM_CONF_PUERTO_SEEDS, char **MEM_CONF_MEMORY_NUMBER_SEEDS, t_log *logger,t_list *LISTA_CONN);
+void processGossipingStruct(t_log *logger,t_list *LISTA_CONN);
+
+/*
+ * Crea una lista de Struct de SEEDS, si es KERNEL no ingresa su propia IP
+ * Parametros
+ * tipoProceso: el proceso que invoca la funcion
+ * MEM_CONF_IP: IP del proceso principal del archivo de configuracion, para KERNEL no es necesario
+ * MEM_CONF_PUERTO: PUERTO del proceso principal del archivo de configuracion, para KERNEL no es necesario
+ * MEM_CONF_NUMERO_MEMORIA: Numero de la memoria principal, para KERNEL enviar DESCONOCIDO
+ * MEM_CONF_IP_SEEDS: Lista de SEEDS de archivo de configuracion
+ * MEM_CONF_PUERTO_SEEDS: Lista de PUERTOS SEEDS de archivo de configuracion
+ * logger: Logger del proceso
+ * LISTA_CONN: Lista en Memoria de los SEEDS
+ */
+int crearListaSeedsStruct(char tipoProceso,char *MEM_CONF_IP,char *MEM_CONF_PUERTO,int MEM_CONF_NUMERO_MEMORIA, char **MEM_CONF_IP_SEEDS, char **MEM_CONF_PUERTO_SEEDS, t_log *logger,t_list *LISTA_CONN);
 
 #endif /* GOSSIPING_H_ */
