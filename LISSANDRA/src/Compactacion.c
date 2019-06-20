@@ -12,8 +12,54 @@ int process_compactacion(char* path_tabla)
 {
 	int res = 0;
 	loggear(logger, LOG_LEVEL_INFO,"Se esta por realizar la compactacion de %s",path_tabla);
+	char* listasTmp[100];
+	int i;
+	char* rutaTabla = string_new();
+	char* rutaTmp = string_new();
+	char* rutaTmpc = string_new();
 
-	//TODO: listar archivos .tmp, dentro del directorio que le corresponde a la tabla
+	DIR *dir;
+	struct dirent *entry;
+
+	//creamos una array vacio
+	for (i = 0; 100 > i; i++) {
+		listasTmp[i] = string_new();
+	}
+
+	//vamos guardando cada tmp en el array
+	string_append(&rutaTabla, rutaTablas);
+	string_append(&rutaTabla, path_tabla);
+
+
+	if ((dir = opendir(rutaTabla)) == NULL) {
+		perror("openndir() error");
+	} else {
+		i = 0;
+		while ((entry = readdir(dir)) != NULL) {
+			if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, "..")) {
+
+			} else {
+				if (string_ends_with(entry->d_name, ".tmp")) {
+					listasTmp[i] = entry->d_name;
+					i++;
+				}
+			}
+		}
+	}
+
+	//Renombrar a .tmpc
+
+	i=0;
+	while(!string_is_empty(listasTmp[i])){
+		string_append(&rutaTmp,rutaTabla);
+		string_append(&rutaTmp, listasTmp[i]);
+		string_append(&rutaTmpc, rutaTmp);
+		string_append(&rutaTmpc, "c");
+		rename(rutaTmp, rutaTmpc);
+
+		i++;
+	}
+
 
 	//Por cada .tmp:
 		//Renombrar a .tmpc
