@@ -24,6 +24,7 @@
 
 #define MAX_PATH 50
 #define MAX_CONS 3
+#define MEMORY_FULL -100
 
 int tamanio_value;
 t_log* logger;

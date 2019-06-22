@@ -14,18 +14,19 @@
 #include "file_conf.h"
 
 int solicitarPagina(char *tabla, unsigned long long timestamp) {
-	loggear(logger,LOG_LEVEL_INFO,"Busco pagina");
 	int paginaNueva = add_spa(tabla,1,timestamp);
 	if(paginaNueva<0) {
 		t_adm_tabla_frames_spa frame_reg = getPaginaMenorTimestamp();
 		paginaNueva = frame_reg.pagina;
-		if(paginaNueva<=-1) {
-			process_journaling();
-			paginaNueva = add_spa(tabla,1,timestamp);
+		if(paginaNueva<0) {
+			loggear(logger,LOG_LEVEL_DEBUG,"MEMORY FULL!!");
+			return MEMORY_FULL;
+			//process_journaling();
+			//paginaNueva = add_spa(tabla,1,timestamp);
 		}
 	}
 	if(paginaNueva<0){
-		loggear(logger,LOG_LEVEL_ERROR,"Error en pagina: %d", paginaNueva);
+		loggear(logger,LOG_LEVEL_ERROR,"Error en solitarPagina: %d", paginaNueva);
 		return -1;
 	}
 	return paginaNueva;
@@ -36,7 +37,6 @@ int proceso_select(char* tabla, int clave, char** buffer) {
 	if(paginaTabla>=0){
 		*buffer = leer_bytes_spa(tabla,0,paginaTabla*frame_spa_size,frame_spa_size);
 		if(*buffer[0]!=0x00){
-			loggear(logger,LOG_LEVEL_ERROR,"NO encontre la pagina en memoria (%d)",paginaTabla);
 			pthread_mutex_unlock(&journalingMutexSelect);
 			return 1;
 		}
@@ -54,6 +54,7 @@ int proceso_select(char* tabla, int clave, char** buffer) {
 	sleep(MEM_CONF.RETARDO_FS/1000);
 	enviarMensaje(mem,selectMsg,largo_content,content,socket_lis,logger,lis);
 	t_mensaje* mensaje = recibirMensaje(socket_lis, logger);
+	free(content);
 
 	if(mensaje == NULL) {
 		loggear(logger,LOG_LEVEL_ERROR,"No se pudo recibir mensaje de lis");
@@ -72,9 +73,9 @@ int proceso_select(char* tabla, int clave, char** buffer) {
 	int paginaNueva = solicitarPagina(tabla, timestamp);
 	if(paginaNueva<0){
 		free(*buffer);
-		loggear(logger,LOG_LEVEL_ERROR,"Error en escribir_bytes: %d", paginaNueva);
+		loggear(logger,LOG_LEVEL_ERROR,"Error en solicitar pagina: %d", paginaNueva);
 		pthread_mutex_unlock(&journalingMutexSelect);
-		return -1;
+		return paginaNueva;
 	}
 
 	int escrito = escribir_bytes_spa(tabla,paginaNueva,0,frame_spa_size,*buffer,0);
@@ -111,7 +112,7 @@ int proceso_insert(char* tabla, int clave, char* value) {
 		free(buffer);
 		loggear(logger,LOG_LEVEL_ERROR,"Error en escribir_bytes: %d", paginaNueva);
 		pthread_mutex_unlock(&journalingMutexInsert);
-		return -1;
+		return paginaNueva;
 	}
 
 	escrito = escribir_bytes_spa(tabla,0,paginaNueva*frame_spa_size,frame_spa_size,buffer,1);
@@ -122,6 +123,7 @@ int proceso_insert(char* tabla, int clave, char* value) {
 		return escrito;
 	}
 
+	free(buffer);
 	pthread_mutex_unlock(&journalingMutexInsert);
 	return escrito;
 }

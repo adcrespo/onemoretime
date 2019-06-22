@@ -58,17 +58,23 @@ void *crearConsola() {
 	rl_attempted_completion_function = character_name_completion;
 
 	while (1) {
+		int i;
 		line = readline("Ingrese un comando> ");
 		if (line) {
 			add_history(line);
 		}
 
 		char** comando = string_split(line, " ");
+		free(line);
 
 		t_tipoComando comando_e = buscar_enum(comando[0]);
 
-		if(comando_e == -2)
+		if(comando_e == -2){
+			for(i=0;comando[i]!=NULL;i++)
+				free(comando[i]);
+			if(comando) free(comando);
 			continue;
+		}
 
 		switch (comando_e) {
 		case select_:;
@@ -94,14 +100,13 @@ void *crearConsola() {
 				break;
 			}
 			char* registroInsertar = string_new();
-			int i=3;
 			for(i=3;comando[i]!=NULL;i++){
 				string_append_with_format(&registroInsertar,"%s ",comando[i]);
 			}
 			registroInsertar[strlen(registroInsertar)-1]=0x00;
 
 			printf("insert...\n");
-			int escrito = proceso_insert(comando[1],atoi(comando[2]), registroInsertar);
+			int escrito = proceso_insert(comando[1],atoll(comando[2]), registroInsertar);
 			if(escrito >= 0)
 				printf("[OK] Se pudo insertar el registro \n");
 			else
@@ -165,6 +170,9 @@ void *crearConsola() {
 		default:;
 			printf("No se reconoce el comando %s .\n", comando[0]);
 		}
+		for(i=0;comando[i]!=NULL;i++)
+			free(comando[i]);
+		if(comando) free(comando);
 	}
 	return 0;
 }

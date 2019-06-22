@@ -108,6 +108,8 @@ void liberar_memory_spa() {
 	mem_desallocate_fullspace_spa();
 	int i,j,k;
 	for (i = 0; i < frames_spa_count; i++) {
+		t_adm_tabla_frames_spa* adm_table_frame = list_get(adm_frame_lista_spa,0);
+		free(adm_table_frame->path_tabla);
 		free(list_remove(adm_frame_lista_spa,0));
 	}
 	if(adm_frame_lista_spa!=NULL) list_destroy(adm_frame_lista_spa);
@@ -125,6 +127,7 @@ void liberar_memory_spa() {
 			list_destroy(adm_table_seg->pag_lista);
 			free(adm_table_seg);
 		}
+		free(adm_table->path_tabla);
 		list_destroy(adm_table->seg_lista);
 		free(adm_table);
 	}
@@ -152,7 +155,7 @@ void init_memory_spa() {
 	for (i = 0; i < frames_spa_count; i++) {
 		t_adm_tabla_frames_spa* adm_table = malloc(sizeof(t_adm_tabla_frames_spa));
 		adm_table->path_tabla = string_from_format("");
-		adm_table->pagina = 0;
+		adm_table->pagina = -1;
 		list_add(adm_frame_lista_spa, adm_table);
 	}
 
@@ -201,7 +204,7 @@ void free_spa(char* path_table, int pagina) {
 	t_adm_tabla_frames_spa* adm_table_frame = list_get(adm_frame_lista_spa,adm_table_pag->frame);
 
 	adm_table_frame->path_tabla = string_from_format("");
-	adm_table_frame->pagina = 0;
+	adm_table_frame->pagina = -1;
 	clean_frame_spa(adm_table_pag->frame);
 
 	adm_table_pag->frame = -1;
@@ -491,7 +494,7 @@ t_adm_tabla_frames_spa getPaginaMenorTimestamp() {
 		t_segmentos_spa* adm_table_seg = list_get(adm_table->seg_lista, 0);
 		for (j = 0; j < list_size(adm_table_seg->pag_lista); j++) {
 			t_paginas_spa* adm_table_pag = list_get(adm_table_seg->pag_lista,j);
-			if(timestamp==0 || adm_table_pag->timestamp < timestamp) {
+			if((timestamp==0 || adm_table_pag->timestamp < timestamp) && adm_table_pag->modificado == 0) {
 				frame_spa.path_tabla = string_from_format(adm_table->path_tabla);
 				frame_spa.pagina = j;
 				timestamp = adm_table_pag->timestamp;
@@ -544,7 +547,7 @@ int getSizePagesForTable(char *path_table) {
 	t_adm_tabla_segmentos_spa* adm_table = list_find(adm_spa_lista, &find);
 
 	loggear(logger,LOG_LEVEL_DEBUG, "%s",
-					(adm_table != NULL) ? "ENCONTRE EL SEGMENTO FOR KEY!" : "NO ENCONTRE EL SEGMENTO FOR KEY.");
+					(adm_table != NULL) ? "ENCONTRE EL SEGMENTO FOR TABLA!" : "NO ENCONTRE EL SEGMENTO FOR TABLA.");
 
 	if(adm_table==NULL)
 		return -1;
