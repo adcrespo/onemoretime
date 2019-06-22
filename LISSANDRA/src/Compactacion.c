@@ -62,7 +62,6 @@ int process_compactacion(char* path_tabla)
 
 
 	//Por cada .tmp:
-		//Renombrar a .tmpc
 		//Analizar registro por registro y compararlos contra el .bin (en memoria)
 			//Si la key no existe -> agregarlo
 			//Si la key existe pero el timestamp del .tmp es mas reciente -> agregarlo

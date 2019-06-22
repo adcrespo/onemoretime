@@ -10,6 +10,7 @@
 
 #include "LFS.h"
 
+
 void *CrearFileSystem();
 void CargarMetadata();
 void CargarBitmap();
@@ -32,6 +33,7 @@ void liberarBloques(char **bloques, int cantBloques);
 void liberarMetadata(char **bloques, int cant);
 void BuscarKeyMemtable(int key, char *nombre);
 void LevantarHilosCompactacionFS();
+t_list *obtenerRegistroBin();
 
 t_config *config_metadata;
 t_bitarray *bitmap;

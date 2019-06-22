@@ -629,3 +629,66 @@ void LevantarHilosCompactacionFS()
 			}
 		}
 }
+
+t_list *obtenerRegistroBin(char *tabla) {
+
+	DIR *dir;
+	struct dirent *entry;
+
+	//vamos guardando cada tmp en el array
+
+	if ((dir = opendir(tabla)) == NULL) {
+		perror("openndir() error");
+	} else {
+		t_list *registrosBin = list_create();
+		while ((entry = readdir(dir)) != NULL) {
+			if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, "..")) {
+
+			} else {
+				if (string_ends_with(entry->d_name, ".bin")) {
+					printf("Archivo: %s\n", entry->d_name);
+					char *pathFile = string_from_format("%s/%s", tabla,
+							entry->d_name);
+					printf("Abriendo file %s\n", pathFile);
+					t_config *config_file = cargarConfiguracion(pathFile,
+							logger);
+
+					int size = config_get_int_value(config_file, "SIZE");
+
+					int cantBloques = calcularBloques(size);
+					char **bloques = malloc(sizeof(int) * cantBloques);
+					bloques = config_get_array_value(config_file, "BLOCKS");
+
+					for (int i = 0; cantBloques > i; i++) {
+						char *bloque = string_from_format("%s/%s.bin",
+								rutaBloques, bloques[i]);
+						//abrirArchivo
+						FILE *archivo = fopen(bloque, "r+");
+						char linea[100];
+						char **elementos;
+
+						//recorrer
+						while (!feof(archivo)) {
+							fgets(linea, 100, archivo);
+							elementos = string_split(linea, ";");
+							int cantElementos = ContarElementosArray(elementos);
+							t_registro *registro = malloc(sizeof(t_registro));
+							registro->timestamp = atoll(elementos[0]);
+							registro->key = atoi(elementos[1]);
+							strcpy(registro->value, elementos[2]);
+							list_add(registrosBin, registro);
+							for (int i = 0; cantElementos > i; i++) {
+								free(elementos[i]);
+							}
+						}
+					}
+				}
+			}
+		}
+		return registrosBin;
+	}
+	return NULL;
+}
+
+
+
