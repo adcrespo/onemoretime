@@ -34,6 +34,7 @@ void liberarMetadata(char **bloques, int cant);
 void BuscarKeyMemtable(int key, char *nombre);
 void LevantarHilosCompactacionFS();
 t_list *obtenerRegistroBin();
+void GuardarEnBloque(char *linea, char *path);
 
 t_config *config_metadata;
 t_bitarray *bitmap;

@@ -10,6 +10,8 @@
 
 #include "LFS.h"
 
+int dumpRealizados;
+
 void *InicializarDump();
 void AplicarTiempoDump();
 void RealizarDumpeo();

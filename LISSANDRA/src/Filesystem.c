@@ -230,7 +230,7 @@ int InsertarTabla(t_request *request)
 
 	registro->key = atoi(request->parametro2);
 	memcpy(registro->value, request->parametro3, strlen(request->parametro3)+1);
-	registro->timestamp = atoi(request->parametro4);
+	registro->timestamp = atoll(request->parametro4);
 
 	printf("Registro key %d\n", registro->key);
 	printf("Registro value %s\n", registro->value);
@@ -280,6 +280,19 @@ void CrearBloque(int numero, int bytes)
 	free(bytesAEscribir);
 	fflush(binFile);
 
+}
+
+void GuardarEnBloque(char *linea, char *path)
+{
+	loggear(logger, LOG_LEVEL_INFO, "Guardando linea :%s en: %s", linea, path);
+	FILE *file = fopen(path, "w+");
+	fseek(file, 0L, SEEK_END);
+	//int len = ftell(file);
+	//fseek(file, len, SEEK_SET);
+
+	fwrite(linea, 1, strlen(linea), file);
+	free(linea);
+	fclose(file);
 }
 
 void BuscarKey(int key, char *tabla)
@@ -381,7 +394,7 @@ void BuscarKeyBloque(int key, char *archivo)
 			t_registro *registro = malloc(sizeof(t_registro));
 			char *value = string_new();
 			string_append(&value, elementos[2]);
-			registro->timestamp = atoi(elementos[0]);
+			registro->timestamp = atoll(elementos[0]);
 			registro->key = atoi(elementos[1]);
 			strcpy(registro->value, value);
 
@@ -624,7 +637,7 @@ void LevantarHilosCompactacionFS()
 
 					int compactationTime = config_get_int_value(config_file, "COMPACTATION_TIME");
 					printf("Tiempo de compactacion tabla %s: %d\n", entry->d_name, compactationTime);
-					crearHiloCompactacion(compactationTime, entry->d_name);
+					//crearHiloCompactacion(compactationTime, entry->d_name);
 				}
 			}
 		}
@@ -681,6 +694,7 @@ t_list *obtenerRegistroBin(char *tabla) {
 								free(elementos[i]);
 							}
 						}
+						fclose(archivo);
 					}
 				}
 			}

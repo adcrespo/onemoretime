@@ -8,7 +8,7 @@
 
 void *InicializarDump()
 {
-
+	dumpRealizados = 0;
 	AplicarTiempoDump();
 	RealizarDumpeo();
 	LimpiarMemtable();
@@ -25,7 +25,8 @@ void AplicarTiempoDump()
 
 void RealizarDumpeo()
 {
-	loggear(logger, LOG_LEVEL_INFO, "Realizando dumpeo");
+	dumpRealizados ++;
+	loggear(logger, LOG_LEVEL_INFO, "Realizando dumpeo numero %d", dumpRealizados);
 
 	int longitudMemtable = list_size(memtable);
 
@@ -56,11 +57,57 @@ void DumpearTabla(t_list *lista, char *nombre)
 	loggear(logger, LOG_LEVEL_INFO, "Dumpeando tabla: %s", nombre);
 
 	int longitudTabla = list_size(lista);
+	loggear(logger, LOG_LEVEL_INFO,"Longitud tabla %s es %d", nombre, longitudTabla);
+	char *temporal = string_from_format("%s%s/%d.tmp", rutaTablas, nombre, dumpRealizados);
+	loggear(logger, LOG_LEVEL_INFO,"Creando archivo %s", temporal);
+	FILE *file = fopen(temporal, "w+");
+
+	int bloqueActual = AgregarBloque();
+	char *rutaActual = string_from_format("%s%d.bin", rutaBloques, bloqueActual);
+	int disponibleActual = tamanio_bloques;
 	//for para recorrer cada tabla dentro de memtable
 	for(int j = 0; j < longitudTabla; j++)
 	{
 
+		int len = sizeof(t_registro);
+		t_registro *registro = malloc(len);
+		registro = list_get(lista, j);
+		char *linea = string_new();
+		char *key = string_itoa(registro->key);
+		char *timestamp = string_itoa(registro->timestamp);
+
+		string_append(&linea, key);
+		string_append(&linea, ";");
+		string_append(&linea, registro->value);
+		string_append(&linea, ";");
+		string_append(&linea, timestamp);
+		string_append(&linea, "\n");
+		int lenLinea = strlen(linea);
+
+		if(lenLinea < disponibleActual)
+		{
+			disponibleActual -= lenLinea;
+			GuardarEnBloque(linea, rutaActual);
+			loggear(logger, LOG_LEVEL_INFO, "El disponible es: %d", disponibleActual);
+		} else
+		{
+			bloqueActual = AgregarBloque();
+			disponibleActual = tamanio_bloques;
+			bloqueActual ++;
+			disponibleActual -= lenLinea;
+			rutaActual = string_from_format("%s%d.bin", rutaBloques, bloqueActual);
+			GuardarEnBloque(linea, rutaActual);
+			loggear(logger, LOG_LEVEL_INFO, "El disponible es: %d", disponibleActual);
+
+
+		}
+
+
+
+		loggear(logger, LOG_LEVEL_WARNING, "Registro key: %d value: %s timestamp %d", registro->key, registro->value, registro->timestamp);
+
 	}
+	fclose(file);
 }
 
 void LimpiarMemtable()

@@ -51,11 +51,21 @@ int procesar_comando(char *line) {
 						case _insert:
 
 							printf("CONSOLA: Se ingresó comando INSERT \n");
-							printf("Tabla: %s\n", request->parametro1);
-							printf("Key: %s\n", request->parametro2);
-							printf("Value: %s\n", request->parametro3);
-							printf("Timestamp: %s\n", request->parametro4);
-							InsertarTabla(request);
+							if(string_is_empty(request->parametro1)
+							  || string_is_empty(request->parametro2)
+							  || string_is_empty(request->parametro3)
+							  || string_is_empty(request->parametro4))
+							{
+								printf("Faltan ingresar datos utilizar el comando\n");
+							} else
+							{
+								printf("Tabla: %s\n", request->parametro1);
+								printf("Key: %s\n", request->parametro2);
+								printf("Value: %s\n", request->parametro3);
+								printf("Timestamp: %s\n", request->parametro4);
+								InsertarTabla(request);
+							}
+
 
 							break;
 
@@ -133,7 +143,7 @@ int procesar_comando(char *line) {
 						default:;
 					}
 				}
-
+				free(line);
 				return 0;
 }
 
