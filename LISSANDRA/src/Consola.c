@@ -53,12 +53,15 @@ int procesar_comando(char *line) {
 							printf("CONSOLA: Se ingresó comando INSERT \n");
 							if(string_is_empty(request->parametro1)
 							  || string_is_empty(request->parametro2)
-							  || string_is_empty(request->parametro3)
-							  || string_is_empty(request->parametro4))
+							  || string_is_empty(request->parametro3))
 							{
 								printf("Faltan ingresar datos utilizar el comando\n");
 							} else
 							{
+								if(string_is_empty(request->parametro4))
+								{
+									request->parametro4 = string_itoa(obtenerTimeStamp());
+								}
 								printf("Tabla: %s\n", request->parametro1);
 								printf("Key: %s\n", request->parametro2);
 								printf("Value: %s\n", request->parametro3);

@@ -64,6 +64,7 @@ void DumpearTabla(t_list *lista, char *nombre)
 
 	int bloqueActual = AgregarBloque();
 	char *rutaActual = string_from_format("%s%d.bin", rutaBloques, bloqueActual);
+	int sizeTotal = 0;
 	int disponibleActual = tamanio_bloques;
 	//for para recorrer cada tabla dentro de memtable
 	for(int j = 0; j < longitudTabla; j++)
@@ -82,12 +83,15 @@ void DumpearTabla(t_list *lista, char *nombre)
 		string_append(&linea, ";");
 		string_append(&linea, timestamp);
 		string_append(&linea, "\n");
+		free(key);
+		free(timestamp);
 		int lenLinea = strlen(linea);
 
 		if(lenLinea < disponibleActual)
 		{
 			disponibleActual -= lenLinea;
 			GuardarEnBloque(linea, rutaActual);
+			sizeTotal += lenLinea;
 			loggear(logger, LOG_LEVEL_INFO, "El disponible es: %d", disponibleActual);
 		} else
 		{
@@ -97,6 +101,7 @@ void DumpearTabla(t_list *lista, char *nombre)
 			disponibleActual -= lenLinea;
 			rutaActual = string_from_format("%s%d.bin", rutaBloques, bloqueActual);
 			GuardarEnBloque(linea, rutaActual);
+			sizeTotal += lenLinea;
 			loggear(logger, LOG_LEVEL_INFO, "El disponible es: %d", disponibleActual);
 
 
@@ -107,7 +112,15 @@ void DumpearTabla(t_list *lista, char *nombre)
 		loggear(logger, LOG_LEVEL_WARNING, "Registro key: %d value: %s timestamp %d", registro->key, registro->value, registro->timestamp);
 
 	}
+	char *sizeAEscribir = string_from_format("SIZE=%d\n", sizeTotal);
+	fputs(sizeAEscribir, file);
+	fputs("BLOCKS=[",file);
+	fprintf(file, "%d", bloqueActual);
+	fputs("]\n",file);
+	free(sizeAEscribir);
+	list_clean(lista);
 	fclose(file);
+
 }
 
 void LimpiarMemtable()
