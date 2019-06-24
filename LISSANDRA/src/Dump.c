@@ -66,6 +66,8 @@ void DumpearTabla(t_list *lista, char *nombre)
 	char *rutaActual = string_from_format("%s%d.bin", rutaBloques, bloqueActual);
 	int sizeTotal = 0;
 	int disponibleActual = tamanio_bloques;
+	t_list *bloques = list_create();
+	list_add(bloques, bloqueActual);
 	//for para recorrer cada tabla dentro de memtable
 	for(int j = 0; j < longitudTabla; j++)
 	{
@@ -101,6 +103,7 @@ void DumpearTabla(t_list *lista, char *nombre)
 			disponibleActual -= lenLinea;
 			rutaActual = string_from_format("%s%d.bin", rutaBloques, bloqueActual);
 			GuardarEnBloque(linea, rutaActual);
+			list_add(bloques, bloqueActual);
 			sizeTotal += lenLinea;
 			loggear(logger, LOG_LEVEL_INFO, "El disponible es: %d", disponibleActual);
 
@@ -115,10 +118,27 @@ void DumpearTabla(t_list *lista, char *nombre)
 	char *sizeAEscribir = string_from_format("SIZE=%d\n", sizeTotal);
 	fputs(sizeAEscribir, file);
 	fputs("BLOCKS=[",file);
-	fprintf(file, "%d", bloqueActual);
+	int longitudBloques = list_size(bloques);
+	for(int i = 0; i < longitudBloques; i++)
+	{
+		int idBloque = list_get(bloques, i);
+		if(i < (longitudBloques - 1))
+		{
+			fprintf(file, "%d", idBloque);
+			fputs(",", file);
+		} else
+		{
+			fprintf(file, "%d", idBloque);
+		}
+
+	}
+
 	fputs("]\n",file);
 	free(sizeAEscribir);
+	list_clean(bloques);
+	free(bloques);
 	list_clean(lista);
+	free(lista);
 	fclose(file);
 
 }

@@ -285,7 +285,7 @@ void CrearBloque(int numero, int bytes)
 void GuardarEnBloque(char *linea, char *path)
 {
 	loggear(logger, LOG_LEVEL_INFO, "Guardando linea :%s en: %s", linea, path);
-	FILE *file = fopen(path, "w+");
+	FILE *file = fopen(path, "a+");
 	fseek(file, 0L, SEEK_END);
 	//int len = ftell(file);
 	//fseek(file, len, SEEK_SET);
