@@ -27,6 +27,9 @@ int main(void) {
 	/* 5. Creación de hilo para consola */
 	crear_hilo_consola();
 
+	/* 6. Gossiping */
+	init_gossiping();
+
 
 	pthread_join(thread_consola, NULL);
 
@@ -42,7 +45,6 @@ void inicializar() {
 	lista_ready = list_create();
 	lista_exec = list_create();
 	lista_exit = list_create();
-
 }
 
 void crear_hilo_consola() {
@@ -52,4 +54,9 @@ void crear_hilo_consola() {
 		log_error(logger, "No se pudo generar el hilo para la consola.");
 	}
 	log_info(logger, "Se generó el hilo para la consola.");
+}
+
+void init_gossiping() {
+
+//	crearListaSeeds(kernel_conf.MEM_CONF.IP,MEM_CONF.PUERTO,MEM_CONF.IP_SEEDS,MEM_CONF.PUERTO_SEEDS,logger);
 }

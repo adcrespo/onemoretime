@@ -32,6 +32,8 @@ int procesar_comando(char *line) {
 
 	log_info(logger, "CONSOLA: %s.", line);
 
+	char* linea_auxiliar = string_new();
+	string_append(&linea_auxiliar, line);
 	t_request* request = parsear(line, logger);
 
 	if (request->request == -1) {
@@ -53,6 +55,15 @@ int procesar_comando(char *line) {
 				return -1;
 
 			case _select:
+				// Generar nuevo proceso.
+				printf("Generando nuevo proceso.\n");
+				t_pcb* proceso_nuevo = crear_proceso(linea_auxiliar, request);
+
+				printf("Proceso generado.\n");
+				printf("ID: %d .\n", proceso_nuevo->id_proceso);
+				printf("Program Counter: %d .\n", proceso_nuevo->program_counter);
+				printf("Script: %s .\n", proceso_nuevo->script);
+
 				printf("Validando existencia de Tabla.\n");
 				printf("Seleccionando Memoria según Criterio.\n");
 				printf("Enviando SELECT a una Memoria.\n");

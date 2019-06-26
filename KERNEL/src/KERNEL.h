@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <commons/log.h>
 #include <shared.h>
+#include <gossiping.h>
 #include "Auxiliares/Logueo.h"
 #include "Auxiliares/Consola.h"
 #include "Auxiliares/Planificador.h"
@@ -31,6 +32,8 @@ int socket_memoria;
 //void cargar_configuracion_kernel();
 void inicializar();
 void crear_hilo_consola();
+
+void init_gossiping();
 
 
 #endif /* KERNEL_H_ */

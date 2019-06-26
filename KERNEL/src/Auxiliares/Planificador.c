@@ -18,4 +18,14 @@ void generar_nuevo_proceso(t_request* request) {
 
 }
 
+t_pcb* crear_proceso(char* line,t_request* request) {
+
+	t_pcb* proceso = malloc(sizeof(t_pcb));
+	proceso->script = string_new();
+	proceso->id_proceso = asignar_id_proceso();
+	proceso->program_counter = 0;
+	string_append(&proceso->script, line);
+	return proceso;
+}
+
 
