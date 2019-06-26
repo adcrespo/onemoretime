@@ -60,7 +60,10 @@ int procesar_comando(char *line) {
 							{
 								if(string_is_empty(request->parametro4))
 								{
-									request->parametro4 = string_itoa(obtenerTimeStamp());
+									unsigned long long timestamp =obtenerTimeStamp();
+									request->parametro4 = malloc(20);
+									sprintf(request->parametro4, "%llu", timestamp);
+									//request->parametro4 = string_itoa();
 								}
 								printf("Tabla: %s\n", request->parametro1);
 								printf("Key: %s\n", request->parametro2);

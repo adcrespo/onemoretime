@@ -234,7 +234,7 @@ int InsertarTabla(t_request *request)
 
 	printf("Registro key %d\n", registro->key);
 	printf("Registro value %s\n", registro->value);
-	printf("Registro timestamp %d\n", registro->timestamp);
+	printf("Registro timestamp %llu\n", registro->timestamp);
 
 	//Verifico existencia en el file system
 	if(!ExisteTabla(request->parametro1))
