@@ -76,11 +76,16 @@ char *armarMensajeListaSEEDSStruct(t_log *logger,t_list *LISTA_CONN);
 int procesarMsjGossipingStruct(char *mensaje, char *primerParser, char *segundoParser, t_log *logger,t_list *LISTA_CONN);
 
 /*
+ * KERNEL - MEMORIA
  * Proceso del hilo Gossiping
+ * parametros
+ * loogger: logger del proceso
+ * LISTA_CONN: lista en MEMORIA de SEEDS del proceso
  */
 void processGossipingStruct(t_log *logger,t_list *LISTA_CONN);
 
 /*
+ * KERNEL - MEMORIA
  * Crea una lista de Struct de SEEDS, si es KERNEL no ingresa su propia IP
  * Parametros
  * tipoProceso: el proceso que invoca la funcion

@@ -25,14 +25,15 @@
 #define CONECTADO 1
 
 pthread_t cliente;
-//pthread_mutex_t mutexGossiping;
-//pthread_mutex_t mutexprocessGossiping;
-//t_list *LISTA_CONN;
-//t_list *LISTA_CONECTADOS;
-//char BITMAP_CONN_STATUS[NUM_CONEX];
 
+/*
+ * Proceso de cada Hilo encargado del gossiping
+ */
 void *hiloGossipingMemoria();
 
+/*
+ * Proceso encargado de crear el hilo en MEM encargado del Gossiping
+ */
 int crearHiloGossipingMemoria();
 
 #endif /* GOSSIPINGMEMORIA_H_ */

@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
 	logger = configurar_logger_verbose("MEM.log", "MEM", string_equals_ignore_case(args_verbose,"true")?true:false);
 	get_config(string_equals_ignore_case(args_configfile,"false")?"../MEM.conf":args_configfile);
 
-	//TODO: Inicializar la lista de SEEDS
+	//TODO: Inicializar la lista de SEEDS - USAR EN KERNEL
 	crearListaSeedsStruct(gossiping,MEM_CONF.IP,MEM_CONF.PUERTO,MEM_CONF.MEMORY_NUMBER,MEM_CONF.IP_SEEDS,MEM_CONF.PUERTO_SEEDS,logger,LISTA_CONN);
 
 
@@ -81,7 +81,7 @@ int main(int argc, char *argv[]) {
 	crearHiloConsola();
 	crearHiloJournaling();
 	crearHiloInotify();
-	//TODO: Crea el hilo encargado del Gossiping
+	//TODO: Crea el hilo encargado del Gossiping - USAR EN KERNEL
 	crearHiloGossipingMemoria();
 
 	listen_connexions(MEM_CONF.PUERTO);
