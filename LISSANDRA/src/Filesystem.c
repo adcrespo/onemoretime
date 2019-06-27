@@ -100,6 +100,7 @@ t_metadata* ObtenerMetadataTabla(char *tabla)
 
 	t_metadata *metadata = malloc(sizeof(t_metadata));
 	char *rutaMetadata = string_from_format("%s%s/Metadata", rutaTablas, tabla);
+	loggear(logger, LOG_LEVEL_INFO, "Obteniendo metadata en ruta %s", rutaMetadata);
 
 	t_config *metadataFile = cargarConfiguracion(rutaMetadata, logger);
 
@@ -295,7 +296,7 @@ void GuardarEnBloque(char *linea, char *path)
 	fclose(file);
 }
 
-void BuscarKey(int key, char *tabla)
+t_registro* BuscarKey(t_select *selectMsg)
 {
 
 	//char *nombreTabla = string_new();
@@ -303,69 +304,102 @@ void BuscarKey(int key, char *tabla)
 	//int key = atoi(request->parametro2);
 
 	//Verifico existencia en el file system
-	if(!ExisteTabla(tabla))
+	if(!ExisteTabla(selectMsg->nombreTabla))
 	{
-		loggear(logger, LOG_LEVEL_ERROR, "%s no existe en el file system", tabla);
+		loggear(logger, LOG_LEVEL_ERROR, "%s no existe en el file system", selectMsg->nombreTabla);
 	}
 
 	//Obtengo metadata
-	t_metadata *metadata = ObtenerMetadataTabla(tabla);
+	t_metadata *metadata = ObtenerMetadataTabla(selectMsg->nombreTabla);
 	int particiones = metadata->particiones;
 	free(metadata);
 
 	//Calculo particion de la key
-	int particion = CalcularParticion(key, particiones);
+	int particion = CalcularParticion(selectMsg->key, particiones);
 
 	//Obtengo bloques de la particion
-	char *rutaParticion = (string_from_format("%s%s/%d.bin", rutaTablas, tabla, particion));
-
+	char *rutaParticion = string_from_format("%s%s/part%d.bin", rutaTablas, selectMsg->nombreTabla, particion);
+	loggear(logger, LOG_LEVEL_INFO, "configFile %s", rutaParticion);
 	t_config *configFile = cargarConfiguracion(rutaParticion, logger);
+
 	int sizeArchivo = config_get_int_value(configFile, "SIZE");
 	char **blocksArray = config_get_array_value(configFile, "BLOCKS");
 
+	//Inicializo lista donde se concatenaran las restantes
+	t_list *listaBusqueda = list_create();
+
 	//Escaneo la particion
 	int j = 0;
-	while(blocksArray[j] != NULL)
+	t_registro *registro;
+	while((blocksArray[j] != NULL) && (registro->timestamp != 0))
 	{
-		//BuscarKeyBloque(key, blocksArray[j]);
+		registro = BuscarKeyParticion(selectMsg->key, blocksArray[j]);
 		j++;
 	}
-	//Escaneo temporales
+
+	//Si se encontro en particion agrego a la lista de busqueda
+	if(registro->timestamp != 0)
+	{
+		list_add(listaBusqueda, registro);
+	}
+	int sizeList = list_size(listaBusqueda);
+	loggear(logger, LOG_LEVEL_INFO, "sizeLista %d", sizeList);
+
 	//Escaneo memtable
+	t_list *listaMemtable = list_create();
+	listaMemtable = BuscarKeyMemtable(selectMsg->key, selectMsg->nombreTabla);
+	list_add_all(listaBusqueda, listaMemtable);
+
+	int sizeLista = list_size(listaBusqueda);
+	loggear(logger, LOG_LEVEL_INFO, "Lista de select tiene size %d", sizeLista);
+
+	//Escaneo temporales
 
 
+	//Busco registro con mayor timestamp
+	t_registro *registroInit = malloc(sizeof(t_registro));
+	registroInit = list_get(listaBusqueda, 0);
+	t_registro *registroAux = malloc(sizeof(t_registro));
+	int registroInicio = 1;
+
+	for(int i = 0; i < sizeLista; i++)
+	{
+		registroAux = list_get(listaBusqueda, i);
+		loggear(logger, LOG_LEVEL_INFO, "Elemento %d tiene value %s y timestamp %llu", i, registroAux->value, registroAux->timestamp);
+		if(registroInit->timestamp < registroAux->timestamp)
+		{
+			registroInit = registroAux;
+		}
+
+	}
+
+	loggear(logger, LOG_LEVEL_INFO, "El timestamp mayor es %llu", registroInit->timestamp);
+	free(registroAux);
+	free(selectMsg);
+	list_clean(listaMemtable);
+	list_clean(listaBusqueda);
+	return registroInit;
 }
 
-void BuscarKeyMemtable(int key, char *nombre)
+t_list *BuscarKeyMemtable(int key, char *nombre)
 {
-	printf("Buscando key en memtable de %s\n", nombre);
-	sleep(10);
+	loggear(logger, LOG_LEVEL_INFO, "Buscando key:%d en memtable de: %s EN 40 SEGUNDOS", key, nombre);
+	sleep(40);
 
 	t_tabla *tabla = malloc(sizeof(t_tabla));
 	tabla = BuscarTablaMemtable(nombre);
 
 	if(tabla == NULL)
 	{
-	} else
-	{
-		int sizeLista = list_size(tabla->lista);
-
-		t_registro *registro = malloc(sizeof(t_registro));
-		registro = list_get(tabla->lista, 0);
-
-
-		for(int i = 0; i < sizeLista; i++)
-		{
-			t_registro *registroAux = malloc(sizeof(t_registro));
-			registroAux = list_get(tabla->lista, i);
-
-
-			printf("Registro\n key: %d\nvalue: %s\n", registro->key, registro->value);
-			printf("RegistroAux\n key: %d\nvalue: %s\n", registroAux->key, registroAux->value);
-
-		}
+		loggear(logger, LOG_LEVEL_WARNING, "La tabla %s no posee datos en memtable", nombre);
 	}
 
+	int findKey(t_registro *registro)
+		{
+			return (registro->key == key);
+		}
+
+		return list_filter(tabla->lista,(void*)findKey);
 }
 
 

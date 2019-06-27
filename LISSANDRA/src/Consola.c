@@ -46,6 +46,9 @@ int procesar_comando(char *line) {
 
 						case _select:
 							printf("CONSOLA: Se ingresó comando SELECT \n");
+							if(string_is_empty(request->parametro1) || string_is_empty(request->parametro2))
+							printf("Falta ingresar datos para utilizar select");
+
 							break;
 
 						case _insert:
