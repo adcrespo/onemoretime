@@ -29,7 +29,7 @@ void CargarMetadata(){
 	string_append(&rutaMetadata, lfs_conf.punto_montaje);
 	string_append(&rutaMetadata, "Metadata/");
 	string_append(&rutaMetadata, "Metadata.bin");
-	loggear(logger, LOG_LEVEL_INFO, "Ruta Metadata: %s \n", rutaMetadata);
+	loggear(logger, LOG_LEVEL_INFO, "Ruta Metadata: %s", rutaMetadata);
 
 	config_metadata = cargarConfiguracion(rutaMetadata, logger);
 
@@ -305,7 +305,7 @@ void BuscarKey(int key, char *tabla)
 	//Verifico existencia en el file system
 	if(!ExisteTabla(tabla))
 	{
-		loggear(logger, LOG_LEVEL_ERROR, "%s no existe en el file system", tabla);;
+		loggear(logger, LOG_LEVEL_ERROR, "%s no existe en el file system", tabla);
 	}
 
 	//Obtengo metadata
@@ -369,54 +369,60 @@ void BuscarKeyMemtable(int key, char *nombre)
 }
 
 
-void BuscarKeyBloque(int key, char *archivo)
+t_registro* BuscarKeyParticion(int key, char *bloque)
 {
-	char *rutaArchivo = string_from_format("%s/%s", rutaBloques, archivo);
-	char linea[50];
+	loggear(logger, LOG_LEVEL_INFO, "Buscando key : %d en bloque: %s", key, bloque);
+	char *pathBlock = string_from_format("%s%s.bin", rutaBloques, bloque);
+	loggear(logger, LOG_LEVEL_INFO, "Ruta bloque : %s", pathBlock);
+	char linea[100];
 	char **elementos;
 
-	FILE *file = fopen(rutaArchivo, "r");
+	FILE *file = fopen(pathBlock, "r");
 
 	if(file==NULL)
 	{
 		loggear(logger, LOG_LEVEL_ERROR, "Error abriendo archivo %s", file);
 	}
-
+	loggear(logger, LOG_LEVEL_INFO, "Archivo %s abierto correctamente", pathBlock);
+	t_registro *registro = malloc(sizeof(t_registro));
 	while(!feof(file))
 
 	{
-		fgets(linea, 50, file);
+		fgets(linea, 100, file);
 		elementos = string_split(linea, ";");
 		int cantElementos = ContarElementosArray(elementos);
 
+
 		if(atoi(elementos[1]) == key)
 		{
-			t_registro *registro = malloc(sizeof(t_registro));
-			char *value = string_new();
-			string_append(&value, elementos[2]);
 			registro->timestamp = atoll(elementos[0]);
 			registro->key = atoi(elementos[1]);
+			char *value = string_new();
+			string_append(&value, elementos[2]);
+			value[strcspn(value, "\n")] = 0;
 			strcpy(registro->value, value);
 
-			printf("Timestamp:%d\n", registro->timestamp);
-			printf("Key:%d\n", registro->key);
-			printf("Value:%s\n", registro->value);
-			printf("\n");
-
-			free(value);
+			loggear(logger, LOG_LEVEL_INFO, "Timestamp:%llu", registro->timestamp);
+			loggear(logger, LOG_LEVEL_INFO,"Key:%d", registro->key);
+			loggear(logger, LOG_LEVEL_INFO,"Value:%s", registro->value);
+			return registro;
+		} else
+		{
+			registro->timestamp = 0;
 		}
 
 		for(int i = 0; i < cantElementos; i++)
-		{
+			{
 			free(elementos[i]);
-		}
+			}
+		free(elementos);
 
 	}
 
 
-	free(rutaArchivo);
+	free(pathBlock);
 	fclose(file);
-
+	return registro;
 }
 
 
@@ -630,13 +636,13 @@ void LevantarHilosCompactacionFS()
 
 				} else
 				{
-					printf("%s\n", entry->d_name);
+					//printf("%s\n", entry->d_name);
 					char *metadataFile = string_from_format("%s%s/Metadata", rutaTablas, entry->d_name);
-					printf("Ruta de metadata: %s\n", metadataFile);
+					//printf("Ruta de metadata: %s\n", metadataFile);
 					t_config *config_file = cargarConfiguracion(metadataFile,logger);
 
 					int compactationTime = config_get_int_value(config_file, "COMPACTATION_TIME");
-					printf("Tiempo de compactacion tabla %s: %d\n", entry->d_name, compactationTime);
+					//printf("Tiempo de compactacion tabla %s: %d\n", entry->d_name, compactationTime);
 					//crearHiloCompactacion(compactationTime, entry->d_name);
 				}
 			}
