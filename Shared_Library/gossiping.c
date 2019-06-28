@@ -167,20 +167,13 @@ int actualizaListaSeedConfigStruct(t_list *LISTA_CONN, char *ipNueva,char *puert
 {
 	int j=0;
 	int existe=0;
-	int numeroCompara;
-	char *ipCompara;
-	char *portCompara;
 	t_tipoSeeds *seed;
-	t_tipoSeeds *seedNuevo;
 
 
 	while(j<LISTA_CONN->elements_count)
 	{
 
 		seed = list_get(LISTA_CONN,j);
-		//numeroCompara = seed->numeroMemoria;
-		//ipCompara = string_from_format("%s", seed->ip);
-		//portCompara = string_from_format("%s", seed->puerto);
 
 		if(numeroMemoria == DESCONOCIDO)
 		{
@@ -212,22 +205,7 @@ int actualizaListaSeedConfigStruct(t_list *LISTA_CONN, char *ipNueva,char *puert
 	}
 	if(existe!=1)
 	{
-
 		agregarSeedLista(LISTA_CONN,ipNueva,puertoNuevo,numeroMemoria,logger);
-		/*seedNuevo= malloc(sizeof(t_tipoSeeds));
-
-		seedNuevo->numeroMemoria = numeroMemoria;
-
-		memset(seedNuevo->ip,0x0,sizeof(seedNuevo->ip));
-		strcpy(seedNuevo->ip,ipNueva);
-
-		memset(seedNuevo->puerto,0x0,sizeof(seedNuevo->puerto));
-		strcpy(seedNuevo->puerto,puertoNuevo);
-
-		seedNuevo->estado = DESCONECTADO;
-
-		list_add(LISTA_CONN,seedNuevo);
-		 */
 	}
 
 	return 1;
@@ -242,7 +220,6 @@ int crearListaSeedsStruct(char tipoProceso,char *MEM_CONF_IP,char *MEM_CONF_PUER
 	if(tipoProceso == gossiping)
 	{
 		actualizaListaSeedConfigStruct(LISTA_CONN,getLocalIp(MEM_CONF_IP),MEM_CONF_PUERTO,MEM_CONF_NUMERO_MEMORIA,logger);
-		//actualizarEstadoListaStruct(LISTA_CONN,logger,i,DESCONECTADO);
 	}
 
 	while(MEM_CONF_IP_SEEDS[i] != NULL)
@@ -266,9 +243,7 @@ char *armarMensajeListaSEEDSStruct(t_log *logger,t_list *LISTA_CONN)
 	int j=0;
 	char *msj;
 	char *msjOld;
-	int numeroMemoria;
-	char *ip;
-	char *puerto;
+
 	t_tipoSeeds *seed;
 
 	while(j<LISTA_CONN->elements_count)
@@ -276,19 +251,13 @@ char *armarMensajeListaSEEDSStruct(t_log *logger,t_list *LISTA_CONN)
 
 		seed = list_get(LISTA_CONN,j);
 
-		//numeroMemoria = seed->numeroMemoria;
-		//ip = string_from_format("%s", seed->ip);
-		//puerto = string_from_format("%s", seed->puerto);
-
 		if(j==0)
 		{
-			//msj = string_from_format("%d:%s:%s",numeroMemoria,ip,puerto);
 			msj = string_from_format("%d:%s:%s",seed->numeroMemoria,seed->ip,seed->puerto);
 		}
 		else
 		{
 			msjOld=msj;
-			//msj = string_from_format("%s|%d:%s:%s",msj,numeroMemoria,ip,puerto);
 			msj = string_from_format("%s|%d:%s:%s",msj,seed->numeroMemoria,seed->ip,seed->puerto);
 			free(msjOld);
 		}
@@ -380,9 +349,6 @@ void processGossipingStruct(t_log *logger,t_list *LISTA_CONN) {
 	int i;
 	int contadorLista;
 	int socketReceptor=0;
-	int numeroMemoria;
-	char *ipLista;
-	char *puertoLista;
 	char *mensaje;
 	t_mensaje* msjRecibido;
 	t_tipoSeeds *seed;
@@ -396,7 +362,6 @@ void processGossipingStruct(t_log *logger,t_list *LISTA_CONN) {
 	loggear(logger,LOG_LEVEL_INFO,"Se inicio proceso Gossiping...");
 
 	pthread_mutex_lock(&mutexGossiping);
-	//mensaje= string_from_format("%s",armarMensajeListaSEEDSSruct(logger,LISTA_CONN));
 	mensaje= armarMensajeListaSEEDSStruct(logger,LISTA_CONN);
 	pthread_mutex_unlock(&mutexGossiping);
 
@@ -410,9 +375,6 @@ void processGossipingStruct(t_log *logger,t_list *LISTA_CONN) {
 	{
 		pthread_mutex_lock(&mutexGossiping);
 		seed = list_get(LISTA_CONN,i);
-		//numeroMemoria = seed->numeroMemoria;
-		//ipLista = string_from_format("%s", seed->ip);
-		//puertoLista = string_from_format("%s", seed->puerto);
 		pthread_mutex_unlock(&mutexGossiping);
 
 		loggear(logger,LOG_LEVEL_DEBUG,"CONEXION LISTA SEEDS NUMERO: %d",i);
