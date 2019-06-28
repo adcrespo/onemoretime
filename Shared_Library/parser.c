@@ -120,12 +120,9 @@ t_request* parsear(char* linea, t_log* logger) {
 					// Validacion Parametro 4
 					parametro_aux = strtok(NULL, "");
 
-					if(parametro_aux == NULL) {
-						log_error(logger, "Parámetro 4 vacío.");
-						break;
+					if(parametro_aux != NULL) {
+						string_append(&request->parametro4, parametro_aux);
 					}
-
-					string_append(&request->parametro4, parametro_aux);
 
 					log_info(logger, "Parámetro 1: %s", request->parametro1);
 					log_info(logger, "Parámetro 2: %s", request->parametro2);
