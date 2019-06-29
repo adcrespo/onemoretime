@@ -100,13 +100,13 @@ void procesar(int n_descriptor, fd_set* set_master) {
 					request->parametro1 = malloc(strlen(msginsert->nombreTabla)+ 1);
 					request->parametro2 = malloc(strlen(string_itoa(msginsert->key)) +1);
 					request->parametro3 = malloc(strlen(msginsert->value)+1);
-					request->parametro4 = malloc(strlen(string_itoa(msginsert->timestamp)) +1);
-
+					request->parametro4 = malloc(20);
 
 					strcpy(request->parametro1, msginsert->nombreTabla);
 					strcpy(request->parametro2, string_itoa(msginsert->key));
 					strcpy(request->parametro3, msginsert->value);
-					strcpy(request->parametro4, string_itoa(msginsert->timestamp));
+					sprintf(request->parametro4, "%llu", msginsert->timestamp);
+
 					int resultadoInsert = InsertarTabla(request);
 
 					loggear(logger, LOG_LEVEL_WARNING, "Resultado create :%d", resultadoInsert);
@@ -117,8 +117,8 @@ void procesar(int n_descriptor, fd_set* set_master) {
 				case create:
 					loggear(logger, LOG_LEVEL_INFO, "Se recibió mensaje create");
 					t_create *msgCreate = malloc(sizeof(t_create));
-
 					memcpy(msgCreate, msg->content, msg->header.longitud);
+					loggear(logger, LOG_LEVEL_INFO, "Tabla %s con consistencia %s, %d particiones, %d tiempo de compactacion", msgCreate->nombreTabla, msgCreate->tipo_cons, msgCreate->num_part, msgCreate->comp_time);
 
 					int resultadoCreate = CrearTabla(msgCreate);
 					loggear(logger, LOG_LEVEL_WARNING, "Resultado create tabla %s:%d", msgCreate->nombreTabla, resultadoCreate);
@@ -131,9 +131,9 @@ void procesar(int n_descriptor, fd_set* set_master) {
 				case drop:
 					loggear(logger, LOG_LEVEL_INFO, "Se recibió mensaje drop");
 
-					t_drop *dropTabla = sizeof(t_drop);
+					t_drop *dropTabla = malloc(sizeof(t_drop));
 					memcpy(dropTabla, msg->content, msg->header.longitud);
-
+					loggear(logger, LOG_LEVEL_INFO, "Eliminando tabla %s", dropTabla->nombreTabla);
 					int resultadoDrop = DropearTabla(dropTabla->nombreTabla);
 					loggear(logger, LOG_LEVEL_WARNING, "Resultado drop tabla %s:%d", dropTabla->nombreTabla, resultadoDrop);
 					enviarMensajeConError(lis, insert, 0, NULL, n_descriptor, logger, mem, resultadoDrop);
@@ -143,10 +143,45 @@ void procesar(int n_descriptor, fd_set* set_master) {
 
 				case selectMsg:
 					loggear(logger, LOG_LEVEL_INFO, "Se recibió mensaje select");
+					t_select *selectMensaje = malloc(sizeof(t_select));
+					memcpy(selectMensaje, msg->content, msg->header.longitud);
+					loggear(logger, LOG_LEVEL_INFO, "Buscando key: %d en tabla: %s", selectMensaje->key, selectMensaje->nombreTabla);
+					t_registro *resultado = BuscarKey(selectMensaje);
+					enviarMensajeConError(lis, selectMsg, sizeof(t_registro), resultado, n_descriptor, logger, mem, 0);
+
+					free(selectMensaje);
+					free(resultado);
 					break;
 
 				case describe:
 					loggear(logger, LOG_LEVEL_INFO, "Se recibió mensaje describe");
+					t_describe *describeMensaje = malloc(sizeof(t_describe));
+					memcpy(describeMensaje, msg->content, msg->header.longitud);
+					if(string_is_empty(describeMensaje->nombreTabla))
+					{
+						loggear(logger, LOG_LEVEL_INFO, "Buscando metadata para todas las tablas");
+						//enviar un buffer con las metadatas separadas por new line o pipe
+					} else
+					{
+						loggear(logger, LOG_LEVEL_INFO, "Buscando metadata para tabla %s", describeMensaje->nombreTabla);
+						t_metadata *metadata;
+						metadata = ObtenerMetadataTabla(describeMensaje->nombreTabla);
+						char *describeTabla = string_new();
+						string_append(&describeTabla, describeMensaje->nombreTabla);
+						string_append(&describeTabla, ";");
+						string_append(&describeTabla, metadata->tipoConsistencia);
+						string_append(&describeTabla, ";");
+						string_append(&describeTabla, string_itoa(metadata->particiones));
+						string_append(&describeTabla, ";");
+						string_append(&describeTabla, string_itoa(metadata->compactationTime));
+						loggear(logger, LOG_LEVEL_INFO, "Enviando describe: %s", describeTabla);
+						enviarMensajeConError(lis, describe, (strlen(describeTabla) + 1), describeTabla, n_descriptor, logger, mem, 0);
+
+
+						free(metadata);
+						free(describeTabla);
+					}
+					free(describeMensaje);
 					break;
 			}
 			destruirMensaje(msg);
