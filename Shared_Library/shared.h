@@ -135,5 +135,6 @@ void* serializarConError(int tipoProceso, int tipoMensaje, int len, void* conten
 t_mensaje* deserializar(void* buffer);
 
 unsigned long long obtenerTimeStamp();
+char** strlineassplit(const char* s, const char* del);
 
 #endif /* SHARED_H_ */
