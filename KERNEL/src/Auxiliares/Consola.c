@@ -35,6 +35,7 @@ int procesar_comando(char *line) {
 	char* linea_auxiliar = string_new();
 	string_append(&linea_auxiliar, line);
 	t_request* request = parsear(line, logger);
+	t_pcb* proceso_nuevo;
 
 	if (request->request == -1) {
 
@@ -56,13 +57,11 @@ int procesar_comando(char *line) {
 
 			case _select:
 				// Generar nuevo proceso.
-				printf("Generando nuevo proceso.\n");
-				t_pcb* proceso_nuevo = crear_proceso(linea_auxiliar, request);
+				proceso_nuevo = crear_proceso(linea_auxiliar, request);
 
-				printf("Proceso generado.\n");
-				printf("ID: %d .\n", proceso_nuevo->id_proceso);
-				printf("Program Counter: %d .\n", proceso_nuevo->program_counter);
-				printf("Script: %s .\n", proceso_nuevo->script);
+				// Loguear nuevo proceso
+				log_info(logger, "Proceso generado.");
+				imprimir_pcb(proceso_nuevo);
 
 				printf("Validando existencia de Tabla.\n");
 				printf("Seleccionando Memoria según Criterio.\n");
@@ -70,13 +69,25 @@ int procesar_comando(char *line) {
 				break;
 
 			case _insert:
+				// Generar nuevo proceso.
+				proceso_nuevo = crear_proceso(linea_auxiliar, request);
+
+				// Loguear nuevo proceso
+				log_info(logger, "Proceso generado.");
+				imprimir_pcb(proceso_nuevo);
+
 				printf("Validando existencia de Tabla.\n");
 				printf("Seleccionando Memoria según Criterio.\n");
 				printf("Enviando INSERT a una Memoria.\n");
 				break;
 
 			case _create:
-				printf("CONSOLA: Se ingresó comando CREATE \n");
+				// Generar nuevo proceso.
+				proceso_nuevo = crear_proceso(linea_auxiliar, request);
+
+				// Loguear nuevo proceso
+				log_info(logger, "Proceso generado.");
+				imprimir_pcb(proceso_nuevo);
 				break;
 
 			case _describe:
@@ -86,6 +97,14 @@ int procesar_comando(char *line) {
 				break;
 
 			case _drop:
+
+				// Generar nuevo proceso.
+				proceso_nuevo = crear_proceso(linea_auxiliar, request);
+
+				// Loguear nuevo proceso
+				log_info(logger, "Proceso generado.");
+				imprimir_pcb(proceso_nuevo);
+
 				printf("Validando existencia de Tabla.\n");
 				printf("Seleccionando Memoria según Criterio.\n");
 				printf("Enviando DROP a una Memoria.\n");
@@ -108,7 +127,11 @@ int procesar_comando(char *line) {
 				break;
 
 			case _metrics:
-				printf("CONSOLA: Se ingresó comando METRICS \n");
+
+				log_info(logger, "Lista NEW: %d elementos.", list_size(lista_new));
+				log_info(logger, "Lista READY: %d elementos.", list_size(lista_ready));
+				log_info(logger, "Lista EXEC: %d elementos.", list_size(lista_exec));
+				log_info(logger, "Lista EXIT: %d elementos.", list_size(lista_exit));
 				break;
 
 			default:;
@@ -185,4 +208,14 @@ char *character_name_generator(const char *text, int state) {
 		}
 	}
 	return NULL;
+}
+
+void imprimir_pcb(t_pcb* pcb) {
+
+	log_info(logger, "Proceso N°: %d.", pcb->id_proceso);
+	log_info(logger, "Ruta archivo: %s.", pcb->ruta_archivo);
+	log_info(logger, "Program Counter: %d.", pcb->program_counter);
+	log_info(logger, "Cantidad request: %d.", pcb->cantidad_request);
+	log_info(logger, "Script: %s.", pcb->script);
+
 }
