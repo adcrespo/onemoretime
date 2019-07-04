@@ -329,7 +329,7 @@ t_registro* BuscarKey(t_select *selectMsg)
 	t_list *listaBusqueda = list_create();
 
 	//Escaneo la particion
-	int j = 0;
+	/*int j = 0;
 	t_registro *registro;
 	while((blocksArray[j] != NULL) && (registro->timestamp != 0))
 	{
@@ -344,7 +344,7 @@ t_registro* BuscarKey(t_select *selectMsg)
 	}
 	int sizeList = list_size(listaBusqueda);
 	loggear(logger, LOG_LEVEL_INFO, "sizeLista %d", sizeList);
-
+*/
 	//Escaneo memtable
 	t_list *listaMemtable = list_create();
 	listaMemtable = BuscarKeyMemtable(selectMsg->key, selectMsg->nombreTabla);
@@ -520,7 +520,7 @@ int CrearTabla(t_create *msgCreate)
 	}
 
 	//CreoHiloCompactacion
-	crearHiloCompactacion(msgCreate->comp_time, msgCreate->nombreTabla);
+	//crearHiloCompactacion(msgCreate->comp_time, msgCreate->nombreTabla);
 
 
 	return 0;
@@ -559,7 +559,7 @@ int DropearTabla(char *nombre)
 	if(!ExisteTabla(nombre))
 	{
 		loggear(logger, LOG_LEVEL_ERROR, "%s no puede ser dropeada", nombre);
-		return 0;
+		return 1;
 	}
 
 	DIR *dir;
@@ -618,7 +618,7 @@ int DropearTabla(char *nombre)
 	remove(path);
 	free(pathMetadata);
 	free(path);
-	return 1;
+	return 0;
 }
 
 
