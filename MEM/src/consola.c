@@ -16,6 +16,15 @@
 #include "connection.h"
 #include "proceso.h"
 
+bool isNumber(char* s)
+{
+    for (int i = 0; i < strlen(s); i++)
+        if (isdigit(s[i]) == false)
+            return false;
+
+    return true;
+}
+
 t_tipoComando buscar_enum(char *sval) {
 	t_tipoComando result = select_;
 	int i = 0;
@@ -82,6 +91,11 @@ void *crearConsola() {
 				printf("error: select {tabla} {key}.\n");
 				break;
 			}
+			if (!isNumber(comando[2])) {
+				printf("error: select {tabla} {key}.\n");
+				printf("error: {key} debe ser numerico.\n");
+				break;
+			}
 			printf("select...\n");
 			char *buffer_select=NULL;
 			int resultSelect = proceso_select(comando[1],atoi(comando[2]),&buffer_select);
@@ -99,11 +113,22 @@ void *crearConsola() {
 				printf("error: insert {tabla} {key} {\"value\"}.\n");
 				break;
 			}
+			if (!isNumber(comando[2])) {
+				printf("error: insert {tabla} {key} {\"value\"}.\n");
+				printf("error: {key} debe ser numerico.\n");
+				break;
+			}
 			char* registroInsertar = string_new();
 			for(i=3;comando[i]!=NULL;i++){
 				string_append_with_format(&registroInsertar,"%s ",comando[i]);
 			}
 			registroInsertar[strlen(registroInsertar)-1]=0x00;
+			if(strlen(registroInsertar)+1>tamanio_value){
+				free(registroInsertar);
+				printf("error: insert {tabla} {key} {\"value\"}.\n");
+				printf("error: el tamao del {value} debe ser menor a %d.\n",tamanio_value);
+				break;
+			}
 
 			printf("insert...\n");
 			int escrito = proceso_insert(comando[1],atoll(comando[2]), registroInsertar);
@@ -118,6 +143,23 @@ void *crearConsola() {
 				printf("error: create {tabla} {tipo_consistencia} {numero_particiones} {compaction_time}.\n");
 				break;
 			}
+			if (!(string_equals_ignore_case(comando[2],"SC") ||
+					string_equals_ignore_case(comando[2],"SHC") ||
+						string_equals_ignore_case(comando[2],"EC")) ) {
+				printf("error: create {tabla} {tipo_consistencia} {numero_particiones} {compaction_time}.\n");
+				printf("error: {tipo_consistencia} ""SC"", ""SHC"" o ""EC""\n");
+				break;
+			}
+			if (!isNumber(comando[3])) {
+				printf("error: create {tabla} {tipo_consistencia} {numero_particiones} {compaction_time}.\n");
+				printf("error: {numero_particiones} debe ser numerico.\n");
+				break;
+			}
+			if (!isNumber(comando[4])) {
+				printf("error: create {tabla} {tipo_consistencia} {numero_particiones} {compaction_time}.\n");
+				printf("error: {compaction_time} debe ser numerico.\n");
+				break;
+			}
 			printf("create...\n");
 			int creado = proceso_create(comando[1],comando[2], atoi(comando[3]), atoi(comando[4]));
 			if(creado >= 0)
@@ -126,14 +168,12 @@ void *crearConsola() {
 				printf("[ERR] No se pudo crear la tabla \n");
 			break;
 		case describe_:;
-			if (comando[1] == NULL )
-				comando[1] = string_new();
 			printf("describe...\n");
 			char* buffer_describe=NULL;
 			int largo_buffer_describe;
-			int describe = proceso_describe(comando[1],&buffer_describe, &largo_buffer_describe);
+			int describe = proceso_describe(comando[1]!=NULL?comando[1]:"",&buffer_describe, &largo_buffer_describe);
 			if(describe >= 0)
-				printf("[OK] Se pudo realizar el discribe\n");
+				printf("[OK] Se pudo realizar el describe\n");
 			else
 				printf("[ERR] No se pudo realizar el describe\n");
 			free(buffer_describe);
@@ -159,10 +199,8 @@ void *crearConsola() {
 				printf("[ERR] No se pudo realizar el journal\n");
 			break;
 		case dump_:;
-			if (comando[1] == NULL)
-				comando[1] = string_new();
-			printf("Dump (table: %s)...\n",comando[1]);
-			dump_memory_spa(comando[1]);
+			printf("Dump (table: %s)...\n",comando[1]!=NULL?comando[1]:"");
+			dump_memory_spa(comando[1]!=NULL?comando[1]:"");
 			break;
 		case salir_:;
 			exit_gracefully(EXIT_SUCCESS);

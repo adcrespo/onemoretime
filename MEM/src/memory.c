@@ -154,7 +154,7 @@ void init_memory_spa() {
 
 	for (i = 0; i < frames_spa_count; i++) {
 		t_adm_tabla_frames_spa* adm_table = malloc(sizeof(t_adm_tabla_frames_spa));
-		adm_table->path_tabla = string_from_format("");
+		adm_table->path_tabla = string_new();
 		adm_table->pagina = -1;
 		list_add(adm_frame_lista_spa, adm_table);
 	}
@@ -203,7 +203,8 @@ void free_spa(char* path_table, int pagina) {
 
 	t_adm_tabla_frames_spa* adm_table_frame = list_get(adm_frame_lista_spa,adm_table_pag->frame);
 
-	adm_table_frame->path_tabla = string_from_format("");
+	free(adm_table_frame->path_tabla);
+	adm_table_frame->path_tabla = string_new();
 	adm_table_frame->pagina = -1;
 	clean_frame_spa(adm_table_pag->frame);
 
@@ -231,7 +232,7 @@ void free_spa(char* path_table, int pagina) {
 		loggear(logger,LOG_LEVEL_DEBUG, "%s", "SE LIBERA LA TABLA.");
 		int countSegLista = list_size(adm_spa_lista);
 		for (i = 0; i < countSegLista; i++) {
-			t_adm_tabla_segmentos_spa* adm_table = list_get(adm_spa_lista,0);
+			t_adm_tabla_segmentos_spa* adm_table = list_get(adm_spa_lista,i);
 			if(string_equals_ignore_case(adm_table->path_tabla,path_table)){
 				int countSeg = list_size(adm_table->seg_lista);
 				for (j = 0; j < countSeg; j++) {
@@ -240,9 +241,13 @@ void free_spa(char* path_table, int pagina) {
 					for (k = 0; k < countPag; k++) {
 						free(list_remove(adm_table_spa->pag_lista,0));
 					}
-					free(list_remove(adm_table->seg_lista,0));
+					list_destroy(adm_table_spa->pag_lista);
+					free(adm_table_spa);
 				}
-				free(list_remove(adm_spa_lista,0));
+				free(adm_table->path_tabla);
+				list_destroy(adm_table->seg_lista);
+				free(adm_table);
+				list_remove(adm_spa_lista,i);
 				break;
 			}
 		}
@@ -309,7 +314,7 @@ int add_spa(char* path_table, int n_frames, unsigned long long timestamp) {
 		known_paginas++;
 		loggear(logger,LOG_LEVEL_DEBUG, "known_paginas %d",known_paginas);
 		t_adm_tabla_frames_spa* adm_table_frames = list_get(adm_frame_lista_spa,adm_table_pag_new->frame);
-		adm_table_frames->path_tabla = string_from_format(path_table);
+		string_append_with_format(&adm_table_frames->path_tabla, path_table);
 		adm_table_frames->pagina = known_paginas-1;
 		loggear(logger,LOG_LEVEL_DEBUG, "%s", "adm_table_pag_new!");
 	}
@@ -439,7 +444,7 @@ void dump_memory_spa(char* path_table) {
 				memcpy(frame,frames_spa+i*frame_spa_size, frame_spa_size);
 				t_registro* registro = descomponer_registro(frame);
 				string_append_with_format(&dump_mem_content,
-						"FRAME: %d | TABLA: %s | SEGMENTO: %d\n[%d][%d][%s]\n",
+						"FRAME: %d | TABLA: %s | SEGMENTO: %d\n[%llu][%d][%s]\n",
 						i, adm_table->path_tabla, adm_table->pagina,
 						registro->timestamp, registro->key,registro->value);
 				free(frame);
@@ -495,7 +500,7 @@ t_adm_tabla_frames_spa getPaginaMenorTimestamp() {
 		for (j = 0; j < list_size(adm_table_seg->pag_lista); j++) {
 			t_paginas_spa* adm_table_pag = list_get(adm_table_seg->pag_lista,j);
 			if((timestamp==0 || adm_table_pag->timestamp < timestamp) && adm_table_pag->modificado == 0) {
-				frame_spa.path_tabla = string_from_format(adm_table->path_tabla);
+				string_append_with_format(&frame_spa.path_tabla,adm_table->path_tabla);
 				frame_spa.pagina = j;
 				timestamp = adm_table_pag->timestamp;
 			}

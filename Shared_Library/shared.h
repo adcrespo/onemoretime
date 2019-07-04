@@ -85,7 +85,7 @@ typedef struct {
 //create
 typedef struct {
 	char 		nombreTabla[50];
-	char 		tipo_cons[3];
+	char 		tipo_cons[4];
 	int 		num_part;
 	int 		comp_time;
 }__attribute__((packed)) t_create;

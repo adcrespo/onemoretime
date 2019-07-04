@@ -14,8 +14,6 @@ void destroy_args() {
 }
 void initArgumentos(int argc, char** argv) {
 	int opt;
-	args_configfile = string_new();
-	args_verbose = string_new();
 	args_configfile = string_from_format("false");
 	args_verbose = string_from_format("false");
 	while((opt = getopt(argc, argv, ":vf:")) != -1)
@@ -24,10 +22,12 @@ void initArgumentos(int argc, char** argv) {
 		{
 			case 'v':
 				printf("option: %c\n", opt);
+				free(args_verbose);
 				args_verbose = string_from_format("true");
 				break;
 			case 'f':
 				printf("filename: %s\n", optarg);
+				free(args_configfile);
 				args_configfile = string_from_format("%s",optarg);
 				break;
 			case ':':

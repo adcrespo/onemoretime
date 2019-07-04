@@ -18,6 +18,7 @@ int solicitarPagina(char *tabla, unsigned long long timestamp) {
 	if(paginaNueva<0) {
 		t_adm_tabla_frames_spa frame_reg = getPaginaMenorTimestamp();
 		paginaNueva = frame_reg.pagina;
+		free(frame_reg.path_tabla);
 		if(paginaNueva<0) {
 			loggear(logger,LOG_LEVEL_DEBUG,"MEMORY FULL!!");
 			return MEMORY_FULL;
@@ -134,18 +135,19 @@ int proceso_create(char* tabla,char* tipo_cons, int num_part, int compact_time){
 	int creado = -1;
 	int largo_content = MAX_PATH + MAX_CONS + sizeof(int) + sizeof(int);
 	char *content = malloc(largo_content);
-	tipo_cons[2] = 0;
 
 	memset(content, 0x00, largo_content);
 	memcpy(content,tabla,strlen(tabla)<MAX_PATH?strlen(tabla):MAX_PATH);
 	content[MAX_PATH] = 0x00;
-	memcpy(content+MAX_PATH,tipo_cons,MAX_CONS);
+	memcpy(content+MAX_PATH,tipo_cons,strlen(tipo_cons));
 	memcpy(content+MAX_PATH+MAX_CONS,&num_part,sizeof(int));
 	memcpy(content+MAX_PATH+MAX_CONS+sizeof(int),&compact_time,sizeof(int));
 
 	sleep(MEM_CONF.RETARDO_FS/1000);
 	enviarMensaje(mem,create,largo_content,content,socket_lis,logger,lis);
 	t_mensaje* mensaje = recibirMensaje(socket_lis, logger);
+
+	free(content);
 
 	if(mensaje == NULL) {
 		loggear(logger,LOG_LEVEL_ERROR,"No se pudo recibir mensaje de lis");
@@ -162,37 +164,41 @@ int proceso_create(char* tabla,char* tipo_cons, int num_part, int compact_time){
 
 int proceso_describe(char* tabla, char** buffer, int* largo_buffer){
 	pthread_mutex_lock(&journalingMutexDescribe);
-	int describe = -1;
+	int desc = -1;
 	int largo_content = MAX_PATH;
 	char *content = malloc(largo_content);
 
 	memset(content, 0x00, largo_content);
 	memcpy(content,tabla,strlen(tabla)<MAX_PATH?strlen(tabla):MAX_PATH);
-	content[MAX_PATH] = 0x00;
+	content[MAX_PATH-1] = 0x00;
 
 	sleep(MEM_CONF.RETARDO_FS/1000);
-	enviarMensaje(mem,create,largo_content,content,socket_lis,logger,lis);
+	enviarMensaje(mem,describe,largo_content,content,socket_lis,logger,lis);
 	t_mensaje* mensaje = recibirMensaje(socket_lis, logger);
+
+	free(content);
 
 	if(mensaje == NULL) {
 		loggear(logger,LOG_LEVEL_ERROR,"No se pudo recibir mensaje de lis");
 		pthread_mutex_unlock(&journalingMutexDescribe);
 		return -1;
 	}
-	describe = mensaje->header.error;
+	desc = mensaje->header.error;
 	*buffer = malloc(mensaje->header.longitud);
 	memset(*buffer,0x00,mensaje->header.longitud);
 	memcpy(*buffer,mensaje->content,mensaje->header.longitud);
 	*largo_buffer = mensaje->header.longitud;
 	destruirMensaje(mensaje);
 
+	loggear(logger,LOG_LEVEL_DEBUG,"Data: %s",*buffer);
+
 	pthread_mutex_unlock(&journalingMutexDescribe);
-	return describe;
+	return desc;
 }
 
 int proceso_drop(char* tabla){
 	pthread_mutex_lock(&journalingMutexDrop);
-	int drop = -1;
+	int dropRes = -1;
 
 	int i;
 	int totalPaginas = getSizePagesForTable(tabla);
@@ -212,22 +218,24 @@ int proceso_drop(char* tabla){
 
 	memset(content, 0x00, largo_content);
 	memcpy(content,tabla,strlen(tabla)<MAX_PATH?strlen(tabla):MAX_PATH);
-	content[MAX_PATH] = 0x00;
+	content[MAX_PATH-1] = 0x00;
 
 	sleep(MEM_CONF.RETARDO_FS/1000);
-	enviarMensaje(mem,create,largo_content,content,socket_lis,logger,lis);
+	enviarMensaje(mem,drop,largo_content,content,socket_lis,logger,lis);
 	t_mensaje* mensaje = recibirMensaje(socket_lis, logger);
+
+	free(content);
 
 	if(mensaje == NULL) {
 		loggear(logger,LOG_LEVEL_ERROR,"No se pudo recibir mensaje de lis");
 		pthread_mutex_unlock(&journalingMutexDrop);
 		return -1;
 	}
-	drop = mensaje->header.error;
+	dropRes = mensaje->header.error;
 	destruirMensaje(mensaje);
 
 	pthread_mutex_unlock(&journalingMutexDrop);
-	return drop;
+	return dropRes;
 }
 
 

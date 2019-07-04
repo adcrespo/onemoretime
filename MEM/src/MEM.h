@@ -23,7 +23,7 @@
 #include <time.h>
 
 #define MAX_PATH 50
-#define MAX_CONS 3
+#define MAX_CONS 4
 #define MEMORY_FULL -100
 
 int tamanio_value;
