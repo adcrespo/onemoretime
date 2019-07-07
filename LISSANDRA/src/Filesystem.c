@@ -360,7 +360,6 @@ t_registro* BuscarKey(t_select *selectMsg)
 	t_registro *registroInit = malloc(sizeof(t_registro));
 	registroInit = list_get(listaBusqueda, 0);
 	t_registro *registroAux = malloc(sizeof(t_registro));
-	int registroInicio = 1;
 
 	for(int i = 0; i < sizeLista; i++)
 	{
@@ -383,8 +382,7 @@ t_registro* BuscarKey(t_select *selectMsg)
 
 t_list *BuscarKeyMemtable(int key, char *nombre)
 {
-	loggear(logger, LOG_LEVEL_INFO, "Buscando key:%d en memtable de: %s EN 40 SEGUNDOS", key, nombre);
-	sleep(40);
+	loggear(logger, LOG_LEVEL_INFO, "Buscando key:%d en memtable de: %s", key, nombre);
 
 	t_tabla *tabla = malloc(sizeof(t_tabla));
 	tabla = BuscarTablaMemtable(nombre);
@@ -589,14 +587,14 @@ int DropearTabla(char *nombre)
 
 					int size = config_get_int_value(config_file, "SIZE");
 
-					int cantBloques = calcularBloques(size);
+					int cantBloques = CalcularBloques(size);
 					char **bloques = malloc(sizeof(int) * cantBloques);
 					bloques = config_get_array_value(config_file, "BLOCKS");
 
 
 
-					liberarBloques(bloques, cantBloques);
-					liberarMetadata(bloques, cantBloques);
+					LiberarBloques(bloques, cantBloques);
+					LiberarMetadata(bloques, cantBloques);
 
 
 					printf("PATHFILE %s\n", pathFile);
@@ -622,14 +620,14 @@ int DropearTabla(char *nombre)
 }
 
 
-int calcularBloques(int bytes)
+int CalcularBloques(int bytes)
 {
 	int a = (bytes/tamanio_bloques);
 	a++;
 	return a;
 }
 
-void liberarBloques(char **bloques, int cantBloques)
+void LiberarBloques(char **bloques, int cantBloques)
 {
 	for(int i = 0; i < cantBloques; i++)
 	{
@@ -640,7 +638,7 @@ void liberarBloques(char **bloques, int cantBloques)
 	}
 }
 
-void liberarMetadata(char **bloques, int cant)
+void LiberarMetadata(char **bloques, int cant)
 {
 	loggear(logger, LOG_LEVEL_INFO, "Eliminando metadata asociada");
 	for(int i = 0; i < cant; i++)
@@ -708,7 +706,7 @@ t_list *obtenerRegistroBin(char *tabla) {
 
 					int size = config_get_int_value(config_file, "SIZE");
 
-					int cantBloques = calcularBloques(size);
+					int cantBloques = CalcularBloques(size);
 					char **bloques = malloc(sizeof(int) * cantBloques);
 					bloques = config_get_array_value(config_file, "BLOCKS");
 
@@ -744,5 +742,35 @@ t_list *obtenerRegistroBin(char *tabla) {
 	return NULL;
 }
 
+
+int ContarTablas()
+{
+	DIR *dir;
+	struct dirent *entry;
+	int count = 0;
+
+	char *path = string_from_format("%s", rutaTablas);
+
+	if((dir=opendir(path)) == NULL)
+	{
+		perror("openndir() error");
+	}
+
+	while((entry = readdir(dir)) != NULL)
+	{
+		if(!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, ".."))
+		{
+
+		}else
+		{
+			count++;
+		}
+	}
+
+	free(entry);
+	free(dir);
+	free(path);
+	return count;
+}
 
 

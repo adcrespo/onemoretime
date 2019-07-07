@@ -41,7 +41,9 @@ typedef enum tipoMensaje {
 	insert,
 	create,
 	drop,
-	journal
+	journal,
+	dump,
+	salir
 }t_tipoMensaje;
 
 typedef enum tipoProceso {

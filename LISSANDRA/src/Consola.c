@@ -148,11 +148,14 @@ int procesar_comando(char *line) {
 								}
 							}
 							break;
-
+						case _salir:
+							exit_gracefully(EXIT_SUCCESS);
+							break;
 						default:;
 					}
 				}
 				free(line);
+				free(request);
 				return 0;
 }
 

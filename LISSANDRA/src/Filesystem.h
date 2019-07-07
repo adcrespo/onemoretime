@@ -27,13 +27,14 @@ int AgregarBloque();
 int CrearTabla(t_create *msgCreate);
 void ObtenerMetadataCompleto();
 int DropearTabla(char *nombre);
-int calcularBloques(int bytes);
-void liberarBloques(char **bloques, int cantBloques);
-void liberarMetadata(char **bloques, int cant);
+int CalcularBloques(int bytes);
+void LiberarBloques(char **bloques, int cantBloques);
+void LiberarMetadata(char **bloques, int cant);
 t_list *BuscarKeyMemtable(int key, char *nombre);
 void LevantarHilosCompactacionFS();
 t_list *obtenerRegistroBin();
 void GuardarEnBloque(char *linea, char *path);
+int ContarTablas();
 
 t_config *config_metadata;
 t_bitarray *bitmap;
