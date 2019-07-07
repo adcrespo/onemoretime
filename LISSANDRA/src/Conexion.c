@@ -183,6 +183,11 @@ void procesar(int n_descriptor, fd_set* set_master) {
 					}
 					free(describeMensaje);
 					break;
+				case countTables:
+					log_info(logger, "Mensaje countTables recibido");
+					int cantidadTablas = ContarTablas();
+					enviarMensajeConError(lis, countTables, 0, NULL, n_descriptor, logger, mem, cantidadTablas);
+
 			}
 			destruirMensaje(msg);
 			break;

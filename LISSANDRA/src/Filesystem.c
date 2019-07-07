@@ -329,7 +329,7 @@ t_registro* BuscarKey(t_select *selectMsg)
 	t_list *listaBusqueda = list_create();
 
 	//Escaneo la particion
-	/*int j = 0;
+	int j = 0;
 	t_registro *registro;
 	while((blocksArray[j] != NULL) && (registro->timestamp != 0))
 	{
@@ -344,7 +344,7 @@ t_registro* BuscarKey(t_select *selectMsg)
 	}
 	int sizeList = list_size(listaBusqueda);
 	loggear(logger, LOG_LEVEL_INFO, "sizeLista %d", sizeList);
-*/
+
 	//Escaneo memtable
 	t_list *listaMemtable = list_create();
 	listaMemtable = BuscarKeyMemtable(selectMsg->key, selectMsg->nombreTabla);
@@ -354,7 +354,9 @@ t_registro* BuscarKey(t_select *selectMsg)
 	loggear(logger, LOG_LEVEL_INFO, "Lista de select tiene size %d", sizeLista);
 
 	//Escaneo temporales
-
+	t_list *listaTemp;
+	listaTemp = BuscarKeyTemporales(selectMsg->key, selectMsg->nombreTabla);
+	list_add_all(listaBusqueda, listaTemp);
 
 	//Busco registro con mayor timestamp
 	t_registro *registroInit = malloc(sizeof(t_registro));
@@ -398,6 +400,15 @@ t_list *BuscarKeyMemtable(int key, char *nombre)
 		}
 
 		return list_filter(tabla->lista,(void*)findKey);
+}
+
+t_list *BuscarKeyTemporales(int key, char *tabla){
+	t_list *listaTmp = list_create();
+
+
+
+
+	return listaTmp;
 }
 
 

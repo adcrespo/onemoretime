@@ -35,6 +35,7 @@ void LevantarHilosCompactacionFS();
 t_list *obtenerRegistroBin();
 void GuardarEnBloque(char *linea, char *path);
 int ContarTablas();
+t_list *BuscarKeyTemporales(int key, char *tabla);
 
 t_config *config_metadata;
 t_bitarray *bitmap;

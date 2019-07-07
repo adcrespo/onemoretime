@@ -43,6 +43,7 @@ typedef enum tipoMensaje {
 	drop,
 	journal,
 	dump,
+	countTables,
 	salir
 }t_tipoMensaje;
 
