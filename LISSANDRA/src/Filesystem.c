@@ -319,7 +319,13 @@ t_registro* BuscarKey(t_select *selectMsg) {
 //	//Escaneo memtable
 	t_list *listaMemtable = list_create();
 	listaMemtable = BuscarKeyMemtable(selectMsg->key, selectMsg->nombreTabla);
-	list_add_all(listaBusqueda, listaMemtable);
+	if(listaMemtable != NULL)
+		{
+		list_add_all(listaBusqueda, listaMemtable);
+		} else
+		{
+			log_info(logger, "Lista de memtable vacia");
+		}
 
 	int sizeSelect = list_size(listaBusqueda);
 	loggear(logger, LOG_LEVEL_INFO, "Lista de select tiene size %d", sizeSelect);
@@ -362,7 +368,7 @@ t_registro* BuscarKey(t_select *selectMsg) {
 	loggear(logger, LOG_LEVEL_INFO, "El timestamp mayor es %llu",registroInit->timestamp);
 	free(registroAux);
 	free(selectMsg);
-	list_clean(listaMemtable);
+	if(listaMemtable != NULL) list_clean(listaMemtable);
 	list_clean(listaTemp);
 	list_clean(listaBusqueda);
 	return registroInit;
@@ -376,6 +382,7 @@ t_list *BuscarKeyMemtable(int key, char *nombre) {
 
 	if (tabla == NULL) {
 		loggear(logger, LOG_LEVEL_WARNING, "La tabla %s no posee datos en memtable", nombre);
+		return NULL;
 	}
 
 	int findKey(t_registro *registro) {
@@ -721,7 +728,7 @@ t_list *obtenerRegistroBin(char *tabla) {
 	struct dirent *entry;
 
 	//vamos guardando cada tmp en el array
-
+	log_info(logger, "Obteniendo registros de %s", tabla);
 	if ((dir = opendir(tabla)) == NULL) {
 		perror("openndir() error");
 	} else {
@@ -731,9 +738,7 @@ t_list *obtenerRegistroBin(char *tabla) {
 
 			} else {
 				if (string_ends_with(entry->d_name, ".bin")) {
-					printf("Archivo: %s\n", entry->d_name);
 					char *pathFile = string_from_format("%s/%s", tabla,entry->d_name);
-					printf("Abriendo file %s\n", pathFile);
 					t_config *config_file = cargarConfiguracion(pathFile,logger);
 
 					int size = config_get_int_value(config_file, "SIZE");
@@ -743,8 +748,7 @@ t_list *obtenerRegistroBin(char *tabla) {
 					bloques = config_get_array_value(config_file, "BLOCKS");
 
 					for (int i = 0; cantBloques > i; i++) {
-						char *bloque = string_from_format("%s/%s.bin",
-								rutaBloques, bloques[i]);
+						char *bloque = string_from_format("%s/%s.bin", rutaBloques, bloques[i]);
 						//abrirArchivo
 						FILE *archivo = fopen(bloque, "r+");
 						char linea[100];
@@ -763,9 +767,12 @@ t_list *obtenerRegistroBin(char *tabla) {
 							for (int i = 0; cantElementos > i; i++) {
 								free(elementos[i]);
 							}
+							free(elementos);
 						}
+						free(bloque);
 						fclose(archivo);
 					}
+					free(pathFile);
 				}
 			}
 		}

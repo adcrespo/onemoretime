@@ -24,5 +24,6 @@ pthread_t compactacion;
 int hilo_compactacion;
 
 int crearHiloCompactacion();
+int process_compactaction(char *nombreTabla);
 
 #endif /* COMPACTACION_H_ */

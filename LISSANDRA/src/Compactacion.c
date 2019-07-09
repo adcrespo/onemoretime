@@ -52,17 +52,20 @@ int process_compactacion(char* path_tabla)
 	i=0;
 	while(!string_is_empty(listasTmp[i])){
 		string_append(&rutaTmp,rutaTabla);
+		string_append(&rutaTmp, "/");
 		string_append(&rutaTmp, listasTmp[i]);
 		string_append(&rutaTmpc, rutaTmp);
 		string_append(&rutaTmpc, "c");
 		rename(rutaTmp, rutaTmpc);
-
 		i++;
 	}
 
 
 	//Por cada .tmp:
 		//Analizar registro por registro y compararlos contra el .bin (en memoria)
+	t_list *listaBin = obtenerRegistroBin(rutaTabla);
+	int count = list_size(listaBin);
+	log_info(logger, "SIZE LISTA BIN %d", count);
 			//Si la key no existe -> agregarlo
 			//Si la key existe pero el timestamp del .tmp es mas reciente -> agregarlo
 			//Si no no hacer nada
@@ -74,12 +77,16 @@ int process_compactacion(char* path_tabla)
 			//Grabar los datos en el nuevo archivo “.bin”
 			//Desbloquer la tabla y tomar el tiempo cuanto estuvo bloqueada
 
+
+
+
+	closedir(dir);
 	return res;
 }
 
 void *crearCompactacion(void *pDatos_compactacion) {
 	t_datos_compactacion datos_compactacion = *((t_datos_compactacion *) pDatos_compactacion);
-
+	log_info(logger, "Compactando tabla %s en %d", datos_compactacion.path_tabla, datos_compactacion.retardo);
 	sleep(datos_compactacion.retardo/1000);
 	while (1) {
 		process_compactacion(datos_compactacion.path_tabla);
@@ -95,7 +102,7 @@ int crearHiloCompactacion(int retardo, char* path_tabla)
 
 	if (hilo_compactacion == -1)
 		loggear(logger,LOG_LEVEL_INFO,"ERROR_HILO_COMPACTACION: %d", hilo_compactacion);
-	log_info(logger, "Se generó el hilo para la COMPACTACION.");
+	log_info(logger, "Se generó el hilo para la COMPACTACION de tabla:%s.", path_tabla);
 
 	return 1;
 }
