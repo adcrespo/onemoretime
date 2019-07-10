@@ -96,7 +96,8 @@ t_metadata* ObtenerMetadataTabla(char *tabla) {
 
 	t_metadata *metadata = malloc(sizeof(t_metadata));
 	char *rutaMetadata = string_from_format("%s%s/Metadata", rutaTablas, tabla);
-	loggear(logger, LOG_LEVEL_INFO, "Obteniendo metadata en ruta %s",rutaMetadata);
+	loggear(logger, LOG_LEVEL_INFO, "Obteniendo metadata en ruta %s",
+			rutaMetadata);
 
 	t_config *metadataFile = cargarConfiguracion(rutaMetadata, logger);
 
@@ -214,7 +215,8 @@ int InsertarTabla(t_request *request) {
 	t_registro *registro = malloc(sizeof(t_registro));
 
 	registro->key = atoi(request->parametro2);
-	memcpy(registro->value, request->parametro3,strlen(request->parametro3) + 1);
+	memcpy(registro->value, request->parametro3,
+			strlen(request->parametro3) + 1);
 	registro->timestamp = atoll(request->parametro4);
 
 	printf("Registro key %d\n", registro->key);
@@ -223,7 +225,8 @@ int InsertarTabla(t_request *request) {
 
 	//Verifico existencia en el file system
 	if (!ExisteTabla(request->parametro1)) {
-		loggear(logger, LOG_LEVEL_WARNING, "%s no existe en el file system", request->parametro1);
+		loggear(logger, LOG_LEVEL_WARNING, "%s no existe en el file system",
+				request->parametro1);
 		return 1;
 	}
 
@@ -233,7 +236,8 @@ int InsertarTabla(t_request *request) {
 
 	if (tabla == NULL) {
 		//Aloco en memtable como nueva tabla
-		loggear(logger, LOG_LEVEL_INFO, "%s no posee datos a dumpear", request->parametro1);
+		loggear(logger, LOG_LEVEL_INFO, "%s no posee datos a dumpear",
+				request->parametro1);
 		AlocarTabla(request->parametro1, registro);
 	} else {
 		//Alocar en su posicion
@@ -276,7 +280,8 @@ t_registro* BuscarKey(t_select *selectMsg) {
 
 	//Verifico existencia en el file system
 	if (!ExisteTabla(selectMsg->nombreTabla)) {
-		loggear(logger, LOG_LEVEL_ERROR, "%s no existe en el file system",selectMsg->nombreTabla);
+		loggear(logger, LOG_LEVEL_ERROR, "%s no existe en el file system",
+				selectMsg->nombreTabla);
 	}
 
 	//Obtengo metadata
@@ -288,7 +293,8 @@ t_registro* BuscarKey(t_select *selectMsg) {
 	int particion = CalcularParticion(selectMsg->key, particiones);
 
 	//Obtengo bloques de la particion
-	char *rutaParticion = string_from_format("%s%s/part%d.bin", rutaTablas,selectMsg->nombreTabla, particion);
+	char *rutaParticion = string_from_format("%s%s/part%d.bin", rutaTablas,
+			selectMsg->nombreTabla, particion);
 	loggear(logger, LOG_LEVEL_INFO, "configFile %s", rutaParticion);
 	t_config *configFile = cargarConfiguracion(rutaParticion, logger);
 
@@ -319,16 +325,15 @@ t_registro* BuscarKey(t_select *selectMsg) {
 //	//Escaneo memtable
 	t_list *listaMemtable = list_create();
 	listaMemtable = BuscarKeyMemtable(selectMsg->key, selectMsg->nombreTabla);
-	if(listaMemtable != NULL)
-		{
+	if (listaMemtable != NULL) {
 		list_add_all(listaBusqueda, listaMemtable);
-		} else
-		{
-			log_info(logger, "Lista de memtable vacia");
-		}
+	} else {
+		log_info(logger, "Lista de memtable vacia");
+	}
 
 	int sizeSelect = list_size(listaBusqueda);
-	loggear(logger, LOG_LEVEL_INFO, "Lista de select tiene size %d", sizeSelect);
+	loggear(logger, LOG_LEVEL_INFO, "Lista de select tiene size %d",
+			sizeSelect);
 
 	//Escaneo temporales
 	t_list *listaTemp;
@@ -338,17 +343,15 @@ t_registro* BuscarKey(t_select *selectMsg) {
 	int count = list_size(listaTemp);
 	log_info(logger, "Coincidencias en temp :%d", count);
 
-	for(int i = 0; i < count; i++)
-	{
+	for (int i = 0; i < count; i++) {
 		t_registro *registro = malloc(sizeof(t_registro));
-		log_info(logger, "Obteniendo registro %d",i);
+		log_info(logger, "Obteniendo registro %d", i);
 		registro = list_get(listaTemp, i);
 		log_info(logger, "***Registro %d de Temp***", i);
 		log_info(logger, "Timestamp %llu", registro->timestamp);
 		log_info(logger, "Key %d", registro->key);
 		log_info(logger, "Value: %s", registro->value);
 	}
-
 
 	//Busco registro con mayor timestamp
 	t_registro *registroInit = malloc(sizeof(t_registro));
@@ -358,30 +361,36 @@ t_registro* BuscarKey(t_select *selectMsg) {
 	int sizeLista = list_size(listaBusqueda);
 	for (int i = 0; i < sizeLista; i++) {
 		registroAux = list_get(listaBusqueda, i);
-		loggear(logger, LOG_LEVEL_INFO,"Elemento %d tiene value %s y timestamp %llu", i,registroAux->value, registroAux->timestamp);
+		loggear(logger, LOG_LEVEL_INFO,
+				"Elemento %d tiene value %s y timestamp %llu", i,
+				registroAux->value, registroAux->timestamp);
 		if (registroInit->timestamp < registroAux->timestamp) {
 			registroInit = registroAux;
 		}
 
 	}
 
-	loggear(logger, LOG_LEVEL_INFO, "El timestamp mayor es %llu",registroInit->timestamp);
+	loggear(logger, LOG_LEVEL_INFO, "El timestamp mayor es %llu",
+			registroInit->timestamp);
 	free(registroAux);
 	free(selectMsg);
-	if(listaMemtable != NULL) list_clean(listaMemtable);
+	if (listaMemtable != NULL)
+		list_clean(listaMemtable);
 	list_clean(listaTemp);
 	list_clean(listaBusqueda);
 	return registroInit;
 }
 
 t_list *BuscarKeyMemtable(int key, char *nombre) {
-	loggear(logger, LOG_LEVEL_INFO, "Buscando key:%d en memtable de: %s", key, nombre);
+	loggear(logger, LOG_LEVEL_INFO, "Buscando key:%d en memtable de: %s", key,
+			nombre);
 
 	t_tabla *tabla = malloc(sizeof(t_tabla));
 	tabla = BuscarTablaMemtable(nombre);
 
 	if (tabla == NULL) {
-		loggear(logger, LOG_LEVEL_WARNING, "La tabla %s no posee datos en memtable", nombre);
+		loggear(logger, LOG_LEVEL_WARNING,
+				"La tabla %s no posee datos en memtable", nombre);
 		return NULL;
 	}
 
@@ -398,7 +407,6 @@ t_list *BuscarKeyTemporales(int key, char *tabla) {
 	DIR *dir;
 	struct dirent *entry;
 
-
 	if ((dir = opendir(pathTemps)) == NULL) {
 		perror("openndir() error");
 	}
@@ -409,14 +417,15 @@ t_list *BuscarKeyTemporales(int key, char *tabla) {
 	while ((entry = readdir(dir)) != NULL) {
 		if (string_ends_with(entry->d_name, ".tmp")) {
 
-			char *pathFile = string_from_format("%s/%s", pathTemps, entry->d_name);
+			char *pathFile = string_from_format("%s/%s", pathTemps,
+					entry->d_name);
 			t_config *config_file = cargarConfiguracion(pathFile, logger);
 			int size = config_get_int_value(config_file, "SIZE");
 			int cantBloques = CalcularBloques(size);
 			char **bloques = malloc(sizeof(int) * cantBloques);
 			bloques = config_get_array_value(config_file, "BLOCKS");
 
-			for(int i = 0; cantBloques > i; i++){
+			for (int i = 0; cantBloques > i; i++) {
 				list_add(tempBlocksCollection, atoi(bloques[i]));
 				free(bloques[i]);
 			}
@@ -456,9 +465,9 @@ t_list *BuscarKeyTemporales(int key, char *tabla) {
 				value[strcspn(value, "\n")] = 0;
 				strcpy(registro->value, value);
 				list_add(listaTmp, registro);
-				log_info(logger, "Elemento guardado con value %s",registro->value);
+				log_info(logger, "Elemento guardado con value %s",
+						registro->value);
 			}
-
 
 			for (int i = 0; i < cantElementos; i++) {
 				free(elementos[i]);
@@ -470,14 +479,14 @@ t_list *BuscarKeyTemporales(int key, char *tabla) {
 		free(pathBlock);
 	}
 
-
 	free(pathTemps);
 	list_clean(tempBlocksCollection);
 	return listaTmp;
 }
 
 t_registro* BuscarKeyParticion(int key, char *bloque) {
-	loggear(logger, LOG_LEVEL_INFO, "Buscando key : %d en bloque: %s", key, bloque);
+	loggear(logger, LOG_LEVEL_INFO, "Buscando key : %d en bloque: %s", key,
+			bloque);
 	char *pathBlock = string_from_format("%s%s.bin", rutaBloques, bloque);
 	loggear(logger, LOG_LEVEL_INFO, "Ruta bloque : %s", pathBlock);
 	char linea[100];
@@ -488,7 +497,8 @@ t_registro* BuscarKeyParticion(int key, char *bloque) {
 	if (file == NULL) {
 		loggear(logger, LOG_LEVEL_ERROR, "Error abriendo archivo %s", file);
 	}
-	loggear(logger, LOG_LEVEL_INFO, "Archivo %s abierto correctamente",pathBlock);
+	loggear(logger, LOG_LEVEL_INFO, "Archivo %s abierto correctamente",
+			pathBlock);
 	t_registro *registro = malloc(sizeof(t_registro));
 	while (!feof(file))
 
@@ -505,7 +515,8 @@ t_registro* BuscarKeyParticion(int key, char *bloque) {
 			value[strcspn(value, "\n")] = 0;
 			strcpy(registro->value, value);
 
-			loggear(logger, LOG_LEVEL_INFO, "Timestamp:%llu",registro->timestamp);
+			loggear(logger, LOG_LEVEL_INFO, "Timestamp:%llu",
+					registro->timestamp);
 			loggear(logger, LOG_LEVEL_INFO, "Key:%d", registro->key);
 			loggear(logger, LOG_LEVEL_INFO, "Value:%s", registro->value);
 			return registro;
@@ -709,12 +720,14 @@ void LevantarHilosCompactacionFS() {
 
 			} else {
 				//printf("%s\n", entry->d_name);
-				char *metadataFile = string_from_format("%s%s/Metadata",rutaTablas, entry->d_name);
+				char *metadataFile = string_from_format("%s%s/Metadata",
+						rutaTablas, entry->d_name);
 				//printf("Ruta de metadata: %s\n", metadataFile);
 				t_config *config_file = cargarConfiguracion(metadataFile,
 						logger);
 
-				int compactationTime = config_get_int_value(config_file,"COMPACTATION_TIME");
+				int compactationTime = config_get_int_value(config_file,
+						"COMPACTATION_TIME");
 				//printf("Tiempo de compactacion tabla %s: %d\n", entry->d_name, compactationTime);
 				//crearHiloCompactacion(compactationTime, entry->d_name);
 			}
@@ -722,34 +735,37 @@ void LevantarHilosCompactacionFS() {
 	}
 }
 
-t_list *obtenerRegistroBin(char *tabla) {
+t_list *ObtenerRegistros(char *tabla, char *extension) {
 
 	DIR *dir;
 	struct dirent *entry;
 
-	//vamos guardando cada tmp en el array
-	log_info(logger, "Obteniendo registros de %s", tabla);
+	log_info(logger, "Obteniendo registros %s de %s", extension, tabla);
 	if ((dir = opendir(tabla)) == NULL) {
 		perror("openndir() error");
 	} else {
-		t_list *registrosBin = list_create();
+		t_list *registros = list_create();
 		while ((entry = readdir(dir)) != NULL) {
 			if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, "..")) {
-
+			//no hacer nada
 			} else {
-				if (string_ends_with(entry->d_name, ".bin")) {
-					char *pathFile = string_from_format("%s/%s", tabla,entry->d_name);
-					t_config *config_file = cargarConfiguracion(pathFile,logger);
+				if (string_ends_with(entry->d_name, extension)) {
+					char *pathFile = string_from_format("%s/%s", tabla,
+							entry->d_name);
+					log_info(logger, "Abriendo config de %s", pathFile);
+					t_config *config_file = cargarConfiguracion(pathFile,
+							logger);
 
 					int size = config_get_int_value(config_file, "SIZE");
 
 					int cantBloques = CalcularBloques(size);
 					char **bloques = malloc(sizeof(int) * cantBloques);
 					bloques = config_get_array_value(config_file, "BLOCKS");
-
 					for (int i = 0; cantBloques > i; i++) {
-						char *bloque = string_from_format("%s/%s.bin", rutaBloques, bloques[i]);
+						char *bloque = string_from_format("%s%s.bin",
+								rutaBloques, bloques[i]);
 						//abrirArchivo
+						log_info(logger, "ABRIENDO %s", bloque);
 						FILE *archivo = fopen(bloque, "r+");
 						char linea[100];
 						char **elementos;
@@ -763,7 +779,7 @@ t_list *obtenerRegistroBin(char *tabla) {
 							registro->timestamp = atoll(elementos[0]);
 							registro->key = atoi(elementos[1]);
 							strcpy(registro->value, elementos[2]);
-							list_add(registrosBin, registro);
+							list_add(registros, registro);
 							for (int i = 0; cantElementos > i; i++) {
 								free(elementos[i]);
 							}
@@ -776,7 +792,7 @@ t_list *obtenerRegistroBin(char *tabla) {
 				}
 			}
 		}
-		return registrosBin;
+		return registros;
 	}
 	closedir(dir);
 	return NULL;
@@ -806,4 +822,6 @@ int ContarTablas() {
 	free(path);
 	return count;
 }
+
+
 

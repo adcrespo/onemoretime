@@ -17,7 +17,7 @@
 
 typedef struct {
 	int retardo;
-	char* path_tabla;
+	char path_tabla[50];
 }t_datos_compactacion;
 
 pthread_t compactacion;

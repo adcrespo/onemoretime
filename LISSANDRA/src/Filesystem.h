@@ -32,7 +32,8 @@ void LiberarBloques(char **bloques, int cantBloques);
 void LiberarMetadata(char **bloques, int cant);
 t_list *BuscarKeyMemtable(int key, char *nombre);
 void LevantarHilosCompactacionFS();
-t_list *obtenerRegistroBin();
+/**Invocar con extension ".bin" o ".tmp" **/
+t_list *ObtenerRegistros(char *tabla, char *extension);
 void GuardarEnBloque(char *linea, char *path);
 int ContarTablas();
 t_list *BuscarKeyTemporales(int key, char *tabla);

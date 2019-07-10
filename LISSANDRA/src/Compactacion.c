@@ -63,10 +63,14 @@ int process_compactacion(char* path_tabla)
 
 	//Por cada .tmp:
 		//Analizar registro por registro y compararlos contra el .bin (en memoria)
-	t_list *listaBin = obtenerRegistroBin(rutaTabla);
-	int count = list_size(listaBin);
-	log_info(logger, "SIZE LISTA BIN %d", count);
+	t_list *listaBin = ObtenerRegistros(rutaTabla, ".bin");
+	t_list *listaTmp = ObtenerRegistros(rutaTabla, ".tmpc");
+	int a = list_size(listaTmp);
+	int b = list_size(listaBin);
+	log_info(logger, "list size de registros tmp %d", a);
+	log_info(logger, "list size de registros bin %d", b);
 			//Si la key no existe -> agregarlo
+
 			//Si la key existe pero el timestamp del .tmp es mas reciente -> agregarlo
 			//Si no no hacer nada
 		//Realizar la reasignacion de bloques
@@ -87,18 +91,23 @@ int process_compactacion(char* path_tabla)
 void *crearCompactacion(void *pDatos_compactacion) {
 	t_datos_compactacion datos_compactacion = *((t_datos_compactacion *) pDatos_compactacion);
 	log_info(logger, "Compactando tabla %s en %d", datos_compactacion.path_tabla, datos_compactacion.retardo);
-	sleep(datos_compactacion.retardo/1000);
 	while (1) {
-		process_compactacion(datos_compactacion.path_tabla);
 		sleep(datos_compactacion.retardo/1000);
+		process_compactacion(datos_compactacion.path_tabla);
 	}
+
+	return NULL;
 }
 
 int crearHiloCompactacion(int retardo, char* path_tabla)
 {
-	t_datos_compactacion datos_compactacion = {.retardo = retardo, .path_tabla = string_from_format(path_tabla)};
+//	t_datos_compactacion datos_compactacion = {.retardo = retardo, .path_tabla = string_from_format(path_tabla)};
+	t_datos_compactacion *datos_compactacion = malloc(sizeof(t_datos_compactacion));
+	datos_compactacion->retardo = retardo;
+	strcpy(datos_compactacion->path_tabla, path_tabla);
 
-	hilo_compactacion = pthread_create(&compactacion, NULL, crearCompactacion, (void *) &datos_compactacion);
+//	hilo_compactacion = pthread_create(&compactacion, NULL, crearCompactacion, (void *) &datos_compactacion);
+	hilo_compactacion = pthread_create(&compactacion, NULL, crearCompactacion, datos_compactacion);
 
 	if (hilo_compactacion == -1)
 		loggear(logger,LOG_LEVEL_INFO,"ERROR_HILO_COMPACTACION: %d", hilo_compactacion);
