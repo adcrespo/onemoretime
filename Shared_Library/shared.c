@@ -329,7 +329,7 @@ int enviarMensaje(int tipoProcesoEmisor, int tipoMensaje, int len, void* content
 int enviarMensajeConError(int tipoProcesoEmisor, int tipoMensaje, int len, void* content,
 		int socketReceptor, t_log* logger, int tipoProcesoReceptor, int error) {
 
-	void* buffer = serializar(tipoProcesoEmisor, tipoMensaje, len, content);
+	void* buffer = serializarConError(tipoProcesoEmisor, tipoMensaje, len, content,error);
 
 	if (len > 0 && content != NULL)
 		if (buffer == NULL) {

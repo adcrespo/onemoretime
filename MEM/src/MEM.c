@@ -74,7 +74,7 @@ int main(int argc, char *argv[]) {
 	//liberar_memory_spa();*/
 
 	tamanio_value = VALUE;
-	//socket_lis = connect_to_server(MEM_CONF.IP_FS, MEM_CONF.PUERTO_FS, lis,memoria);
+	socket_lis = connect_to_server(MEM_CONF.IP_FS, MEM_CONF.PUERTO_FS, lis,memoria);
 
 	init_memory_spa();
 
