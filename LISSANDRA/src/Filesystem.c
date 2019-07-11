@@ -219,9 +219,9 @@ int InsertarTabla(t_request *request) {
 			strlen(request->parametro3) + 1);
 	registro->timestamp = atoll(request->parametro4);
 
-	printf("Registro key %d\n", registro->key);
-	printf("Registro value %s\n", registro->value);
-	printf("Registro timestamp %llu\n", registro->timestamp);
+//	printf("Registro key %d\n", registro->key);
+//	printf("Registro value %s\n", registro->value);
+//	printf("Registro timestamp %llu\n", registro->timestamp);
 
 	//Verifico existencia en el file system
 	if (!ExisteTabla(request->parametro1)) {
@@ -651,10 +651,10 @@ int DropearTabla(char *nombre) {
 					|| !strcmp(entry->d_name, "Metadata")) {
 
 			} else {
-				printf("Archivo: %s\n", entry->d_name);
+//				printf("Archivo: %s\n", entry->d_name);
 				char *pathFile = string_from_format("%s/%s", path,
 						entry->d_name);
-				printf("Abriendo file %s\n", pathFile);
+//				printf("Abriendo file %s\n", pathFile);
 				t_config *config_file = cargarConfiguracion(pathFile, logger);
 
 				int size = config_get_int_value(config_file, "SIZE");
@@ -666,7 +666,7 @@ int DropearTabla(char *nombre) {
 				LiberarBloques(bloques, cantBloques);
 				LiberarMetadata(bloques, cantBloques);
 
-				printf("PATHFILE %s\n", pathFile);
+//				printf("PATHFILE %s\n", pathFile);
 				remove(pathFile);
 
 				for (int i = 0; i <= cantBloques; i++) {

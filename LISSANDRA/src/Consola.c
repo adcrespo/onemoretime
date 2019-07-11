@@ -76,7 +76,13 @@ int procesar_comando(char *line) {
 				printf("Key: %s\n", request->parametro2);
 				printf("Value: %s\n", request->parametro3);
 				printf("Timestamp: %s\n", request->parametro4);
-				InsertarTabla(request);
+				int resultInsert = InsertarTabla(request);
+				if (resultInsert) {
+					printf("La tabla %s no se encuentra creada.\n",
+							request->parametro1);
+				} else {
+					printf("Registro insertado correctamente.\n");
+				}
 			}
 
 			break;
@@ -109,22 +115,33 @@ int procesar_comando(char *line) {
 
 		case _describe:
 			printf("CONSOLA: Se ingresó comando DESCRIBE \n");
+			if (string_is_empty(request->parametro1)) {
+				printf("Obteniendo metadata de todas las tablas.\n");
+			} else {
+				int resultExists = ExisteTabla(request->parametro1);
+				char *tableName = string_new();
+				strcpy(tableName, request->parametro1);
 
-			if (request->parametro1 != NULL) {
-				printf("Metadata de tabla %s\n", request->parametro1);
-				t_metadata *metadata;
-				metadata = ObtenerMetadataTabla(request->parametro1);
-				int particiones = metadata->particiones;
-				int tiempoCompactacion = metadata->compactationTime;
-				char *consistencia = string_new();
-				strcpy(consistencia, metadata->tipoConsistencia);
-				printf("CONSISTENCY=%s\n", consistencia);
-				printf("PARTITIONS=%d\n", particiones);
-				printf("COMPACTATION_TIME=%d\n", tiempoCompactacion);
-				free(consistencia);
-				free(metadata);
+				switch (resultExists) {
+				case 1:
+					printf("Metadata de tabla %s\n", request->parametro1);
+					t_metadata *metadata;
+					metadata = ObtenerMetadataTabla(request->parametro1);
+					int particiones = metadata->particiones;
+					int tiempoCompactacion = metadata->compactationTime;
+					char *consistencia = string_new();
+					strcpy(consistencia, metadata->tipoConsistencia);
+					printf("CONSISTENCY=%s\n", consistencia);
+					printf("PARTITIONS=%d\n", particiones);
+					printf("COMPACTATION_TIME=%d\n", tiempoCompactacion);
+					free(consistencia);
+					free(metadata);
+
+					break;
+				case 0:
+					printf("La tabla no existe \n");
+				}
 			}
-
 			break;
 
 		case _drop:
@@ -135,8 +152,8 @@ int procesar_comando(char *line) {
 
 			} else {
 				int resultado = DropearTabla(request->parametro1);
-				if (resultado)
-					printf("Tabla %s eliminada\n.", request->parametro1);
+				if (!resultado)
+					printf("Tabla %s eliminada.\n", request->parametro1);
 				else {
 					printf("La tabla ingresada no existe.\n");
 				}
