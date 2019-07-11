@@ -6,12 +6,13 @@
  */
 #include "Dump.h"
 
-void *InicializarDump()
-{
+void *InicializarDump() {
 	dumpRealizados = 0;
-	AplicarTiempoDump();
-	RealizarDumpeo();
-	LimpiarMemtable();
+	while (1) {
+		AplicarTiempoDump();
+		RealizarDumpeo();
+		LimpiarMemtable();
+	}
 	return 0;
 }
 

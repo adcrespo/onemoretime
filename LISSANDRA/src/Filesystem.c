@@ -219,9 +219,9 @@ int InsertarTabla(t_request *request) {
 			strlen(request->parametro3) + 1);
 	registro->timestamp = atoll(request->parametro4);
 
-	printf("Registro key %d\n", registro->key);
-	printf("Registro value %s\n", registro->value);
-	printf("Registro timestamp %llu\n", registro->timestamp);
+//	printf("Registro key %d\n", registro->key);
+//	printf("Registro value %s\n", registro->value);
+//	printf("Registro timestamp %llu\n", registro->timestamp);
 
 	//Verifico existencia en el file system
 	if (!ExisteTabla(request->parametro1)) {
@@ -308,17 +308,24 @@ t_registro* BuscarKey(t_select *selectMsg) {
 
 	//Escaneo la particion
 	int j = 0;
-	t_registro *registro;
-	while ((blocksArray[j] != NULL) && (registro->timestamp != 0)) {
-		registro = BuscarKeyParticion(selectMsg->key, blocksArray[j]);
+//	t_registro *registro;
+//	while ((blocksArray[j] != NULL) && (registro->timestamp != 0)) {
+	while (blocksArray[j] != NULL) {
+
+		t_registro *registro = BuscarKeyParticion(selectMsg->key,
+				blocksArray[j]);
+		if (registro->timestamp != 0) {
+			log_info(logger, "Registro encontrado en particion");
+			list_add(listaBusqueda, registro);
+		}
 		j++;
 	}
 
 	//Si se encontro en particion agrego a la lista de busqueda
-	if (registro->timestamp != 0) {
-		log_info(logger, "Registro encontrado en particion");
-		list_add(listaBusqueda, registro);
-	}
+//	if (registro->timestamp != 0) {
+//		log_info(logger, "Registro encontrado en particion");
+//		list_add(listaBusqueda, registro);
+//	}
 	int sizeList = list_size(listaBusqueda);
 	loggear(logger, LOG_LEVEL_INFO, "sizeLista %d", sizeList);
 
@@ -376,7 +383,8 @@ t_registro* BuscarKey(t_select *selectMsg) {
 	free(selectMsg);
 	if (listaMemtable != NULL)
 		list_clean(listaMemtable);
-	list_clean(listaTemp);
+	if (listaTemp != NULL)
+		list_clean(listaTemp);
 	list_clean(listaBusqueda);
 	return registroInit;
 }
@@ -643,10 +651,10 @@ int DropearTabla(char *nombre) {
 					|| !strcmp(entry->d_name, "Metadata")) {
 
 			} else {
-				printf("Archivo: %s\n", entry->d_name);
+//				printf("Archivo: %s\n", entry->d_name);
 				char *pathFile = string_from_format("%s/%s", path,
 						entry->d_name);
-				printf("Abriendo file %s\n", pathFile);
+//				printf("Abriendo file %s\n", pathFile);
 				t_config *config_file = cargarConfiguracion(pathFile, logger);
 
 				int size = config_get_int_value(config_file, "SIZE");
@@ -658,7 +666,7 @@ int DropearTabla(char *nombre) {
 				LiberarBloques(bloques, cantBloques);
 				LiberarMetadata(bloques, cantBloques);
 
-				printf("PATHFILE %s\n", pathFile);
+//				printf("PATHFILE %s\n", pathFile);
 				remove(pathFile);
 
 				for (int i = 0; i <= cantBloques; i++) {
@@ -747,7 +755,7 @@ t_list *ObtenerRegistros(char *tabla, char *extension) {
 		t_list *registros = list_create();
 		while ((entry = readdir(dir)) != NULL) {
 			if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, "..")) {
-			//no hacer nada
+				//no hacer nada
 			} else {
 				if (string_ends_with(entry->d_name, extension)) {
 					char *pathFile = string_from_format("%s/%s", tabla,
@@ -822,6 +830,4 @@ int ContarTablas() {
 	free(path);
 	return count;
 }
-
-
 
