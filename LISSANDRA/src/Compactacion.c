@@ -65,14 +65,32 @@ int process_compactacion(char* path_tabla)
 		//Analizar registro por registro y compararlos contra el .bin (en memoria)
 	t_list *listaBin = ObtenerRegistros(rutaTabla, ".bin");
 	t_list *listaTmp = ObtenerRegistros(rutaTabla, ".tmpc");
-	int a = list_size(listaTmp);
-	int b = list_size(listaBin);
-	log_info(logger, "list size de registros tmp %d", a);
-	log_info(logger, "list size de registros bin %d", b);
-			//Si la key no existe -> agregarlo
+	int cantListaTmp = list_size(listaTmp);
+	int cantListaBin = list_size(listaBin);
+	log_info(logger, "list size de registros tmp %d", cantListaTmp);
+	log_info(logger, "list size de registros bin %d", cantListaBin);
 
-			//Si la key existe pero el timestamp del .tmp es mas reciente -> agregarlo
+	for (int i = 0; cantListaTmp > i; i++) {
+
+		t_registro* registroTmp = list_get(listaTmp, i);
+
+		bool find(void* element) {
+			t_registro* registroBusqueda = element;
+			return registroBusqueda->key == registroTmp->key;
+		}
+
+		t_registro* registroBin = list_find(listaBin, &find);
+		if (registroBin == NULL) {
+			list_add(listaBin, registroTmp);//Si la key no existe -> agregarlo
+		} else {
+			if (registroTmp->timestamp > registroBin->timestamp) {
+				//Si la key existe pero el timestamp del .tmp es mas reciente -> agregarlo
+				registroBin = registroTmp;
+			}
 			//Si no no hacer nada
+		}
+	}
+
 		//Realizar la reasignacion de bloques
 			//Bloquear la tabla y tomar timestamp
 			//Liberar los bloques que contengan el archivo “.tmpc”
@@ -80,9 +98,6 @@ int process_compactacion(char* path_tabla)
 			//Solicitar los bloques necesarios para el nuevo archivo “.bin”
 			//Grabar los datos en el nuevo archivo “.bin”
 			//Desbloquer la tabla y tomar el tiempo cuanto estuvo bloqueada
-
-
-
 
 	closedir(dir);
 	return res;
