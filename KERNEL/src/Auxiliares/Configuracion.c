@@ -7,13 +7,10 @@
 
 #include "Configuracion.h"
 
-void cargar_configuracion_kernel() {
+void cargar_configuracion_kernel(char * path_config) {
 
 //	config = cargar_configuracion("../config/KERNEL.config", logger);
-	config =
-			cargarConfiguracion(
-					"/home/utnso/Repositorios/tp-2019-1c-One-more-time/KERNEL/config/KERNEL.config",
-					logger);
+	config = cargarConfiguracion(path_config,logger);
 
 	if (config_has_property(config, "IP_MEMORIA")) {
 		kernel_conf.ip_memoria = config_get_string_value(config, "IP_MEMORIA");

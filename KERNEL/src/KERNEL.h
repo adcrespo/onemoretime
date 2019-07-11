@@ -19,6 +19,7 @@
 #include "Auxiliares/Planificador.h"
 #include "Auxiliares/Configuracion.h"
 #include "Auxiliares/Conexion.h"
+#include "Auxiliares/argparse.h"
 
 
 /* Variables globales */
