@@ -19,8 +19,8 @@
 #include <commons/string.h>
 #include <time.h>
 
-int proceso_select(char* tabla, int clave, char** buffer);
-int proceso_insert(char* tabla, int clave, char* value);
+int proceso_select(char* tabla, int clave, char** buffer, int* largo_buffer);
+int proceso_insert(char* tabla, int clave, char* value, unsigned long long tstamp);
 int proceso_create(char* tabla,char* tipo_cons, int num_part, int compact_time);
 int proceso_describe(char* tabla, char** buffer, int* largo_buffer);
 int proceso_journal();

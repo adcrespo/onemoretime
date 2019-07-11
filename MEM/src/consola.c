@@ -98,7 +98,8 @@ void *crearConsola() {
 			}
 			printf("select...\n");
 			char *buffer_select=NULL;
-			int resultSelect = proceso_select(comando[1],atoi(comando[2]),&buffer_select);
+			int largo_buffer = 0;
+			int resultSelect = proceso_select(comando[1],atoi(comando[2]),&buffer_select, &largo_buffer);
 			if(resultSelect>0){
 				t_registro* reg = descomponer_registro(buffer_select);
 				printf("[OK] [timestamp:%llu][key:%d] %s\n",reg->timestamp, reg->key, reg->value);
@@ -131,7 +132,7 @@ void *crearConsola() {
 			}
 
 			printf("insert...\n");
-			int escrito = proceso_insert(comando[1],atoll(comando[2]), registroInsertar);
+			int escrito = proceso_insert(comando[1],atoll(comando[2]), registroInsertar, 0);
 			if(escrito >= 0)
 				printf("[OK] Se pudo insertar el registro \n");
 			else

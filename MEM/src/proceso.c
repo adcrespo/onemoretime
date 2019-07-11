@@ -32,8 +32,9 @@ int solicitarPagina(char *tabla, unsigned long long timestamp) {
 	}
 	return paginaNueva;
 }
-int proceso_select(char* tabla, int clave, char** buffer) {
+int proceso_select(char* tabla, int clave, char** buffer, int* largo_buffer) {
 	pthread_mutex_lock(&journalingMutexSelect);
+	*largo_buffer = 0;
 	int paginaTabla = getPaginaForKey(tabla, clave);
 	if(paginaTabla>=0){
 		*buffer = leer_bytes_spa(tabla,0,paginaTabla*frame_spa_size,frame_spa_size);
@@ -49,7 +50,7 @@ int proceso_select(char* tabla, int clave, char** buffer) {
 	char *content = malloc(largo_content);
 	memset(content, 0x00, largo_content);
 	memcpy(content,tabla,strlen(tabla)<MAX_PATH?strlen(tabla):MAX_PATH);
-	content[MAX_PATH] = 0x00;
+	content[MAX_PATH-1] = 0x00;
 	memcpy(content+MAX_PATH,&clave,sizeof(int));
 
 	sleep(MEM_CONF.RETARDO_FS/1000);
@@ -63,7 +64,8 @@ int proceso_select(char* tabla, int clave, char** buffer) {
 		return -1;
 	}
 
-	*buffer = malloc(mensaje->header.longitud);
+	*largo_buffer = mensaje->header.longitud;
+	*buffer = malloc(*largo_buffer);
 	memcpy(*buffer, mensaje->content, mensaje->header.longitud);
 	destruirMensaje(mensaje);
 
@@ -92,10 +94,12 @@ int proceso_select(char* tabla, int clave, char** buffer) {
 }
 
 
-int proceso_insert(char* tabla, int clave, char* value) {
+int proceso_insert(char* tabla, int clave, char* value, unsigned long long tstamp) {
 	pthread_mutex_lock(&journalingMutexInsert);
 	int escrito = -1;
-	unsigned long long timestamp = obtenerTimeStamp();
+	unsigned long long timestamp = tstamp;
+	if(timestamp==0)
+		timestamp = obtenerTimeStamp();
 	char *buffer = componer_registro(timestamp,clave, value, strlen(value));
 	int paginaTabla = getPaginaForKey(tabla, clave);
 	if(paginaTabla>=0){
@@ -138,7 +142,7 @@ int proceso_create(char* tabla,char* tipo_cons, int num_part, int compact_time){
 
 	memset(content, 0x00, largo_content);
 	memcpy(content,tabla,strlen(tabla)<MAX_PATH?strlen(tabla):MAX_PATH);
-	content[MAX_PATH] = 0x00;
+	content[MAX_PATH-1] = 0x00;
 	memcpy(content+MAX_PATH,tipo_cons,strlen(tipo_cons));
 	memcpy(content+MAX_PATH+MAX_CONS,&num_part,sizeof(int));
 	memcpy(content+MAX_PATH+MAX_CONS+sizeof(int),&compact_time,sizeof(int));
