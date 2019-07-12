@@ -345,9 +345,9 @@ int procesarMsjGossipingStruct(char *mensaje, char *primerParser, char *segundoP
 }
 
 
-void processGossipingStruct(t_log *logger,t_list *LISTA_CONN) {
-	int i;
-	int contadorLista;
+void processGossipingStruct(t_log *logger,t_list *LISTA_CONN,char tipoProceso) {
+	int i=0;
+	int contadorLista=0;
 	int socketReceptor=0;
 	char *mensaje;
 	t_mensaje* msjRecibido;
@@ -370,7 +370,9 @@ void processGossipingStruct(t_log *logger,t_list *LISTA_CONN) {
 	pthread_mutex_unlock(&mutexGossiping);
 
 	//CONEXION_CON_CADA_MEMORIA
-	i=1;
+	if(tipoProceso== gossiping)
+		i=1;
+
 	while(i < contadorLista)
 	{
 		pthread_mutex_lock(&mutexGossiping);
