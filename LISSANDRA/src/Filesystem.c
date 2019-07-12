@@ -20,6 +20,7 @@ void *CrearFileSystem() {
 	loggear(logger, LOG_LEVEL_INFO, "Ruta de bloques: %s", rutaBloques);
 	CargarMetadata();
 	CargarBitmap();
+	CargarTablas();
 
 	return (void*) 1;
 }
@@ -563,6 +564,7 @@ int CrearTabla(t_create *msgCreate) {
 		return -1;
 	}
 
+	AddGlobalList(msgCreate->nombreTabla);
 	int particiones = msgCreate->num_part;
 
 	//Creo Directorio
@@ -829,5 +831,39 @@ int ContarTablas() {
 	free(dir);
 	free(path);
 	return count;
+}
+
+void CargarTablas(){
+	DIR *dir;
+	struct dirent *entry;
+
+	char *path = string_from_format("%s", rutaTablas);
+
+	if ((dir = opendir(path)) == NULL) {
+		perror("openndir() error");
+	}
+
+	while ((entry = readdir(dir)) != NULL) {
+		if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, "..")) {
+
+		} else {
+			AddGlobalList(entry->d_name);
+		}
+	}
+
+	free(entry);
+	free(path);
+	closedir(dir);
+
+}
+
+void AddGlobalList(char *nombre){
+	t_tcb *tabla = malloc(sizeof(t_tcb));
+	tabla->bloqueado = 0;
+	tabla->contadorTmp = 0;
+	strcpy(tabla->nombre_tabla, nombre);
+	list_add(tablasGlobal, tabla);
+	log_info(logger, "Nueva tabla ingresada");
+
 }
 

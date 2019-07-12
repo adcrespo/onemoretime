@@ -23,7 +23,6 @@ int main(void) {
 	CrearHiloConexiones();
 	CrearHiloDump();
 	LevantarHilosCompactacionFS();
-
 	pthread_join(thread_consola, NULL);
 	pthread_join(thread_dump, NULL);
 
@@ -62,4 +61,5 @@ void CrearHiloDump() {
 void Inicializar()
 {
 	memtable = list_create();
+	tablasGlobal = list_create();
 }

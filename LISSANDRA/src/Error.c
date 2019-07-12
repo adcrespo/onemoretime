@@ -24,7 +24,7 @@ void exit_gracefully(int return_nr) {
 
 
   loggear(logger, LOG_LEVEL_INFO, "********* FIN DEL PROCESO LISSANDRA *********");
-
+  list_clean(tablasGlobal);
   destruir_logger(logger);
   destroy_config(config);
 
