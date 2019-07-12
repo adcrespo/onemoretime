@@ -69,6 +69,7 @@ void crear_hilo_consola() {
 void init_gossiping() {
 
 	puts("Creando lista seeds struct");
+//	crearListaSeedsStruct(KernelGoss, kernel_conf.ip, kernel_conf.puerto, 1000, kernel_conf.ip_memoria, kernel_conf.puerto_memoria, logger, LISTA_CONN);
 	crearListaSeedsStruct(gossiping, kernel_conf.ip, kernel_conf.puerto, 1000, kernel_conf.ip_memoria, kernel_conf.puerto_memoria, logger, LISTA_CONN);
 }
 
@@ -91,7 +92,6 @@ void *hiloGossiping()
 
 void crear_hilo_gossiping() {
 
-//	int hilo_gossiping = pthread_create(&thread_gossiping, NULL, crear_consola, NULL);
 	int hilo_gossiping = pthread_create(&thread_gossiping, NULL, hiloGossiping, NULL);
 	if (hilo_gossiping == -1) {
 		log_error(logger, "No se pudo generar el hilo para el gossiping.");
