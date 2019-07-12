@@ -57,7 +57,7 @@ typedef struct tipoSeeds {
 } t_tipoSeeds;
 
 typedef enum tipoServidor {
-	memoria,gossiping
+	memoria,gossiping,kernelGoss
 } t_tipoServidor;
 
 /*
@@ -82,7 +82,7 @@ int procesarMsjGossipingStruct(char *mensaje, char *primerParser, char *segundoP
  * loogger: logger del proceso
  * LISTA_CONN: lista en MEMORIA de SEEDS del proceso
  */
-void processGossipingStruct(t_log *logger,t_list *LISTA_CONN);
+void processGossipingStruct(t_log *logger,t_list *LISTA_CONN, char tipoProceso);
 
 /*
  * KERNEL - MEMORIA
