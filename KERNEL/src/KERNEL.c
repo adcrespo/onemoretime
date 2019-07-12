@@ -34,7 +34,7 @@ int main(int argc, char *argv[]) {
 
 	/* 6. Gossiping */
 	init_gossiping();
-
+	crear_hilo_gossiping();
 
 	pthread_join(thread_consola, NULL);
 
@@ -50,6 +50,16 @@ void inicializar() {
 	lista_ready = list_create();
 	lista_exec = list_create();
 	lista_exit = list_create();
+
+	LISTA_CONN = list_create();
+//	char* lista_ips = string_new();
+//	char* lista_puertos = string_new();
+
+//	puts("Metiendo memoria en lista");
+//	string_append(&lista_ips, kernel_conf.ip_memoria);
+//	puts("listo el primero");
+//	string_append(&lista_puertos, string_itoa(kernel_conf.puerto_memoria));
+//	puts("Metido en lista");
 }
 
 void crear_hilo_consola() {
@@ -63,5 +73,33 @@ void crear_hilo_consola() {
 
 void init_gossiping() {
 
-//	crearListaSeeds(kernel_conf.MEM_CONF.IP,MEM_CONF.PUERTO,MEM_CONF.IP_SEEDS,MEM_CONF.PUERTO_SEEDS,logger);
+	puts("Creando lista seeds struct");
+	crearListaSeedsStruct(gossiping, kernel_conf.ip, kernel_conf.puerto, 1000, kernel_conf.ip_memoria, kernel_conf.puerto_memoria, logger, LISTA_CONN);
+}
+
+void *hiloGossiping()
+{
+	int tiempo = 30000;
+//	sleep (kernel_conf./1000);
+	sleep (tiempo/1000);
+
+	while (1)
+	{
+		loggear(logger,LOG_LEVEL_INFO,"INIT_GOSSIPING");
+		processGossipingStruct(logger,LISTA_CONN);
+		loggear(logger,LOG_LEVEL_INFO,"END_GOSSIPING");
+
+//		sleep (MEM_CONF.RETARDO_GOSSIPING/1000);
+		sleep (tiempo/1000);
+	}
+}
+
+void crear_hilo_gossiping() {
+
+//	int hilo_gossiping = pthread_create(&thread_gossiping, NULL, crear_consola, NULL);
+	int hilo_gossiping = pthread_create(&thread_gossiping, NULL, hiloGossiping, NULL);
+	if (hilo_gossiping == -1) {
+		log_error(logger, "No se pudo generar el hilo para el gossiping.");
+	}
+	log_info(logger, "Se generó el hilo para el gossiping.");
 }

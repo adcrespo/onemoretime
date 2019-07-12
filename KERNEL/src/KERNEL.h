@@ -25,16 +25,21 @@
 /* Variables globales */
 //t_log* logger;
 pthread_t thread_consola;
+pthread_t thread_gossiping;
 
 int socket_memoria;
+t_list *LISTA_CONN;
+char** lista_ips;
+char** lista_puertos;
 
 
 /* Declaración de Procesos*/
 //void cargar_configuracion_kernel();
 void inicializar();
 void crear_hilo_consola();
-
+void crear_hilo_gossiping();
 void init_gossiping();
+void *hiloGossiping();
 
 
 #endif /* KERNEL_H_ */
