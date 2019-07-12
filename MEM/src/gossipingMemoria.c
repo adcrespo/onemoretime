@@ -23,7 +23,7 @@ void *hiloGossipingMemoria()
 	while (1)
 	{
 		loggear(logger,LOG_LEVEL_INFO,"INIT_HILO_GOSSIPING");
-		processGossipingStruct(logger,LISTA_CONN);
+		processGossipingStruct(logger,LISTA_CONN,gossiping);
 		loggear(logger,LOG_LEVEL_INFO,"END_HILO_GOSSIPING");
 
 		sleep (MEM_CONF.RETARDO_GOSSIPING/1000);
