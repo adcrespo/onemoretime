@@ -13,7 +13,9 @@ int process_compactacion(char* path_tabla)
 	int res = 0;
 	loggear(logger, LOG_LEVEL_INFO,"Se esta por realizar la compactacion de %s",path_tabla);
 	char* listasTmp[100];
+	char* listasBin[100];
 	int i;
+	int j;
 	char* rutaTabla = string_new();
 	char* rutaTmp = string_new();
 	char* rutaTmpc = string_new();
@@ -26,6 +28,10 @@ int process_compactacion(char* path_tabla)
 		listasTmp[i] = string_new();
 	}
 
+	for (j = 0; 100 > j; j++) {
+			listasBin[j] = string_new();
+		}
+
 	//vamos guardando cada tmp en el array
 	string_append(&rutaTabla, rutaTablas);
 	string_append(&rutaTabla, path_tabla);
@@ -35,6 +41,7 @@ int process_compactacion(char* path_tabla)
 		perror("openndir() error");
 	} else {
 		i = 0;
+		j= 0;
 		while ((entry = readdir(dir)) != NULL) {
 			if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, "..")) {
 
@@ -42,6 +49,10 @@ int process_compactacion(char* path_tabla)
 				if (string_ends_with(entry->d_name, ".tmp")) {
 					listasTmp[i] = entry->d_name;
 					i++;
+				}else if(string_ends_with(entry->d_name, ".bin")) {
+					listasBin[j] = entry->d_name;
+					j++;
+
 				}
 			}
 		}
@@ -93,12 +104,54 @@ int process_compactacion(char* path_tabla)
 
 		//Realizar la reasignacion de bloques
 			//Bloquear la tabla y tomar timestamp
+	bool findBloqueado(void* element) {
+				t_tcb* registroBusqueda = element;
+				return string_equals_ignore_case(registroBusqueda->nombre_tabla, path_tabla);
+			}
+	t_tcb* registroEncontrado = list_find(tablasGlobal,&findBloqueado);
+	registroEncontrado->bloqueado = 1;
+	unsigned long long timeStamp = obtenerTimeStamp();
+
 			//Liberar los bloques que contengan el archivo “.tmpc”
+
+	i = 0;
+	while (!string_is_empty(listasTmp[i])) {
+		log_info(logger, "Abriendo config de %s", listasTmp[i]);
+		t_config *config_file = cargarConfiguracion(listasTmp[i], logger);
+		int size = config_get_int_value(config_file, "SIZE");
+		int cantBloques = CalcularBloques(size);
+		char **bloques = malloc(sizeof(int) * cantBloques);
+		bloques = config_get_array_value(config_file, "BLOCKS");
+		for (int i = 0; cantBloques > i; i++) {
+			char *bloque = string_from_format("%s%s.bin", rutaBloques,
+					bloques[i]);
+		}
+		LiberarBloques(bloques,cantBloques);
+		remove(listaTmp[i]);
+		i++;
+	}
 			//Liberar los bloques que contengan el archivo “.bin”
+
+	j = 0;
+	while (!string_is_empty(listasBin[j])) {
+		log_info(logger, "Abriendo config de %s", listasBin[j]);
+		t_config *config_file = cargarConfiguracion(listasBin[j], logger);
+		int size = config_get_int_value(config_file, "SIZE");
+		int cantBloques = CalcularBloques(size);
+		char **bloques = malloc(sizeof(int) * cantBloques);
+		bloques = config_get_array_value(config_file, "BLOCKS");
+		for (int j = 0; cantBloques > j; j++) {
+			char *bloque = string_from_format("%s%s.bin", rutaBloques,
+					bloques[j]);
+		}
+		LiberarBloques(bloques, cantBloques);
+		remove(listaTmp[j]);
+		j++;
+	}
 			//Solicitar los bloques necesarios para el nuevo archivo “.bin”
 			//Grabar los datos en el nuevo archivo “.bin”
 			//Desbloquer la tabla y tomar el tiempo cuanto estuvo bloqueada
-
+	registroEncontrado->bloqueado = 0;
 	closedir(dir);
 	return res;
 }
