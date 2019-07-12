@@ -28,6 +28,7 @@
 
 t_log *logger;
 t_list *memtable;
+t_list *tablasGlobal;
 
 typedef struct {
 	char nombre_tabla[20];
@@ -39,6 +40,13 @@ typedef struct {
 	int particiones;
 	int compactationTime;
 } t_metadata;
+
+
+typedef struct {
+	char nombre_tabla[20];
+	int bloqueado;
+	int contadorTmp;
+}__attribute__((packed)) t_tcb;
 
 
 

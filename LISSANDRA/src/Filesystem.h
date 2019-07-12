@@ -14,6 +14,7 @@
 void *CrearFileSystem();
 void CargarMetadata();
 void CargarBitmap();
+void CargarTablas();
 int ExisteTabla(const char*tabla);
 int CalcularParticion(int clave, int particiones);
 void CrearDirectorioTabla(char *tabla);
@@ -37,6 +38,7 @@ t_list *ObtenerRegistros(char *tabla, char *extension);
 void GuardarEnBloque(char *linea, char *path);
 int ContarTablas();
 t_list *BuscarKeyTemporales(int key, char *tabla);
+void AddGlobalList(char *nombre);
 
 t_config *config_metadata;
 t_bitarray *bitmap;
