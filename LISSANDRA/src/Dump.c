@@ -43,7 +43,7 @@ void RealizarDumpeo()
 			char *nombre = string_new();
 			strcpy(nombre, listaTabla->nombre_tabla);
 			DumpearTabla(listaTabla->lista, nombre);
-
+			AumentarContadorTmp(nombre);
 		}
 
 	}
@@ -149,3 +149,29 @@ void LimpiarMemtable()
 	list_clean(memtable);
 	loggear(logger, LOG_LEVEL_INFO, "Memtable vacia");
 }
+
+void AumentarContadorTmp(char *nombre){
+
+	bool findTable(void* element) {
+		t_tcb* tabla = element;
+		return string_equals_ignore_case(tabla->nombre_tabla, nombre);
+	}
+
+	t_tcb* tcbBusqueda = list_find(tablasGlobal, &findTable);
+	tcbBusqueda->contadorTmp ++;
+	log_info(logger, "contador tabla %s vale %d", tcbBusqueda->nombre_tabla, tcbBusqueda->contadorTmp);
+
+}
+
+void ReiniciarContadorTmp(char *nombre){
+	bool findTable(void* element) {
+		t_tcb* tabla = element;
+		return string_equals_ignore_case(tabla->nombre_tabla, nombre);
+	}
+
+	t_tcb* tcbBusqueda = list_find(tablasGlobal, &findTable);
+	tcbBusqueda->contadorTmp = 0;
+	log_info(logger, "contador tabla %s vale %d", tcbBusqueda->nombre_tabla, tcbBusqueda->contadorTmp);
+
+}
+
