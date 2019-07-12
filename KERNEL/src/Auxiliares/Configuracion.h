@@ -13,8 +13,10 @@
 
 // Definición de tipos
 typedef struct {
-	char* ip_memoria;
-	int puerto_memoria;
+	char* ip;
+	char* puerto;
+	char** ip_memoria;
+	char** puerto_memoria;
 	int quantum;
 	int multiprocesamiento;
 	int metadata_refresh;

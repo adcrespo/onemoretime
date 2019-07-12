@@ -12,22 +12,17 @@
 
 int main(int argc, char *argv[]) {
 
-	initArgumentos(argc, argv);
-
 	/* 1. Creación de logger */
-	//logger = configurar_logger("../log/KERNEL.log", "Kernel");
-	logger = configurar_logger_verbose("../log/KERNEL.log", "MEM", string_equals_ignore_case(args_verbose,"true")?true:false);
+	logger = configurar_logger("../log/KERNEL.log", "Kernel");
 
 	/* 2. Carga de configuración desde archivo */
-	cargar_configuracion_kernel(string_equals_ignore_case(args_configfile,"false")?
-			"/home/utnso/Repositorios/tp-2019-1c-One-more-time/KERNEL/config/KERNEL.config":
-			args_configfile);
+	cargar_configuracion_kernel("../config/KERNEL.config");
 
 	/* 3. Inicializar variables */
 	inicializar();
 
 	/* 4. Conexión con Memoria */
-	socket_memoria = conectar_a_servidor(kernel_conf.ip_memoria, kernel_conf.puerto_memoria, mem);
+//	socket_memoria = conectar_a_servidor(kernel_conf.ip_memoria, kernel_conf.puerto_memoria, mem);
 
 	/* 5. Creación de hilo para consola */
 	crear_hilo_consola();
