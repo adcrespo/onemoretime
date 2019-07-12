@@ -61,8 +61,8 @@ void crear_hilo_consola() {
 void init_gossiping() {
 
 	puts("Creando lista seeds struct");
-//	crearListaSeedsStruct(KernelGoss, kernel_conf.ip, kernel_conf.puerto, 1000, kernel_conf.ip_memoria, kernel_conf.puerto_memoria, logger, LISTA_CONN);
-	crearListaSeedsStruct(gossiping, kernel_conf.ip, kernel_conf.puerto, 1000, kernel_conf.ip_memoria, kernel_conf.puerto_memoria, logger, LISTA_CONN);
+	crearListaSeedsStruct(kernelGoss, kernel_conf.ip, kernel_conf.puerto, 1000, kernel_conf.ip_memoria, kernel_conf.puerto_memoria, logger, LISTA_CONN);
+//	crearListaSeedsStruct(gossiping, kernel_conf.ip, kernel_conf.puerto, 1000, kernel_conf.ip_memoria, kernel_conf.puerto_memoria, logger, LISTA_CONN);
 }
 
 void *hiloGossiping()
@@ -74,8 +74,8 @@ void *hiloGossiping()
 	while (1)
 	{
 		loggear(logger,LOG_LEVEL_INFO,"INIT_GOSSIPING");
-//		processGossipingStruct(logger,LISTA_CONN, KernelGoss);
-		processGossipingStruct(logger,LISTA_CONN);
+		processGossipingStruct(logger,LISTA_CONN, kernelGoss);
+//		processGossipingStruct(logger,LISTA_CONN);
 		loggear(logger,LOG_LEVEL_INFO,"END_GOSSIPING");
 
 //		sleep (MEM_CONF.RETARDO_GOSSIPING/1000);
