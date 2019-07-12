@@ -47,14 +47,6 @@ void inicializar() {
 	lista_exit = list_create();
 
 	LISTA_CONN = list_create();
-//	char* lista_ips = string_new();
-//	char* lista_puertos = string_new();
-
-//	puts("Metiendo memoria en lista");
-//	string_append(&lista_ips, kernel_conf.ip_memoria);
-//	puts("listo el primero");
-//	string_append(&lista_puertos, string_itoa(kernel_conf.puerto_memoria));
-//	puts("Metido en lista");
 }
 
 void crear_hilo_consola() {
@@ -75,13 +67,14 @@ void init_gossiping() {
 
 void *hiloGossiping()
 {
-	int tiempo = 30000;
+	int tiempo = 10000;
 //	sleep (kernel_conf./1000);
 	sleep (tiempo/1000);
 
 	while (1)
 	{
 		loggear(logger,LOG_LEVEL_INFO,"INIT_GOSSIPING");
+//		processGossipingStruct(logger,LISTA_CONN, KernelGoss);
 		processGossipingStruct(logger,LISTA_CONN);
 		loggear(logger,LOG_LEVEL_INFO,"END_GOSSIPING");
 
