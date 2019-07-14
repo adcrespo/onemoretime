@@ -32,3 +32,7 @@ void CargarConfigLFS(){
 
 
 }
+
+void AplicarRetardo() {
+	sleep(lfs_conf.retardo/1000);
+}

@@ -219,10 +219,14 @@ int InsertarTabla(t_request *request) {
 	memcpy(registro->value, request->parametro3,
 			strlen(request->parametro3) + 1);
 	registro->timestamp = atoll(request->parametro4);
-
 //	printf("Registro key %d\n", registro->key);
 //	printf("Registro value %s\n", registro->value);
 //	printf("Registro timestamp %llu\n", registro->timestamp);
+
+	//valido value enviado
+	if((strlen(registro->value) + 1) > (lfs_conf.tamano_value)){
+		return 1;
+	}
 
 	//Verifico existencia en el file system
 	if (!ExisteTabla(request->parametro1)) {

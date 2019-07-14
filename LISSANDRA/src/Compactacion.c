@@ -127,7 +127,7 @@ int process_compactacion(char* path_tabla)
 					bloques[i]);
 		}
 		LiberarBloques(bloques,cantBloques);
-		remove(listaTmp[i]);
+		//remove(listaTmp[i]);
 		i++;
 	}
 			//Liberar los bloques que contengan el archivo “.bin”
@@ -145,7 +145,7 @@ int process_compactacion(char* path_tabla)
 					bloques[j]);
 		}
 		LiberarBloques(bloques, cantBloques);
-		remove(listaTmp[j]);
+		//remove(listaTmp[j]);
 		j++;
 	}
 			//Solicitar los bloques necesarios para el nuevo archivo “.bin”
