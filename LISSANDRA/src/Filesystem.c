@@ -57,7 +57,7 @@ void CargarBitmap() {
 	string_append(&rutaBitmap, "Bitmap.bin");
 	loggear(logger, LOG_LEVEL_INFO, "Ruta Bitmap: %s", rutaBitmap);
 
-	/*int bm = open(rutaBitmap, O_RDWR);
+	int bm = open(rutaBitmap, O_RDWR);
 	 struct stat mystat;
 
 	 if(fstat(bm, &mystat) < 0){
@@ -71,7 +71,7 @@ void CargarBitmap() {
 	 loggear(logger, LOG_LEVEL_INFO, "Bitmap generado");
 
 	 close(bm);
-	 free(ruta_bitmap)*/
+	 free(rutaBitmap);
 }
 
 int ExisteTabla(const char *tabla) {
@@ -612,7 +612,7 @@ int CrearTabla(t_create *msgCreate) {
 
 int AgregarBloque() {
 	//Descomentar cuando se encuentre el bitmap del fs disponible
-	/*size_t sizeBitmap = bitarray_get_max_bit(bitmap);
+	size_t sizeBitmap = bitarray_get_max_bit(bitmap);
 	 int bloque = 1;
 
 	 log_info(logger, "Agregando bloque");
@@ -630,10 +630,10 @@ int AgregarBloque() {
 	 return bloque;
 	 }
 	 count ++;
-	 }*/
+	 }
 
-	//return bloque;
-	return 1;
+	return bloque;
+//	return 1;
 }
 
 int DropearTabla(char *nombre) {

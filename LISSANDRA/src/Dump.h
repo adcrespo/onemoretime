@@ -19,5 +19,6 @@ void LimpiarMemtable();
 void DumpearTabla(t_list *lista, char *nombre);
 void AumentarContadorTmp(char *nombre);
 void ReiniciarContadorTmp(char *nombre);
+int GetContadorTmp(char *nombre);
 
 #endif /* DUMP_H_ */

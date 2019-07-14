@@ -56,10 +56,10 @@ void RealizarDumpeo()
 void DumpearTabla(t_list *lista, char *nombre)
 {
 	loggear(logger, LOG_LEVEL_INFO, "Dumpeando tabla: %s", nombre);
-
+	int numeroDump = GetContadorTmp(nombre);
 	int longitudTabla = list_size(lista);
 	loggear(logger, LOG_LEVEL_INFO,"Longitud tabla %s es %d", nombre, longitudTabla);
-	char *temporal = string_from_format("%s%s/%d.tmp", rutaTablas, nombre, dumpRealizados);
+	char *temporal = string_from_format("%s%s/%d.tmp", rutaTablas, nombre, numeroDump);
 	loggear(logger, LOG_LEVEL_INFO,"Creando archivo %s", temporal);
 	FILE *file = fopen(temporal, "w+");
 
@@ -78,8 +78,8 @@ void DumpearTabla(t_list *lista, char *nombre)
 		registro = list_get(lista, j);
 		char *linea = string_new();
 		char *key = string_itoa(registro->key);
-		char *timestamp = string_itoa(registro->timestamp);
-
+		char *timestamp = string_new();
+		sprintf(timestamp, "%llu", registro->timestamp);
 		string_append(&linea, key);
 		string_append(&linea, ";");
 		string_append(&linea, registro->value);
@@ -160,7 +160,17 @@ void AumentarContadorTmp(char *nombre){
 	t_tcb* tcbBusqueda = list_find(tablasGlobal, &findTable);
 	tcbBusqueda->contadorTmp ++;
 	log_info(logger, "contador tabla %s vale %d", tcbBusqueda->nombre_tabla, tcbBusqueda->contadorTmp);
+}
 
+int GetContadorTmp(char *nombre){
+
+	bool findTable(void* element) {
+		t_tcb* tabla = element;
+		return string_equals_ignore_case(tabla->nombre_tabla, nombre);
+	}
+
+	t_tcb* tcbBusqueda = list_find(tablasGlobal, &findTable);
+	return tcbBusqueda->contadorTmp;
 }
 
 void ReiniciarContadorTmp(char *nombre){
