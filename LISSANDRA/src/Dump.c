@@ -89,6 +89,7 @@ void DumpearTabla(t_list *lista, char *nombre)
 		free(key);
 		free(timestamp);
 		int lenLinea = strlen(linea);
+		log_info(logger, "strlen de linea %s es %d", linea, lenLinea);
 
 		if(lenLinea < disponibleActual)
 		{
@@ -146,6 +147,11 @@ void DumpearTabla(t_list *lista, char *nombre)
 
 void LimpiarMemtable()
 {
+	int sizeMemTable = list_size(memtable);
+	for(int i = 0; i < sizeMemTable; i++){
+		t_registro *registro = list_get(memtable, i);
+		free(registro);
+	}
 	list_clean(memtable);
 	loggear(logger, LOG_LEVEL_INFO, "Memtable vacia");
 }
@@ -159,7 +165,7 @@ void AumentarContadorTmp(char *nombre){
 
 	t_tcb* tcbBusqueda = list_find(tablasGlobal, &findTable);
 	tcbBusqueda->contadorTmp ++;
-	log_info(logger, "contador tabla %s vale %d", tcbBusqueda->nombre_tabla, tcbBusqueda->contadorTmp);
+//	log_info(logger, "contador tabla %s vale %d", tcbBusqueda->nombre_tabla, tcbBusqueda->contadorTmp);
 }
 
 int GetContadorTmp(char *nombre){
@@ -170,6 +176,7 @@ int GetContadorTmp(char *nombre){
 	}
 
 	t_tcb* tcbBusqueda = list_find(tablasGlobal, &findTable);
+	log_info(logger, "Contador tabla %s es %d", nombre, tcbBusqueda->contadorTmp);
 	return tcbBusqueda->contadorTmp;
 }
 
@@ -180,8 +187,7 @@ void ReiniciarContadorTmp(char *nombre){
 	}
 
 	t_tcb* tcbBusqueda = list_find(tablasGlobal, &findTable);
-	tcbBusqueda->contadorTmp = 0;
-	log_info(logger, "contador tabla %s vale %d", tcbBusqueda->nombre_tabla, tcbBusqueda->contadorTmp);
-
+	tcbBusqueda->contadorTmp = 1;
+//	log_info(logger, "contador tabla %s vale %d", tcbBusqueda->nombre_tabla, tcbBusqueda->contadorTmp);
 }
 

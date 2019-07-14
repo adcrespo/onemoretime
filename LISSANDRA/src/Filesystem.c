@@ -864,10 +864,21 @@ void CargarTablas(){
 void AddGlobalList(char *nombre){
 	t_tcb *tabla = malloc(sizeof(t_tcb));
 	tabla->bloqueado = 0;
-	tabla->contadorTmp = 0;
+	tabla->contadorTmp = 1;
 	strcpy(tabla->nombre_tabla, nombre);
 	list_add(tablasGlobal, tabla);
-	log_info(logger, "Nueva tabla ingresada");
+//	log_info(logger, "Nueva tabla ingresada");
 
+}
+
+int GetFreeBlocks() {
+	size_t sizeBitmap = bitarray_get_max_bit(bitmap);
+	int count = 0;
+	for (int i = 0; i < sizeBitmap; i++) {
+		if (bitarray_test_bit(bitmap, i) == 0) {
+			count++;
+		}
+	}
+	return count;
 }
 
