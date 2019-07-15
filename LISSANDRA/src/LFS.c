@@ -23,6 +23,7 @@ int main(void) {
 	CrearHiloConexiones();
 	CrearHiloDump();
 	LevantarHilosCompactacionFS();
+	crearHiloInotify();
 	pthread_join(thread_consola, NULL);
 	pthread_join(thread_dump, NULL);
 

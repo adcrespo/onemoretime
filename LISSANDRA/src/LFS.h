@@ -21,6 +21,7 @@
 #include "Dump.h"
 #include "Error.h"
 #include "Compactacion.h"
+#include "InotifyLfs.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -28,6 +29,9 @@
 #include <fcntl.h>
 #include <sys/mman.h>
 #include <math.h>
+#include <sys/inotify.h>
+#include <limits.h>
+#include <signal.h>
 
 t_log *logger;
 t_list *memtable;
