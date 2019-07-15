@@ -122,7 +122,6 @@ int process_compactacion(char* path_tabla)
 		bloquesLiberar+=cantBloques;
 		j++;
 	}
-
 	int sizeListaBin = 0;
 	for (int j = 0; cantListaBin > j; j++){
 		t_registro* registroTmp = list_get(listaBin, i);
@@ -132,6 +131,14 @@ int process_compactacion(char* path_tabla)
 				+ strlen(registroTmp->value) + 3;
 	}
 	int bloquesAsignar = (sizeListaBin + tamanio_bloques - 1) / tamanio_bloques;
+	int bloquesLibres = GetFreeBlocks();
+
+	if(bloquesLibres + bloquesLiberar - bloquesAsignar < 0){
+		log_info(logger, "No hay bloques libres "
+				"(Libres: %d, a_liberar: %d, a_asignar)",
+				bloquesLibres, bloquesLiberar, bloquesAsignar);
+		return -1;
+	}
 
 		//Realizar la reasignacion de bloques
 			//Bloquear la tabla y tomar timestamp
@@ -181,6 +188,7 @@ int process_compactacion(char* path_tabla)
 			//Desbloquer la tabla y tomar el tiempo cuanto estuvo bloqueada
 	registroEncontrado->bloqueado = 0;
 	unsigned long long tiempo = obtenerTimeStamp() - timeStamp;
+	log_info(logger, "Tiempo consumido %d", tiempo);
 	return res;
 }
 
