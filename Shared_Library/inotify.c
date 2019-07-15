@@ -20,8 +20,7 @@ int inotifyInit(char* args_configfile)
 	if (inotifyFd == -1)
 		return -1;
 
-	wd = inotify_add_watch(inotifyFd, string_equals_ignore_case(args_configfile,"false")?
-			"../MEM.conf":args_configfile, IN_ALL_EVENTS);
+	wd = inotify_add_watch(inotifyFd, args_configfile, IN_ALL_EVENTS);
 	if (wd == -1)
 		return -1;
 

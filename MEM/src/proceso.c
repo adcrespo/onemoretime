@@ -187,20 +187,20 @@ int proceso_describe(char* tabla, char** buffer, int* largo_buffer){
 		loggear(logger,LOG_LEVEL_DEBUG,"La cantidad es: %d",cantidad);
 	}
 
+	enviarMensaje(mem,describe,largo_content,content,socket_lis,logger,lis);
+	free(content);
+	int longAcum = 0;
 	while(cantidad-->0)
 	{
-		enviarMensaje(mem,describe,largo_content,content,socket_lis,logger,lis);
 		t_mensaje* mensaje = recibirMensaje(socket_lis, logger);
-
-		free(content);
-
 		if(mensaje == NULL) {
 			loggear(logger,LOG_LEVEL_ERROR,"No se pudo recibir mensaje de lis");
 			pthread_mutex_unlock(&journalingMutexDescribe);
 			return -1;
 		}
 		desc = mensaje->header.error;
-		*buffer = malloc(mensaje->header.longitud);
+		longAcum += mensaje->header.longitud;
+		*buffer = realloc(*buffer,longAcum);
 		memset(*buffer,0x00,mensaje->header.longitud);
 		memcpy(*buffer,mensaje->content,mensaje->header.longitud);
 		*largo_buffer = mensaje->header.longitud;
@@ -208,7 +208,6 @@ int proceso_describe(char* tabla, char** buffer, int* largo_buffer){
 
 		loggear(logger,LOG_LEVEL_DEBUG,"Data: %s",*buffer);
 	}
-
 	pthread_mutex_unlock(&journalingMutexDescribe);
 	return desc;
 }

@@ -17,7 +17,8 @@
 
 void *crearInotify()
 {
-	int inotifyFd = inotifyInit(args_configfile);
+	int inotifyFd = inotifyInit(string_equals_ignore_case(args_configfile,"false")?
+			"../MEM.conf":args_configfile);
 
 	if(inotifyFd==-1)
 		_exit_with_error("inotify_init",NULL);
