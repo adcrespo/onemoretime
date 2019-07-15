@@ -21,11 +21,13 @@
 #include "Auxiliares/Conexion.h"
 #include "Auxiliares/argparse.h"
 
+#define BUF_LEN (10 * (sizeof(struct inotify_event) + NAME_MAX + 1))
 
 /* Variables globales */
 //t_log* logger;
 pthread_t thread_consola;
 pthread_t thread_gossiping;
+pthread_t inotify;
 
 int socket_memoria;
 t_list *LISTA_CONN;
@@ -40,6 +42,7 @@ void crear_hilo_consola();
 void crear_hilo_gossiping();
 void init_gossiping();
 void *hiloGossiping();
+int crearHiloInotify();
 
 
 #endif /* KERNEL_H_ */

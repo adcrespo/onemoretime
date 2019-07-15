@@ -107,3 +107,44 @@ void mostrar_propiedades() {
 			i++;
 		}
 }
+
+void cargar_configuracion_kernel_inotify(char* path) {
+	config = cargarConfiguracion(path, logger);
+
+	memset(&kernel_conf, 0x00, sizeof(t_kernel_conf));
+
+	if (config_has_property(config, "QUANTUM")) {
+		kernel_conf.quantum = config_get_int_value(config, "QUANTUM");
+		loguear_carga_propiedad("QUANTUM", string_itoa(kernel_conf.quantum));
+	} else {
+		loguear_error_carga_propiedad("QUANTUM");
+	}
+
+	if (config_has_property(config, "MULTIPROCESAMIENTO")) {
+		kernel_conf.multiprocesamiento = config_get_int_value(config,
+				"MULTIPROCESAMIENTO");
+		loguear_carga_propiedad("MULTIPROCESAMIENTO",
+				string_itoa(kernel_conf.multiprocesamiento));
+	} else {
+		loguear_error_carga_propiedad("MULTIPROCESAMIENTO");
+	}
+
+	if (config_has_property(config, "METADATA_REFRESH")) {
+		kernel_conf.metadata_refresh = config_get_int_value(config,
+				"METADATA_REFRESH");
+		loguear_carga_propiedad("METADATA_REFRESH",
+				string_itoa(kernel_conf.metadata_refresh));
+	} else {
+		loguear_error_carga_propiedad("METADATA_REFRESH");
+	}
+
+	if (config_has_property(config, "SLEEP_EJECUCION")) {
+		kernel_conf.sleep_ejecucion = config_get_int_value(config,
+				"SLEEP_EJECUCION");
+		loguear_carga_propiedad("SLEEP_EJECUCION",
+				string_itoa(kernel_conf.sleep_ejecucion));
+	} else {
+		loguear_error_carga_propiedad("SLEEP_EJECUCION");
+	}
+	//mostrar_propiedades();
+}
