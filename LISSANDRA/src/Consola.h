@@ -13,6 +13,7 @@
 #include <readline/history.h>
 
 void *crear_consola();
+int procesar_comando(char *line);
 
 
 

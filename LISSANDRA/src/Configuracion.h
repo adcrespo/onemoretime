@@ -25,6 +25,7 @@ t_lfs_config lfs_conf;
 t_config *config;
 
 void CargarConfigLFS();
+void AplicarRetardo();
 
 
 #endif /* CONFIGURACION_H_ */

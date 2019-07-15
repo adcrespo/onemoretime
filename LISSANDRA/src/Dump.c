@@ -56,10 +56,10 @@ void RealizarDumpeo()
 void DumpearTabla(t_list *lista, char *nombre)
 {
 	loggear(logger, LOG_LEVEL_INFO, "Dumpeando tabla: %s", nombre);
-
+	int numeroDump = GetContadorTmp(nombre);
 	int longitudTabla = list_size(lista);
 	loggear(logger, LOG_LEVEL_INFO,"Longitud tabla %s es %d", nombre, longitudTabla);
-	char *temporal = string_from_format("%s%s/%d.tmp", rutaTablas, nombre, dumpRealizados);
+	char *temporal = string_from_format("%s%s/%d.tmp", rutaTablas, nombre, numeroDump);
 	loggear(logger, LOG_LEVEL_INFO,"Creando archivo %s", temporal);
 	FILE *file = fopen(temporal, "w+");
 
@@ -78,8 +78,8 @@ void DumpearTabla(t_list *lista, char *nombre)
 		registro = list_get(lista, j);
 		char *linea = string_new();
 		char *key = string_itoa(registro->key);
-		char *timestamp = string_itoa(registro->timestamp);
-
+		char *timestamp = string_new();
+		sprintf(timestamp, "%llu", registro->timestamp);
 		string_append(&linea, key);
 		string_append(&linea, ";");
 		string_append(&linea, registro->value);
@@ -89,6 +89,7 @@ void DumpearTabla(t_list *lista, char *nombre)
 		free(key);
 		free(timestamp);
 		int lenLinea = strlen(linea);
+		log_info(logger, "strlen de linea %s es %d", linea, lenLinea);
 
 		if(lenLinea < disponibleActual)
 		{
@@ -146,6 +147,11 @@ void DumpearTabla(t_list *lista, char *nombre)
 
 void LimpiarMemtable()
 {
+	int sizeMemTable = list_size(memtable);
+	for(int i = 0; i < sizeMemTable; i++){
+		t_registro *registro = list_get(memtable, i);
+		free(registro);
+	}
 	list_clean(memtable);
 	loggear(logger, LOG_LEVEL_INFO, "Memtable vacia");
 }
@@ -159,8 +165,19 @@ void AumentarContadorTmp(char *nombre){
 
 	t_tcb* tcbBusqueda = list_find(tablasGlobal, &findTable);
 	tcbBusqueda->contadorTmp ++;
-	log_info(logger, "contador tabla %s vale %d", tcbBusqueda->nombre_tabla, tcbBusqueda->contadorTmp);
+//	log_info(logger, "contador tabla %s vale %d", tcbBusqueda->nombre_tabla, tcbBusqueda->contadorTmp);
+}
 
+int GetContadorTmp(char *nombre){
+
+	bool findTable(void* element) {
+		t_tcb* tabla = element;
+		return string_equals_ignore_case(tabla->nombre_tabla, nombre);
+	}
+
+	t_tcb* tcbBusqueda = list_find(tablasGlobal, &findTable);
+	log_info(logger, "Contador tabla %s es %d", nombre, tcbBusqueda->contadorTmp);
+	return tcbBusqueda->contadorTmp;
 }
 
 void ReiniciarContadorTmp(char *nombre){
@@ -170,8 +187,7 @@ void ReiniciarContadorTmp(char *nombre){
 	}
 
 	t_tcb* tcbBusqueda = list_find(tablasGlobal, &findTable);
-	tcbBusqueda->contadorTmp = 0;
-	log_info(logger, "contador tabla %s vale %d", tcbBusqueda->nombre_tabla, tcbBusqueda->contadorTmp);
-
+	tcbBusqueda->contadorTmp = 1;
+//	log_info(logger, "contador tabla %s vale %d", tcbBusqueda->nombre_tabla, tcbBusqueda->contadorTmp);
 }
 

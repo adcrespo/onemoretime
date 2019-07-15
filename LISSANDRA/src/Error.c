@@ -27,6 +27,7 @@ void exit_gracefully(int return_nr) {
   list_clean(tablasGlobal);
   destruir_logger(logger);
   destroy_config(config);
+  bitarray_destroy(bitmap);
 
   exit(return_nr);
 }

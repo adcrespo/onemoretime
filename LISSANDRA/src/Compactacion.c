@@ -11,7 +11,8 @@
 int process_compactacion(char* path_tabla)
 {
 	loggear(logger, LOG_LEVEL_INFO,"Se esta por realizar la compactacion de %s",path_tabla);
-	char* listasTmp[100], listasBin[100];
+	char* listasTmp[100];
+	char* listasBin[100];
 	int i,j,res = 0;
 	char* rutaTabla = string_new();
 	char* rutaTmp = string_new();
@@ -156,7 +157,6 @@ int process_compactacion(char* path_tabla)
 		bloques = config_get_array_value(config_file, "BLOCKS");
 		LiberarBloques(bloques,cantBloques);
 		remove(listasTmp[i]);
-		i++;
 	}
 			//Liberar los bloques que contengan el archivo “.bin”
 	j = 0;

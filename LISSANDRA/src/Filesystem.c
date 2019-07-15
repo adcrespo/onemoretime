@@ -57,7 +57,7 @@ void CargarBitmap() {
 	string_append(&rutaBitmap, "Bitmap.bin");
 	loggear(logger, LOG_LEVEL_INFO, "Ruta Bitmap: %s", rutaBitmap);
 
-	/*int bm = open(rutaBitmap, O_RDWR);
+	int bm = open(rutaBitmap, O_RDWR);
 	 struct stat mystat;
 
 	 if(fstat(bm, &mystat) < 0){
@@ -71,7 +71,7 @@ void CargarBitmap() {
 	 loggear(logger, LOG_LEVEL_INFO, "Bitmap generado");
 
 	 close(bm);
-	 free(ruta_bitmap)*/
+	 free(rutaBitmap);
 }
 
 int ExisteTabla(const char *tabla) {
@@ -219,10 +219,14 @@ int InsertarTabla(t_request *request) {
 	memcpy(registro->value, request->parametro3,
 			strlen(request->parametro3) + 1);
 	registro->timestamp = atoll(request->parametro4);
-
 //	printf("Registro key %d\n", registro->key);
 //	printf("Registro value %s\n", registro->value);
 //	printf("Registro timestamp %llu\n", registro->timestamp);
+
+	//valido value enviado
+	if((strlen(registro->value) + 1) > (lfs_conf.tamano_value)){
+		return 1;
+	}
 
 	//Verifico existencia en el file system
 	if (!ExisteTabla(request->parametro1)) {
@@ -608,7 +612,7 @@ int CrearTabla(t_create *msgCreate) {
 
 int AgregarBloque() {
 	//Descomentar cuando se encuentre el bitmap del fs disponible
-	/*size_t sizeBitmap = bitarray_get_max_bit(bitmap);
+	size_t sizeBitmap = bitarray_get_max_bit(bitmap);
 	 int bloque = 1;
 
 	 log_info(logger, "Agregando bloque");
@@ -626,10 +630,10 @@ int AgregarBloque() {
 	 return bloque;
 	 }
 	 count ++;
-	 }*/
+	 }
 
-	//return bloque;
-	return 1;
+	return bloque;
+//	return 1;
 }
 
 int DropearTabla(char *nombre) {
@@ -927,10 +931,21 @@ void CargarTablas(){
 void AddGlobalList(char *nombre){
 	t_tcb *tabla = malloc(sizeof(t_tcb));
 	tabla->bloqueado = 0;
-	tabla->contadorTmp = 0;
+	tabla->contadorTmp = 1;
 	strcpy(tabla->nombre_tabla, nombre);
 	list_add(tablasGlobal, tabla);
-	log_info(logger, "Nueva tabla ingresada");
+//	log_info(logger, "Nueva tabla ingresada");
 
+}
+
+int GetFreeBlocks() {
+	size_t sizeBitmap = bitarray_get_max_bit(bitmap);
+	int count = 0;
+	for (int i = 0; i < sizeBitmap; i++) {
+		if (bitarray_test_bit(bitmap, i) == 0) {
+			count++;
+		}
+	}
+	return count;
 }
 

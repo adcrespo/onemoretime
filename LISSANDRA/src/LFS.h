@@ -25,6 +25,9 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <dirent.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include <math.h>
 
 t_log *logger;
 t_list *memtable;

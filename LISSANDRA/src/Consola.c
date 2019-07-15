@@ -65,24 +65,32 @@ int procesar_comando(char *line) {
 					|| string_is_empty(request->parametro2)
 					|| string_is_empty(request->parametro3)) {
 				printf("Faltan ingresar datos utilizar el comando\n");
+				break;
+			}
+			//valido tamaño del value
+			if ((strlen(request->parametro3) + 1) > lfs_conf.tamano_value) {
+				printf("El tamaño del value con %d bytes supera lo permitido de %d bytes\n",
+						(strlen(request->parametro3) + 1),lfs_conf.tamano_value);
+				break;
+			}
+
+			if (string_is_empty(request->parametro4)) {
+				unsigned long long timestamp = obtenerTimeStamp();
+				request->parametro4 = malloc(20);
+				sprintf(request->parametro4, "%llu", timestamp);
+				//request->parametro4 = string_itoa();
+			}
+
+			printf("Tabla: %s\n", request->parametro1);
+			printf("Key: %s\n", request->parametro2);
+			printf("Value: %s\n", request->parametro3);
+			printf("Timestamp: %s\n", request->parametro4);
+			int resultInsert = InsertarTabla(request);
+			if (resultInsert) {
+				printf("La tabla %s no se encuentra creada.\n",
+						request->parametro1);
 			} else {
-				if (string_is_empty(request->parametro4)) {
-					unsigned long long timestamp = obtenerTimeStamp();
-					request->parametro4 = malloc(20);
-					sprintf(request->parametro4, "%llu", timestamp);
-					//request->parametro4 = string_itoa();
-				}
-				printf("Tabla: %s\n", request->parametro1);
-				printf("Key: %s\n", request->parametro2);
-				printf("Value: %s\n", request->parametro3);
-				printf("Timestamp: %s\n", request->parametro4);
-				int resultInsert = InsertarTabla(request);
-				if (resultInsert) {
-					printf("La tabla %s no se encuentra creada.\n",
-							request->parametro1);
-				} else {
-					printf("Registro insertado correctamente.\n");
-				}
+				printf("Registro insertado correctamente.\n");
 			}
 
 			break;
