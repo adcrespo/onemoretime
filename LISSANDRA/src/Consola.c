@@ -47,8 +47,10 @@ int procesar_comando(char *line) {
 		case _select:
 			printf("CONSOLA: Se ingresó comando SELECT \n");
 			if (string_is_empty(request->parametro1)
-					|| string_is_empty(request->parametro2))
+					|| string_is_empty(request->parametro2)){
 				printf("Falta ingresar datos para utilizar select\n");
+				break;
+			}
 			t_select *selectMsg = malloc(sizeof(t_select));
 			strcpy(selectMsg->nombreTabla, request->parametro1);
 			selectMsg->key = atoi(request->parametro2);
@@ -125,10 +127,11 @@ int procesar_comando(char *line) {
 			printf("CONSOLA: Se ingresó comando DESCRIBE \n");
 			if (string_is_empty(request->parametro1)) {
 				printf("Obteniendo metadata de todas las tablas.\n");
+				ObtenerMetadataCompleto();
 			} else {
 				int resultExists = ExisteTabla(request->parametro1);
 				char *tableName = string_new();
-				strcpy(tableName, request->parametro1);
+				string_append(&tableName, request->parametro1);
 
 				switch (resultExists) {
 				case 1:
@@ -138,16 +141,18 @@ int procesar_comando(char *line) {
 					int particiones = metadata->particiones;
 					int tiempoCompactacion = metadata->compactationTime;
 					char *consistencia = string_new();
-					strcpy(consistencia, metadata->tipoConsistencia);
-					printf("CONSISTENCY=%s\n", consistencia);
-					printf("PARTITIONS=%d\n", particiones);
-					printf("COMPACTATION_TIME=%d\n", tiempoCompactacion);
+					string_append(&consistencia, metadata->tipoConsistencia);
+//					printf("CONSISTENCY=%s\n", consistencia);
+//					printf("PARTITIONS=%d\n", particiones);
+//					printf("COMPACTATION_TIME=%d\n", tiempoCompactacion);
+					printf("Consistency\tPartitions\tCompactionTime\n");
+					printf("%s\t\t%d\t\t%d\n", consistencia, particiones, tiempoCompactacion);
 					free(consistencia);
 					free(metadata);
 
 					break;
 				case 0:
-					printf("La tabla no existe \n");
+					printf("La tabla no existe. \n");
 				}
 			}
 			break;

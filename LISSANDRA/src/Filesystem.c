@@ -13,11 +13,11 @@ void *CrearFileSystem() {
 	rutaTablas = string_new();
 	string_append(&rutaTablas, lfs_conf.punto_montaje);
 	string_append(&rutaTablas, "Tables/");
-	loggear(logger, LOG_LEVEL_INFO, "Ruta de tablas: %s", rutaTablas);
+	log_debug(logger, "Ruta de tablas: %s", rutaTablas);
 	rutaBloques = string_new();
 	string_append(&rutaBloques, lfs_conf.punto_montaje);
 	string_append(&rutaBloques, "Bloques/");
-	loggear(logger, LOG_LEVEL_INFO, "Ruta de bloques: %s", rutaBloques);
+	log_debug(logger, "Ruta de bloques: %s", rutaBloques);
 	CargarMetadata();
 	CargarBitmap();
 	CargarTablas();
@@ -30,7 +30,7 @@ void CargarMetadata() {
 	string_append(&rutaMetadata, lfs_conf.punto_montaje);
 	string_append(&rutaMetadata, "Metadata/");
 	string_append(&rutaMetadata, "Metadata.bin");
-	loggear(logger, LOG_LEVEL_INFO, "Ruta Metadata: %s", rutaMetadata);
+	log_debug(logger, "Ruta Metadata: %s", rutaMetadata);
 
 	config_metadata = cargarConfiguracion(rutaMetadata, logger);
 
@@ -55,7 +55,7 @@ void CargarBitmap() {
 	string_append(&rutaBitmap, lfs_conf.punto_montaje);
 	string_append(&rutaBitmap, "Metadata/");
 	string_append(&rutaBitmap, "Bitmap.bin");
-	loggear(logger, LOG_LEVEL_INFO, "Ruta Bitmap: %s", rutaBitmap);
+	log_debug(logger, "Ruta Bitmap: %s", rutaBitmap);
 
 	int bm = open(rutaBitmap, O_RDWR);
 	 struct stat mystat;
@@ -127,16 +127,18 @@ void ObtenerMetadataCompleto() {
 			if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, "..")) {
 
 			} else {
-				printf("Metadata tabla: %s\n", entry->d_name);
+				printf("Metadata tabla %s:\n", entry->d_name);
 				t_metadata *metadata;
 				metadata = ObtenerMetadataTabla(entry->d_name);
 				int particiones = metadata->particiones;
 				int tiempoCompactacion = metadata->compactationTime;
 				char *consistencia = string_new();
-				strcpy(consistencia, metadata->tipoConsistencia);
-				printf("CONSISTENCY=%s\n", consistencia);
-				printf("PARTITIONS=%d\n", particiones);
-				printf("COMPACTATION_TIME=%d\n", tiempoCompactacion);
+				string_append(&consistencia, metadata->tipoConsistencia);
+//				printf("CONSISTENCY=%s\n", consistencia);
+//				printf("PARTITIONS=%d\n", particiones);
+//				printf("COMPACTATION_TIME=%d\n", tiempoCompactacion);
+				printf("Consistency\tPartitions\tCompactionTime\n");
+				printf("%s\t\t%d\t\t%d\n\n", consistencia, particiones, tiempoCompactacion);
 				free(consistencia);
 				free(metadata);
 			}
