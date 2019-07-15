@@ -808,6 +808,73 @@ t_list *ObtenerRegistros(char *tabla, char *extension) {
 	return NULL;
 }
 
+t_list *ObtenerRegistrosArchivo(char *tabla, char *archivo, char *extension) {
+
+	DIR *dir;
+	struct dirent *entry;
+	char *archivoExtension;
+
+	string_append(&archivoExtension, archivo);
+	string_append(&archivoExtension, extension);
+
+	log_info(logger, "Obteniendo registros %s de %s", extension, tabla);
+	if ((dir = opendir(tabla)) == NULL) {
+		perror("openndir() error");
+	} else {
+		t_list *registros = list_create();
+		while ((entry = readdir(dir)) != NULL) {
+			if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, "..")) {
+				//no hacer nada
+			} else {
+				if (string_equals_ignore_case(entry->d_name, archivoExtension)) {
+					char *pathFile = string_from_format("%s/%s", tabla,
+							entry->d_name);
+					log_info(logger, "Abriendo config de %s", pathFile);
+					t_config *config_file = cargarConfiguracion(pathFile,
+							logger);
+
+					int size = config_get_int_value(config_file, "SIZE");
+
+					int cantBloques = CalcularBloques(size);
+					char **bloques = malloc(sizeof(int) * cantBloques);
+					bloques = config_get_array_value(config_file, "BLOCKS");
+					for (int i = 0; cantBloques > i; i++) {
+						char *bloque = string_from_format("%s%s.bin",
+								rutaBloques, bloques[i]);
+						//abrirArchivo
+						log_info(logger, "ABRIENDO %s", bloque);
+						FILE *archivo = fopen(bloque, "r+");
+						char linea[100];
+						char **elementos;
+
+						//recorrer
+						while (!feof(archivo)) {
+							fgets(linea, 100, archivo);
+							elementos = string_split(linea, ";");
+							int cantElementos = ContarElementosArray(elementos);
+							t_registro *registro = malloc(sizeof(t_registro));
+							registro->timestamp = atoll(elementos[0]);
+							registro->key = atoi(elementos[1]);
+							strcpy(registro->value, elementos[2]);
+							list_add(registros, registro);
+							for (int i = 0; cantElementos > i; i++) {
+								free(elementos[i]);
+							}
+							free(elementos);
+						}
+						free(bloque);
+						fclose(archivo);
+					}
+					free(pathFile);
+				}
+			}
+		}
+		return registros;
+	}
+	closedir(dir);
+	return NULL;
+}
+
 //int ContarTablas() {
 //	DIR *dir;
 //	struct dirent *entry;

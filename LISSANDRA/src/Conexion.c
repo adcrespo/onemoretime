@@ -180,13 +180,14 @@ void procesar(int n_descriptor, fd_set* set_master) {
 						"Buscando metadata para todas las tablas");
 				//recorrer tablasGlobal y enviar metadata por tabla
 				int cantTablas = list_size(tablasGlobal);
+				log_info(logger, "countTables: %d",cantTablas);
 				for (int i = 0; i < cantTablas; i++) {
 					t_tcb *tabla = list_get(tablasGlobal, i);
 					t_metadata *metadataGlobal;
 					metadataGlobal = ObtenerMetadataTabla(tabla->nombre_tabla);
 
 					char *describeTablaGlobal = string_new();
-					string_append(&describeTablaGlobal, describeMensaje->nombreTabla);
+					string_append(&describeTablaGlobal, tabla->nombre_tabla);
 					string_append(&describeTablaGlobal, ";");
 					string_append(&describeTablaGlobal, metadataGlobal->tipoConsistencia);
 					string_append(&describeTablaGlobal, ";");
@@ -203,6 +204,7 @@ void procesar(int n_descriptor, fd_set* set_master) {
 					free(describeTablaGlobal);
 					free(metadataGlobal);
 				}
+				loggear(logger, LOG_LEVEL_INFO, "Fin mensaje describe");
 			} else {
 				loggear(logger, LOG_LEVEL_INFO,
 						"Buscando metadata para tabla %s",
@@ -233,6 +235,7 @@ void procesar(int n_descriptor, fd_set* set_master) {
 		case countTables:
 			log_info(logger, "Mensaje countTables recibido");
 			int cantidadTablas = list_size(tablasGlobal);
+			log_info(logger, "countTables: %d",cantidadTablas);
 			enviarMensajeConError(lis, countTables, 0, NULL, n_descriptor,
 					logger, mem, cantidadTablas);
 

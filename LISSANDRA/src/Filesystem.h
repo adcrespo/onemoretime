@@ -35,6 +35,7 @@ t_list *BuscarKeyMemtable(int key, char *nombre);
 void LevantarHilosCompactacionFS();
 /**Invocar con extension ".bin" o ".tmp" **/
 t_list *ObtenerRegistros(char *tabla, char *extension);
+t_list *ObtenerRegistrosArchivo(char *tabla, char *archivo, char *extension);
 void GuardarEnBloque(char *linea, char *path);
 int ContarTablas();
 t_list *BuscarKeyTemporales(int key, char *tabla);
