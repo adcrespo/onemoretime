@@ -41,7 +41,7 @@ void RealizarDumpeo()
 		{
 
 			char *nombre = string_new();
-			strcpy(nombre, listaTabla->nombre_tabla);
+			string_append(&nombre, listaTabla->nombre_tabla);
 			DumpearTabla(listaTabla->lista, nombre);
 			AumentarContadorTmp(nombre);
 		}
@@ -78,13 +78,14 @@ void DumpearTabla(t_list *lista, char *nombre)
 		registro = list_get(lista, j);
 		char *linea = string_new();
 		char *key = string_itoa(registro->key);
-		char *timestamp = string_new();
+		//char *timestamp = string_new();
+		char *timestamp = malloc(20);
 		sprintf(timestamp, "%llu", registro->timestamp);
+		string_append(&linea, timestamp);
+		string_append(&linea, ";");
 		string_append(&linea, key);
 		string_append(&linea, ";");
 		string_append(&linea, registro->value);
-		string_append(&linea, ";");
-		string_append(&linea, timestamp);
 		string_append(&linea, "\n");
 		free(key);
 		free(timestamp);
@@ -101,7 +102,7 @@ void DumpearTabla(t_list *lista, char *nombre)
 		{
 			bloqueActual = AgregarBloque();
 			disponibleActual = tamanio_bloques;
-			bloqueActual ++;
+			//bloqueActual ++;
 			disponibleActual -= lenLinea;
 			rutaActual = string_from_format("%s%d.bin", rutaBloques, bloqueActual);
 			GuardarEnBloque(linea, rutaActual);
@@ -112,10 +113,7 @@ void DumpearTabla(t_list *lista, char *nombre)
 
 		}
 
-
-
 		loggear(logger, LOG_LEVEL_WARNING, "Registro key: %d value: %s timestamp %d", registro->key, registro->value, registro->timestamp);
-
 	}
 	char *sizeAEscribir = string_from_format("SIZE=%d\n", sizeTotal);
 	fputs(sizeAEscribir, file);
@@ -145,12 +143,18 @@ void DumpearTabla(t_list *lista, char *nombre)
 
 }
 
-void LimpiarMemtable()
-{
+void LimpiarMemtable() {
 	int sizeMemTable = list_size(memtable);
-	for(int i = 0; i < sizeMemTable; i++){
-		t_registro *registro = list_get(memtable, i);
-		free(registro);
+	//recorro memtable
+	for (int i = 0; i < sizeMemTable; i++) {
+		t_tabla *tabla = list_get(memtable, i);
+		int sizeTabla = list_size(tabla->lista);
+		//recorro tabla dentro de memtable
+		for (int j = 0; j < sizeTabla; j++) {
+			t_registro *registro = list_get(memtable, i);
+			free(registro);
+		}
+		free(tabla);
 	}
 	list_clean(memtable);
 	loggear(logger, LOG_LEVEL_INFO, "Memtable vacia");

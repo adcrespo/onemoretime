@@ -185,6 +185,7 @@ void CrearMetadataTabla(char *tabla, char *consistencia, int particiones,
 	free(tipoConsistencia);
 	free(partitions);
 	free(compactationTime);
+	free(rutaMetadataTabla);
 	fclose(file);
 }
 
@@ -674,6 +675,7 @@ int DropearTabla(char *nombre) {
 
 //				printf("PATHFILE %s\n", pathFile);
 				remove(pathFile);
+				free(pathFile);
 
 				for (int i = 0; i <= cantBloques; i++) {
 					free(bloques[i]);
