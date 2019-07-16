@@ -116,6 +116,27 @@ int procesar_comando(char *line) {
 
 			case _add:
 				printf("CONSOLA: Se ingresó comando ADD \n");
+				char *criterio = string_new();
+				string_append(&criterio, request->parametro4);
+				int numeroMemoria = atoi(request->parametro2);
+				int comando = criterio_to_enum(request->parametro4);
+
+				switch(comando){
+				case SC:
+					printf("Agregando memoria %d a strong consistency.\n", numeroMemoria);
+					memoria_sc = numeroMemoria;
+					break;
+				case SHC:
+					printf("Agregando memoria %d a strong hash consistency.\n", numeroMemoria);
+					break;
+				case EV:
+					printf("Agregando memoria %d a eventual consistency.\n", numeroMemoria);
+					break;
+				default:
+					printf("Criterio no reconocido.\n");
+				}
+
+
 				break;
 
 			case _run:
@@ -219,3 +240,21 @@ void imprimir_pcb(t_pcb* pcb) {
 	log_info(logger, "Script: %s.", pcb->script);
 
 }
+
+
+char* criterio_str[] = {
+		"SC"
+		, "SHC"
+		, "EV"
+		, NULL
+};
+
+t_tipoCriterio criterio_to_enum(char *sval) {
+	t_tipoCriterio result = SC;
+	int i = 0;
+	for (i = 0; criterio_str[i] != NULL; ++i, ++result)
+		if (0 == strcmp(sval, criterio_str[i]))
+			return result;
+	return -1;
+}
+

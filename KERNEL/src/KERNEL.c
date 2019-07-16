@@ -48,6 +48,8 @@ void inicializar() {
 	lista_ready = list_create();
 	lista_exec = list_create();
 	lista_exit = list_create();
+	lista_criterio_shc = list_create();
+	lista_criterio_ev = list_create();
 
 	LISTA_CONN = list_create();
 }

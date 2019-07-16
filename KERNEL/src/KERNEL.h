@@ -29,7 +29,13 @@ pthread_t thread_consola;
 pthread_t thread_gossiping;
 pthread_t inotify;
 
+
+
+
 int socket_memoria;
+int memoria_sc;
+t_list *lista_criterio_shc;
+t_list *lista_criterio_ev;
 t_list *LISTA_CONN;
 char** lista_ips;
 char** lista_puertos;
