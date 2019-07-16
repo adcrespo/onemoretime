@@ -28,9 +28,12 @@ int main(int argc, char *argv[]) {
 	crear_hilo_consola();
 
 	/* 6. Creación de hilo para inotify */
-	crearHiloInotify();
+	crear_hilo_inotify();
 
 	/* 7. Gossiping */
+	crear_hilo_refresh();
+
+	/* 8. Gossiping */
 	init_gossiping();
 	crear_hilo_gossiping();
 
@@ -52,7 +55,7 @@ void inicializar() {
 	lista_exit = list_create();
 	lista_criterio_shc = list_create();
 	lista_criterio_ev = list_create();
-
+	lista_metadata = list_create();
 	LISTA_CONN = list_create();
 }
 
@@ -111,7 +114,7 @@ void *crearInotify() {
 	}
 }
 
-int crearHiloInotify() {
+int crear_hilo_inotify() {
 	sigset_t set;
 	int s;
 	int hilo_inotify;
@@ -134,4 +137,27 @@ int crearHiloInotify() {
 	return 1;
 }
 
+void crear_hilo_refresh() {
 
+	int hiloDump = pthread_create(&thread_refresh, NULL, inicializar_refresh,
+			NULL);
+	if (hiloDump == -1) {
+		log_error(logger, "No se pudo generar el hilo para refresh");
+	}
+	log_info(logger, "Se generó el hilo para refresh");
+}
+
+void *inicializar_refresh() {
+	while (1) {
+		aplicar_tiempo_refresh();
+
+	}
+
+}
+
+void aplicar_tiempo_refresh() {
+	int segundos_refresh = (kernel_conf.metadata_refresh / 1000);
+	log_info(logger, "Iniciando refresh de metadata en %d segundos",
+			segundos_refresh);
+	sleep(segundos_refresh);
+}

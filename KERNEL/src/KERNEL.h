@@ -29,6 +29,7 @@
 pthread_t thread_consola;
 pthread_t thread_gossiping;
 pthread_t inotify;
+pthread_t thread_refresh;
 
 
 
@@ -37,6 +38,7 @@ int socket_memoria;
 int memoria_sc;
 t_list *lista_criterio_shc;
 t_list *lista_criterio_ev;
+t_list *lista_metadata;
 t_list *LISTA_CONN;
 char** lista_ips;
 char** lista_puertos;
@@ -49,8 +51,17 @@ void crear_hilo_consola();
 void crear_hilo_gossiping();
 void init_gossiping();
 void *hiloGossiping();
-int crearHiloInotify();
+int crear_hilo_inotify();
+void crear_hilo_refresh();
+void *inicializar_refresh();
+void aplicar_tiempo_refresh();
 
-
+/* Structs */
+typedef struct {
+	char nombreTabla[50];
+	char tipoConsistencia[4];
+	int particiones;
+	int compactationTime;
+} t_metadata;
 
 #endif /* KERNEL_H_ */
