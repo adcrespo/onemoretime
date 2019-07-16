@@ -8,14 +8,11 @@
 #ifndef AUXILIARES_CONSOLA_H_
 #define AUXILIARES_CONSOLA_H_
 
-#include "shared.h"
-#include "parser.h"
-#include <stdlib.h>
+#include "../KERNEL.h"
 #include <readline/readline.h>
 #include <readline/history.h>
-#include "Logueo.h"
-#include "Planificador.h"
-#include "../KERNEL.h"
+
+
 
 
 typedef enum tipoCriterio {
@@ -29,7 +26,6 @@ int procesar_comando(char *line);
 void abrir_archivo_LQL(t_request* request);
 char **character_name_completion(const char *, int, int);
 char *character_name_generator(const char *, int);
-void imprimir_pcb(t_pcb* pcb);
 t_tipoCriterio criterio_to_enum(char *sval);
 t_tipoSeeds* obtener_memoria_lista(int numero);
 

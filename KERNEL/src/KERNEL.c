@@ -34,6 +34,8 @@ int main(int argc, char *argv[]) {
 	init_gossiping();
 	crear_hilo_gossiping();
 
+
+
 	pthread_join(thread_consola, NULL);
 
 	puts("Fin proceso Kernel"); /* prints Proceso Kernel */

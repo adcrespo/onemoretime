@@ -14,6 +14,7 @@
 #include <commons/log.h>
 #include <shared.h>
 #include <gossiping.h>
+#include "parser.h"
 #include "Auxiliares/Logueo.h"
 #include "Auxiliares/Consola.h"
 #include "Auxiliares/Planificador.h"
@@ -49,6 +50,7 @@ void crear_hilo_gossiping();
 void init_gossiping();
 void *hiloGossiping();
 int crearHiloInotify();
+
 
 
 #endif /* KERNEL_H_ */

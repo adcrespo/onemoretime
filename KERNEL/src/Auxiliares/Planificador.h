@@ -8,7 +8,8 @@
 #ifndef AUXILIARES_PLANIFICADOR_H_
 #define AUXILIARES_PLANIFICADOR_H_
 
-#include "parser.h"
+
+#include "../KERNEL.h"
 
 /* Definición de tipos */
 
@@ -35,5 +36,9 @@ int asignar_id_proceso();
 void generar_nuevo_proceso(t_request* request);
 t_pcb* crear_proceso(char* line,t_request* request);
 int cantidad_request(char* buffer);
+void imprimir_pcb(t_pcb* pcb);
+t_tipoSeeds* get_memoria_por_criterio(char *criterio);
+t_tipoSeeds* obtener_memoria_random();
+t_tipoSeeds* obtener_memoria_sc();
 
 #endif /* AUXILIARES_PLANIFICADOR_H_ */

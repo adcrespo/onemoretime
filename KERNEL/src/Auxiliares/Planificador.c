@@ -55,3 +55,41 @@ int cantidad_request(char* buffer) {
 
 	return cantidad_lineas;
 }
+
+t_tipoSeeds* get_memoria_por_criterio(char *criterio) {
+	t_tipoSeeds *memory;
+	int tipo_criterio = criterio_to_enum(criterio);
+	switch (tipo_criterio) {
+	case SC:
+		//devolver memoria_sc
+		memory = obtener_memoria_sc();
+		break;
+	case SHC:
+		break;
+	case EV:
+		//memoria random
+		memory = obtener_memoria_random();
+		break;
+
+	}
+	return memory;
+}
+
+t_tipoSeeds* obtener_memoria_random() {
+	int n;
+	int size_ev = list_size(lista_criterio_ev);
+	n = rand() % size_ev;
+	t_tipoSeeds *memory;
+	memory = list_get(lista_criterio_ev, n);
+	return memory;
+}
+
+t_tipoSeeds* obtener_memoria_sc(){
+	bool findSC(void* element) {
+			t_tipoSeeds *memoria = element;
+			return memoria->numeroMemoria == memoria_sc;
+		}
+	return list_find(LISTA_CONN, &findSC);
+}
+
+
