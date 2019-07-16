@@ -31,6 +31,7 @@ char **character_name_completion(const char *, int, int);
 char *character_name_generator(const char *, int);
 void imprimir_pcb(t_pcb* pcb);
 t_tipoCriterio criterio_to_enum(char *sval);
+t_tipoSeeds* obtener_memoria_lista(int numero);
 
 
 #endif /* AUXILIARES_CONSOLA_H_ */

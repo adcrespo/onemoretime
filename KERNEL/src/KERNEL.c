@@ -43,7 +43,7 @@ int main(int argc, char *argv[]) {
 void inicializar() {
 
 	cont_id_procesos = 0;
-
+	memoria_sc = -1;
 	lista_new = list_create();
 	lista_ready = list_create();
 	lista_exec = list_create();

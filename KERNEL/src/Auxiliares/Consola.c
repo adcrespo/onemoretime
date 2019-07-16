@@ -116,21 +116,39 @@ int procesar_comando(char *line) {
 
 			case _add:
 				printf("CONSOLA: Se ingresó comando ADD \n");
-				char *criterio = string_new();
-				string_append(&criterio, request->parametro4);
 				int numeroMemoria = atoi(request->parametro2);
 				int comando = criterio_to_enum(request->parametro4);
-
+				t_tipoSeeds *memory;
 				switch(comando){
 				case SC:
 					printf("Agregando memoria %d a strong consistency.\n", numeroMemoria);
-					memoria_sc = numeroMemoria;
+					if(memoria_sc == -1){
+						memoria_sc = numeroMemoria;
+					}else{
+						printf("El criterio ya tiene su memoria asignada.\n");
+					}
 					break;
 				case SHC:
 					printf("Agregando memoria %d a strong hash consistency.\n", numeroMemoria);
+					memory = obtener_memoria_lista(numeroMemoria);
+					if(memory != NULL){
+						list_add(lista_criterio_shc, memory);
+						printf("Memoria agregada al criterio.\n");
+					} else {
+						printf("No se encontro la memoria en la lista.\n");
+					}
+
 					break;
 				case EV:
 					printf("Agregando memoria %d a eventual consistency.\n", numeroMemoria);
+					memory = obtener_memoria_lista(numeroMemoria);
+					if(memory != NULL){
+						list_add(lista_criterio_ev, memory);
+						printf("Memoria agregada al criterio.\n");
+					} else {
+						printf("No se encontro la memoria en la lista.\n");
+					}
+
 					break;
 				default:
 					printf("Criterio no reconocido.\n");
@@ -256,5 +274,15 @@ t_tipoCriterio criterio_to_enum(char *sval) {
 		if (0 == strcmp(sval, criterio_str[i]))
 			return result;
 	return -1;
+}
+
+t_tipoSeeds* obtener_memoria_lista(int numero){
+	bool findMemory(void* element) {
+		t_tipoSeeds *memoria = element;
+		return memoria->numeroMemoria == numero;
+	}
+
+	log_info(logger, "Buscando memoria %d en LISTA_CONN", numero);
+	return list_find(LISTA_CONN, &findMemory);
 }
 
