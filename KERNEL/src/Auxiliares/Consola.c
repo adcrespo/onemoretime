@@ -286,3 +286,13 @@ t_tipoSeeds* obtener_memoria_lista(int numero){
 	return list_find(LISTA_CONN, &findMemory);
 }
 
+
+t_metadata* buscar_tabla(char *nombre) {
+
+	int EsLaTabla(t_metadata *tabla) {
+		return string_equals_ignore_case(nombre, tabla->nombreTabla);
+	}
+
+	loggear(logger, LOG_LEVEL_INFO, "Buscando %s en Memtable", nombre);
+	return list_find(lista_metadata, (void*) EsLaTabla);
+}

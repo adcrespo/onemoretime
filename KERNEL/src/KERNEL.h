@@ -31,7 +31,13 @@ pthread_t thread_gossiping;
 pthread_t inotify;
 pthread_t thread_refresh;
 
-
+/* Structs */
+typedef struct {
+	char nombreTabla[50];
+	char tipoConsistencia[4];
+	int particiones;
+	int compactationTime;
+} t_metadata;
 
 
 int socket_memoria;
@@ -55,13 +61,8 @@ int crear_hilo_inotify();
 void crear_hilo_refresh();
 void *inicializar_refresh();
 void aplicar_tiempo_refresh();
+t_metadata* buscar_tabla(char *nombre);
 
-/* Structs */
-typedef struct {
-	char nombreTabla[50];
-	char tipoConsistencia[4];
-	int particiones;
-	int compactationTime;
-} t_metadata;
+
 
 #endif /* KERNEL_H_ */

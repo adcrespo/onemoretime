@@ -30,4 +30,5 @@ t_tipoCriterio criterio_to_enum(char *sval);
 t_tipoSeeds* obtener_memoria_lista(int numero);
 
 
+
 #endif /* AUXILIARES_CONSOLA_H_ */
