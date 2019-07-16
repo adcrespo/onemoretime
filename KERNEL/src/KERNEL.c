@@ -10,7 +10,7 @@
 
 #include "KERNEL.h"
 
-int main(int argc, char *argv[]) {
+int main() {
 
 	/* 1. Creación de logger */
 	logger = configurar_logger("../log/KERNEL.log", "Kernel");
@@ -30,7 +30,7 @@ int main(int argc, char *argv[]) {
 	/* 6. Creación de hilo para inotify */
 	crear_hilo_inotify();
 
-	/* 7. Gossiping */
+	/* 7. Refresh metadata */
 	crear_hilo_refresh();
 
 	/* 8. Gossiping */

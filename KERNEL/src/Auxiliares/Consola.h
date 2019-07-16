@@ -23,7 +23,7 @@ typedef enum tipoCriterio {
 // Definición de funciones
 void *crear_consola();
 int procesar_comando(char *line);
-void abrir_archivo_LQL(t_request* request);
+char* abrir_archivo_LQL(t_request* request);
 char **character_name_completion(const char *, int, int);
 char *character_name_generator(const char *, int);
 t_tipoCriterio criterio_to_enum(char *sval);

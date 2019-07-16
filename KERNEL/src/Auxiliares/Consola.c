@@ -158,11 +158,17 @@ int procesar_comando(char *line) {
 				break;
 
 			case _run:
-				printf("CONSOLA: Se ingresó comando RUN \n");
-				printf("Parámetro: %s \n", request->parametro1);
+//				printf("CONSOLA: Se ingresó comando RUN \n");
+//				printf("Parámetro: %s \n", request->parametro1);
 
 				generar_nuevo_proceso(request);
-				abrir_archivo_LQL(request);
+				char* contenido = abrir_archivo_LQL(request);
+				proceso_nuevo = crear_proceso(contenido, request);
+
+				// Loguear nuevo proceso
+				log_info(logger, "Proceso generado.");
+				imprimir_pcb(proceso_nuevo);
+
 				break;
 
 			case _metrics:
@@ -183,10 +189,11 @@ int procesar_comando(char *line) {
 	return 0;
 }
 
-void abrir_archivo_LQL(t_request* request) {
+char* abrir_archivo_LQL(t_request* request) {
 
 	FILE *file;
 	char* linea = string_new();
+	char* buffer = string_new();
 	size_t len = 0;
 	int cantidad_lineas = 0;
 
@@ -199,6 +206,7 @@ void abrir_archivo_LQL(t_request* request) {
 
 	while (getline(&linea, &len, file) != -1) {
 		printf("Contenido de línea: %s",linea);
+		string_append(&buffer, linea);
 		cantidad_lineas++;
 	}
 
@@ -207,6 +215,8 @@ void abrir_archivo_LQL(t_request* request) {
 	fclose(file);
 	if(linea)
 		free(linea);
+
+	return buffer;
 }
 
 //void generar_nuevo_proceso(t_request* request) {
@@ -255,7 +265,7 @@ void imprimir_pcb(t_pcb* pcb) {
 	log_info(logger, "Ruta archivo: %s.", pcb->ruta_archivo);
 	log_info(logger, "Program Counter: %d.", pcb->program_counter);
 	log_info(logger, "Cantidad request: %d.", pcb->cantidad_request);
-	log_info(logger, "Script: %s.", pcb->script);
+	log_info(logger, "Script: %s", pcb->script);
 
 }
 
