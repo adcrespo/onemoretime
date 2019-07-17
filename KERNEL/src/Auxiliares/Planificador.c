@@ -7,33 +7,77 @@
 
 #include "Planificador.h"
 
+
+void* planificar() {
+
+	while(1) {
+
+		sem_wait(&sem_ready);
+
+		log_info(logger, " --------- Planificando -------- ");
+
+	}
+}
+
 int asignar_id_proceso() {
 	cont_id_procesos += 1;
 	return cont_id_procesos;
 }
 
-void generar_nuevo_proceso(t_request* request) {
+//t_pcb* crear_proceso(char* line,t_request* request) {
+void crear_proceso(char* line,t_request* request) {
 
-//	t_pcb* proceso = malloc(sizeof(t_pcb));
-
-}
-
-t_pcb* crear_proceso(char* line,t_request* request) {
-
+	/* 1. Creación de PCB */
 	t_pcb* proceso = malloc(sizeof(t_pcb));
+	int id_proceso = asignar_id_proceso();
+
+	/* 2. Agregar a NEW */
+	log_info(logger, "PLANIFICADOR|Proceso %d generado. Agregado a NEW.", id_proceso);
+	int valor;
+	sem_getvalue(&sem_new, &valor);
+	log_info(logger, "PLANIFICADOR| Sem new: %d", valor);
+	agregar_proceso(proceso, lista_new, &sem_new);
+	sem_getvalue(&sem_new, &valor);
+	log_info(logger, "PLANIFICADOR| Sem new: %d", valor);
+
+	/* 3. Carga de PCB */
+	log_info(logger, "PLANIFICADOR|Generando estructura de planificación.");
 	proceso->script = string_new();
-	proceso->ruta_archivo = string_new();
-	proceso->id_proceso = asignar_id_proceso();
+
+	if( request->request == _run) {
+		proceso->ruta_archivo = request->parametro1;
+	} else {
+		proceso->ruta_archivo = string_new();
+	}
+	proceso->id_proceso = id_proceso;
 	proceso->program_counter = 0;
 	string_append(&proceso->script, line);
 	proceso->cantidad_request = cantidad_request(line);
 
-	// Agregar proceso a NEW
-	list_add(lista_new, proceso);
+	/* 4. Pasar PCB de NEW a READY */
+	log_info(logger, "PLANIFICADOR|Pasando proceso %d de NEW a READY.", id_proceso);
+	proceso = sacar_proceso(id_proceso, lista_new, &sem_new);
+	agregar_proceso(proceso, lista_ready, &sem_ready);
 
-	return proceso;
+	imprimir_pcb(proceso);
+
 }
 
+void agregar_proceso(t_pcb* proceso,t_list* lista, sem_t* sem) {
+
+	sem_post(sem);
+	list_add(lista, proceso);
+}
+
+t_pcb* sacar_proceso(int id, t_list* lista, sem_t* sem) {
+
+	int buscar_pcb_por_id(t_pcb* pcb) {
+		return pcb->id_proceso == id;
+	}
+
+	sem_wait(sem);
+	return (t_pcb *) list_remove_by_condition(lista, (void *)buscar_pcb_por_id);
+}
 
 
 
@@ -55,6 +99,7 @@ int cantidad_request(char* buffer) {
 
 	return cantidad_lineas;
 }
+
 
 t_tipoSeeds* get_memoria_por_criterio(char *criterio) {
 	t_tipoSeeds *memory;

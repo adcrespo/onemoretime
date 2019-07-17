@@ -10,8 +10,7 @@
 
 
 #include "../KERNEL.h"
-
-/* Definición de tipos */
+#include <semaphore.h>
 
 // Estructura planificable
 typedef struct {
@@ -31,10 +30,11 @@ t_list* lista_ready;
 t_list* lista_exec;
 t_list* lista_exit;
 
-
+void* planificar();
 int asignar_id_proceso();
-void generar_nuevo_proceso(t_request* request);
-t_pcb* crear_proceso(char* line,t_request* request);
+void agregar_proceso(t_pcb* proceso,t_list* lista, sem_t* sem);
+t_pcb* sacar_proceso(int id, t_list* lista, sem_t* sem);
+void crear_proceso(char* line,t_request* request);
 int cantidad_request(char* buffer);
 void imprimir_pcb(t_pcb* pcb);
 t_tipoSeeds* get_memoria_por_criterio(char *criterio);

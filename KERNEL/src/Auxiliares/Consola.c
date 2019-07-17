@@ -30,21 +30,20 @@ void *crear_consola() {
 
 int procesar_comando(char *line) {
 
-	log_info(logger, "CONSOLA: %s.", line);
+	log_info(logger, "CONSOLA| %s.", line);
 
 	char* linea_auxiliar = string_new();
 	string_append(&linea_auxiliar, line);
 	t_request* request = parsear(line, logger);
-	t_pcb* proceso_nuevo;
 
 	if (request->request == -1) {
 
-		log_error(logger, "CONSOLA: Se ingresó un comando desconocido: %s.", line);
+		log_error(logger, "CONSOLA|Se ingresó un comando desconocido: %s.", line);
 		printf("Se ingresó un comando desconocido: %s.\n", line);
 
 	} else if (request->es_valido == -1) {
 
-		log_error(logger, "CONSOLA: No se ingresaron los parámetros necesarios: %s.\n", line);
+		log_error(logger, "CONSOLA|No se ingresaron los parámetros necesarios: %s.\n", line);
 		printf("No se ingresaron los parámetros necesarios: %s.\n", line);
 
 	} else {
@@ -57,11 +56,7 @@ int procesar_comando(char *line) {
 
 			case _select:
 				// Generar nuevo proceso.
-				proceso_nuevo = crear_proceso(linea_auxiliar, request);
-
-				// Loguear nuevo proceso
-				log_info(logger, "Proceso generado.");
-				imprimir_pcb(proceso_nuevo);
+				crear_proceso(linea_auxiliar, request);
 
 				printf("Validando existencia de Tabla.\n");
 				printf("Seleccionando Memoria según Criterio.\n");
@@ -70,11 +65,7 @@ int procesar_comando(char *line) {
 
 			case _insert:
 				// Generar nuevo proceso.
-				proceso_nuevo = crear_proceso(linea_auxiliar, request);
-
-				// Loguear nuevo proceso
-				log_info(logger, "Proceso generado.");
-				imprimir_pcb(proceso_nuevo);
+				crear_proceso(linea_auxiliar, request);
 
 				printf("Validando existencia de Tabla.\n");
 				printf("Seleccionando Memoria según Criterio.\n");
@@ -83,11 +74,8 @@ int procesar_comando(char *line) {
 
 			case _create:
 				// Generar nuevo proceso.
-				proceso_nuevo = crear_proceso(linea_auxiliar, request);
+				crear_proceso(linea_auxiliar, request);
 
-				// Loguear nuevo proceso
-				log_info(logger, "Proceso generado.");
-				imprimir_pcb(proceso_nuevo);
 				break;
 
 			case _describe:
@@ -99,11 +87,7 @@ int procesar_comando(char *line) {
 			case _drop:
 
 				// Generar nuevo proceso.
-				proceso_nuevo = crear_proceso(linea_auxiliar, request);
-
-				// Loguear nuevo proceso
-				log_info(logger, "Proceso generado.");
-				imprimir_pcb(proceso_nuevo);
+				crear_proceso(linea_auxiliar, request);
 
 				printf("Validando existencia de Tabla.\n");
 				printf("Seleccionando Memoria según Criterio.\n");
@@ -157,17 +141,12 @@ int procesar_comando(char *line) {
 
 				break;
 
-			case _run:
+			case _run:;
 //				printf("CONSOLA: Se ingresó comando RUN \n");
 //				printf("Parámetro: %s \n", request->parametro1);
 
-				generar_nuevo_proceso(request);
 				char* contenido = abrir_archivo_LQL(request);
-				proceso_nuevo = crear_proceso(contenido, request);
-
-				// Loguear nuevo proceso
-				log_info(logger, "Proceso generado.");
-				imprimir_pcb(proceso_nuevo);
+				crear_proceso(contenido, request);
 
 				break;
 
@@ -200,7 +179,7 @@ char* abrir_archivo_LQL(t_request* request) {
 	file = fopen(request->parametro1, "r");
 
 	if (file == NULL) {
-		log_error(logger, "CONSOLA: No se puede abrir el archivo: %s", request->parametro1);
+		log_error(logger, "CONSOLA|No se puede abrir el archivo: %s", request->parametro1);
 		printf("No se puede abrir el archivo: %s", request->parametro1);
 	}
 
@@ -218,11 +197,6 @@ char* abrir_archivo_LQL(t_request* request) {
 
 	return buffer;
 }
-
-//void generar_nuevo_proceso(t_request* request) {
-//
-//
-//}
 
 
 char **character_name_completion(const char *text, int start, int end) {
@@ -261,11 +235,11 @@ char *character_name_generator(const char *text, int state) {
 
 void imprimir_pcb(t_pcb* pcb) {
 
-	log_info(logger, "Proceso N°: %d.", pcb->id_proceso);
-	log_info(logger, "Ruta archivo: %s.", pcb->ruta_archivo);
-	log_info(logger, "Program Counter: %d.", pcb->program_counter);
-	log_info(logger, "Cantidad request: %d.", pcb->cantidad_request);
-	log_info(logger, "Script: %s", pcb->script);
+	log_info(logger, "PCB|Proceso N°: %d.", pcb->id_proceso);
+	log_info(logger, "PCB|Ruta archivo: %s.", pcb->ruta_archivo);
+	log_info(logger, "PCB|Program Counter: %d.", pcb->program_counter);
+	log_info(logger, "PCB|Cantidad request: %d.", pcb->cantidad_request);
+	log_info(logger, "PCB|Script: %s", pcb->script);
 
 }
 

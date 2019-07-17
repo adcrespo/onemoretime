@@ -41,11 +41,11 @@ t_request* parsear(char* linea, t_log* logger) {
 
 	if (request->request == -1) {
 
-		log_error(logger, "Comando desconocido: %s.", comando);
+		log_error(logger, "PARSER|Comando desconocido: %s.", comando);
 
 	} else {
 
-		log_info(logger, "Comando: %s.", comando);
+		log_info(logger, "PARSER|Comando: %s.", comando);
 
 		switch (request->request) {
 
@@ -62,7 +62,7 @@ t_request* parsear(char* linea, t_log* logger) {
 					parametro_aux = strtok(NULL, " ");
 
 					if(parametro_aux == NULL) {
-						log_error(logger, "Parámetro 1 vacío.");
+						log_error(logger, "PARSER|Parámetro 1 vacío.");
 						break;
 					}
 
@@ -72,14 +72,14 @@ t_request* parsear(char* linea, t_log* logger) {
 					parametro_aux = strtok(NULL, " ");
 
 					if(parametro_aux == NULL) {
-						log_error(logger, "Parámetro 2 vacío.");
+						log_error(logger, "PARSER|Parámetro 2 vacío.");
 						break;
 					}
 
 					string_append(&request->parametro2, parametro_aux);
 
-					log_info(logger, "Parámetro 1: %s", request->parametro1);
-					log_info(logger, "Parámetro 2: %s", request->parametro2);
+					log_info(logger, "PARSER|Parámetro 1: %s", request->parametro1);
+					log_info(logger, "PARSER|Parámetro 2: %s", request->parametro2);
 					request->es_valido = 0;
 					break;
 
@@ -91,7 +91,7 @@ t_request* parsear(char* linea, t_log* logger) {
 					parametro_aux = strtok(NULL, " ");
 
 					if(parametro_aux == NULL) {
-						log_error(logger, "Parámetro 1 vacío.");
+						log_error(logger, "PARSER|Parámetro 1 vacío.");
 						break;
 					}
 
@@ -101,7 +101,7 @@ t_request* parsear(char* linea, t_log* logger) {
 					parametro_aux = strtok(NULL, " ");
 
 					if(parametro_aux == NULL) {
-						log_error(logger, "Parámetro 2 vacío.");
+						log_error(logger, "PARSER|Parámetro 2 vacío.");
 						break;
 					}
 
@@ -111,7 +111,7 @@ t_request* parsear(char* linea, t_log* logger) {
 					parametro_aux = strtok(NULL, " ");
 
 					if(parametro_aux == NULL) {
-						log_error(logger, "Parámetro 3 vacío.");
+						log_error(logger, "PARSER|Parámetro 3 vacío.");
 						break;
 					}
 
@@ -124,10 +124,10 @@ t_request* parsear(char* linea, t_log* logger) {
 						string_append(&request->parametro4, parametro_aux);
 					}
 
-					log_info(logger, "Parámetro 1: %s", request->parametro1);
-					log_info(logger, "Parámetro 2: %s", request->parametro2);
-					log_info(logger, "Parámetro 3: %s", request->parametro3);
-					log_info(logger, "Parámetro 4: %s", request->parametro4);
+					log_info(logger, "PARSER|Parámetro 1: %s", request->parametro1);
+					log_info(logger, "PARSER|Parámetro 2: %s", request->parametro2);
+					log_info(logger, "PARSER|Parámetro 3: %s", request->parametro3);
+					log_info(logger, "PARSER|Parámetro 4: %s", request->parametro4);
 					request->es_valido = 0;
 					break;
 
@@ -139,7 +139,7 @@ t_request* parsear(char* linea, t_log* logger) {
 					parametro_aux = strtok(NULL, " ");
 
 					if(parametro_aux == NULL) {
-						log_error(logger, "Parámetro 1 vacío.");
+						log_error(logger, "PARSER|Parámetro 1 vacío.");
 						break;
 					}
 
@@ -149,7 +149,7 @@ t_request* parsear(char* linea, t_log* logger) {
 					parametro_aux = strtok(NULL, " ");
 
 					if(parametro_aux == NULL) {
-						log_error(logger, "Parámetro 2 vacío.");
+						log_error(logger, "PARSER|Parámetro 2 vacío.");
 						break;
 					}
 
@@ -159,7 +159,7 @@ t_request* parsear(char* linea, t_log* logger) {
 					parametro_aux = strtok(NULL, " ");
 
 					if(parametro_aux == NULL) {
-						log_error(logger, "Parámetro 3 vacío.");
+						log_error(logger, "PARSER|Parámetro 3 vacío.");
 						break;
 					}
 
@@ -169,16 +169,16 @@ t_request* parsear(char* linea, t_log* logger) {
 					parametro_aux = strtok(NULL, " ");
 
 					if(parametro_aux == NULL) {
-						log_error(logger, "Parámetro 4 vacío.");
+						log_error(logger, "PARSER|Parámetro 4 vacío.");
 						break;
 					}
 
 					string_append(&request->parametro4, parametro_aux);
 
-					log_info(logger, "Parámetro 1: %s", request->parametro1);
-					log_info(logger, "Parámetro 2: %s", request->parametro2);
-					log_info(logger, "Parámetro 3: %s", request->parametro3);
-					log_info(logger, "Parámetro 4: %s", request->parametro4);
+					log_info(logger, "PARSER|Parámetro 1: %s", request->parametro1);
+					log_info(logger, "PARSER|Parámetro 2: %s", request->parametro2);
+					log_info(logger, "PARSER|Parámetro 3: %s", request->parametro3);
+					log_info(logger, "PARSER|Parámetro 4: %s", request->parametro4);
 					request->es_valido = 0;
 					break;
 
@@ -190,11 +190,9 @@ t_request* parsear(char* linea, t_log* logger) {
 
 					if(parametro_aux != NULL) {
 						string_append(&request->parametro1, parametro_aux);
-						log_info(logger, "Parámetro 1: %s", request->parametro1);
+						log_info(logger, "PARSER|Parámetro 1: %s", request->parametro1);
 					}
-//					string_append(&request->parametro1, strtok(NULL, " "));
-//
-//					log_info(logger, "Parámetro 1: %s", request->parametro1);
+
 					request->es_valido = 0;
 					break;
 
@@ -206,13 +204,13 @@ t_request* parsear(char* linea, t_log* logger) {
 					parametro_aux = strtok(NULL, " ");
 
 					if(parametro_aux == NULL) {
-						log_error(logger, "Parámetro 1 vacío.");
+						log_error(logger, "PARSER|Parámetro 1 vacío.");
 						break;
 					}
 
 					string_append(&request->parametro1, parametro_aux);
 
-					log_info(logger, "Parámetro 1: %s", request->parametro1);
+					log_info(logger, "PARSER|Parámetro 1: %s", request->parametro1);
 					request->es_valido = 0;
 					break;
 
@@ -229,7 +227,7 @@ t_request* parsear(char* linea, t_log* logger) {
 					parametro_aux = strtok(NULL, " ");
 
 					if(parametro_aux == NULL) {
-						log_error(logger, "Parámetro 1 vacío.");
+						log_error(logger, "PARSER|Parámetro 1 vacío.");
 						break;
 					}
 
@@ -239,7 +237,7 @@ t_request* parsear(char* linea, t_log* logger) {
 					parametro_aux = strtok(NULL, " ");
 
 					if(parametro_aux == NULL) {
-						log_error(logger, "Parámetro 2 vacío.");
+						log_error(logger, "PARSER|Parámetro 2 vacío.");
 						break;
 					}
 
@@ -249,7 +247,7 @@ t_request* parsear(char* linea, t_log* logger) {
 					parametro_aux = strtok(NULL, " ");
 
 					if(parametro_aux == NULL) {
-						log_error(logger, "Parámetro 3 vacío.");
+						log_error(logger, "PARSER|Parámetro 3 vacío.");
 						break;
 					}
 
@@ -259,16 +257,16 @@ t_request* parsear(char* linea, t_log* logger) {
 					parametro_aux = strtok(NULL, " ");
 
 					if(parametro_aux == NULL) {
-						log_error(logger, "Parámetro 4 vacío.");
+						log_error(logger, "PARSER|Parámetro 4 vacío.");
 						break;
 					}
 
 					string_append(&request->parametro4, parametro_aux);
 
-					log_info(logger, "Parámetro 1: %s", request->parametro1);
-					log_info(logger, "Parámetro 2: %s", request->parametro2);
-					log_info(logger, "Parámetro 3: %s", request->parametro3);
-					log_info(logger, "Parámetro 4: %s", request->parametro4);
+					log_info(logger, "PARSER|Parámetro 1: %s", request->parametro1);
+					log_info(logger, "PARSER|Parámetro 2: %s", request->parametro2);
+					log_info(logger, "PARSER|Parámetro 3: %s", request->parametro3);
+					log_info(logger, "PARSER|Parámetro 4: %s", request->parametro4);
 					request->es_valido = 0;
 					break;
 
@@ -280,13 +278,13 @@ t_request* parsear(char* linea, t_log* logger) {
 					parametro_aux = strtok(NULL, " ");
 
 					if(parametro_aux == NULL) {
-						log_error(logger, "Parámetro 1 vacío.");
+						log_error(logger, "PARSER|Parámetro 1 vacío.");
 						break;
 					}
 
 					string_append(&request->parametro1, parametro_aux);
 
-					log_info(logger, "Parámetro 1: %s", request->parametro1);
+					log_info(logger, "PARSER|Parámetro 1: %s", request->parametro1);
 					request->es_valido = 0;
 					break;
 
