@@ -24,6 +24,7 @@
 #include <semaphore.h>
 
 #define BUF_LEN (10 * (sizeof(struct inotify_event) + NAME_MAX + 1))
+#define MAX_PATH 50
 
 /* Variables globales */
 //t_log* logger;
@@ -59,7 +60,9 @@ void inicializar();
 void inicializar_semaforos();
 void aplicar_tiempo_refresh();
 t_metadata* buscar_tabla(char *nombre);
-
+void actualizar_metadata();
+void guardar_metadata(char *buffer);
+t_metadata* validar_metadata(char *nombre);
 
 
 #endif /* KERNEL_H_ */

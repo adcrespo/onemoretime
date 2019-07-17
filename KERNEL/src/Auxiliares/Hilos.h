@@ -8,6 +8,7 @@
 #ifndef AUXILIARES_HILOS_H_
 #define AUXILIARES_HILOS_H_
 
+#include "../KERNEL.h"
 #include <stdlib.h>
 #include "Planificador.h"
 
@@ -20,5 +21,6 @@ int crear_hilo_inotify();
 void crear_hilo_refresh();
 void *inicializar_refresh();
 void crear_hilo_planificador();
+
 
 #endif /* AUXILIARES_HILOS_H_ */

@@ -65,7 +65,7 @@ int crear_hilo_inotify() {
 
 	sigemptyset(&set);
 	sigaddset(&set, SIGINT);
-	int s = pthread_sigmask(SIG_BLOCK, &set, NULL);
+//	int s = pthread_sigmask(SIG_BLOCK, &set, NULL);
 
 	/*if (s != 0)
 		_exit_with_error("No se pudo bloquear SIGINT con prthread_sigmask",
@@ -92,9 +92,12 @@ void crear_hilo_refresh() {
 }
 
 void *inicializar_refresh() {
+	//actualizo metadata una vez al principio
+	actualizar_metadata();
+	//luego por hilo
 	while (1) {
 		aplicar_tiempo_refresh();
-
+		actualizar_metadata();
 	}
 
 }
@@ -107,3 +110,16 @@ void crear_hilo_planificador() {
 	}
 	log_info(logger, "THREAD|Se generó el hilo para el planificador.");
 }
+
+
+//busco si ya tengo metadata para esa tabla
+t_metadata* validar_metadata(char *nombre){
+	bool findMd(void* element) {
+			t_metadata *metadata = element;
+			return string_equals_ignore_case(nombre, metadata->nombreTabla);
+		}
+	return list_find(lista_metadata, &findMd);
+}
+
+
+

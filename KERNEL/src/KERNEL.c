@@ -75,3 +75,79 @@ void aplicar_tiempo_refresh() {
 			segundos_refresh);
 	sleep(segundos_refresh);
 }
+
+
+
+void actualizar_metadata() {
+	int largo_content = MAX_PATH;
+	char *content = malloc(largo_content);
+
+
+	memset(content, 0x00, largo_content);
+	content[MAX_PATH - 1] = 0x00;
+
+	sleep(kernel_conf.sleep_ejecucion / 1000);
+	int cantidad = 1;
+	//aca obtiene de criterio EV, hay que cambiar por cualquiera conectada
+	t_tipoSeeds *memoria;
+	memoria = obtener_memoria_random();
+	int puerto = atoi(memoria->puerto);
+	int client_socket = conectar_a_servidor(memoria->ip, puerto, kernel);
+
+	enviarMensaje(kernel, countTables, 0, NULL, client_socket, logger, mem);
+	t_mensaje* mensajeCantidad = recibirMensaje(client_socket, logger);
+	cantidad = mensajeCantidad->header.error;
+	destruirMensaje(mensajeCantidad);
+	loggear(logger, LOG_LEVEL_DEBUG, "La cantidad es: %d", cantidad);
+
+	enviarMensaje(kernel, describe, largo_content, content, client_socket,
+			logger, mem);
+	free(content);
+	int longAcum = 0;
+
+	while (cantidad-- > 0) {
+		t_mensaje* mensaje = recibirMensaje(client_socket, logger);
+		if (mensaje == NULL) {
+			loggear(logger, LOG_LEVEL_ERROR,
+					"No se pudo recibir mensaje de mem");
+			return;
+		}
+		char* buffer_describe= string_new();
+		longAcum += mensaje->header.longitud;
+//		memset(buffer_describe, 0x00, mensaje->header.longitud);
+		memcpy(buffer_describe, mensaje->content, mensaje->header.longitud);
+		guardar_metadata(buffer_describe);
+		destruirMensaje(mensaje);
+
+		loggear(logger, LOG_LEVEL_DEBUG, "Data: %s", *buffer_describe);
+	}
+}
+
+void guardar_metadata(char *buffer) {
+	//nombre_tabla;tipoConsistencia;particiones;compactationTime
+	char **elementos;
+
+	elementos = string_split(buffer, ";");
+	char *nombre = string_new();
+	string_append(&nombre, elementos[0]);
+
+	t_metadata *metadataAux;
+	metadataAux = validar_metadata(nombre);
+	if (metadataAux == NULL) {
+		t_metadata *metadata = malloc(sizeof(t_metadata));
+		strcpy(metadata->nombreTabla, elementos[0]);
+		strcpy(metadata->tipoConsistencia, elementos[1]);
+		metadata->particiones = atoi(elementos[2]);
+		metadata->compactationTime = atoi(elementos[3]);
+		list_add(lista_metadata, metadata);
+	}
+
+	int i = 0;
+	while(elementos[i] != NULL){
+		free(elementos[i]);
+		i++;
+	}
+	free(nombre);
+	free(elementos);
+
+}
