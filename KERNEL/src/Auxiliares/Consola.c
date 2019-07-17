@@ -96,6 +96,8 @@ int procesar_comando(char *line) {
 
 			case _journal:
 				printf("CONSOLA: Se ingresó comando JOURNAL \n");
+				enviar_journal_memorias();
+				printf("Journal enviado a las memorias asociadas.\n");
 				break;
 
 			case _add:

@@ -5,6 +5,7 @@
  *      Author: utnso
  */
 
+#include "../KERNEL.h"
 #include <shared.h>
 #include "Logueo.h"
 
@@ -13,6 +14,11 @@
 
 
 int conectar_a_servidor(char* ip, int puerto, int proceso);
+void enviar_journal_memorias();
+void enviar_journal_sc();
+void enviar_journal_shc();
+void enviar_journal_ev();
+void enviar_mensaje_journal(t_tipoSeeds *memoria);
 
 
 #endif /* AUXILIARES_CONEXION_H_ */
