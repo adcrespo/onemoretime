@@ -97,6 +97,7 @@ void *inicializar_refresh() {
 	//luego por hilo
 	while (1) {
 		aplicar_tiempo_refresh();
+		limpiar_metadata();
 		actualizar_metadata();
 	}
 

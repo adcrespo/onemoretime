@@ -21,6 +21,6 @@ int crear_hilo_inotify();
 void crear_hilo_refresh();
 void *inicializar_refresh();
 void crear_hilo_planificador();
-
+void limpiar_metadata();
 
 #endif /* AUXILIARES_HILOS_H_ */

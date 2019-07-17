@@ -114,7 +114,6 @@ void actualizar_metadata() {
 		}
 		char* buffer_describe= string_new();
 		longAcum += mensaje->header.longitud;
-//		memset(buffer_describe, 0x00, mensaje->header.longitud);
 		memcpy(buffer_describe, mensaje->content, mensaje->header.longitud);
 		guardar_metadata(buffer_describe);
 		destruirMensaje(mensaje);
@@ -128,26 +127,30 @@ void guardar_metadata(char *buffer) {
 	char **elementos;
 
 	elementos = string_split(buffer, ";");
-	char *nombre = string_new();
-	string_append(&nombre, elementos[0]);
 
-	t_metadata *metadataAux;
-	metadataAux = validar_metadata(nombre);
-	if (metadataAux == NULL) {
-		t_metadata *metadata = malloc(sizeof(t_metadata));
-		strcpy(metadata->nombreTabla, elementos[0]);
-		strcpy(metadata->tipoConsistencia, elementos[1]);
-		metadata->particiones = atoi(elementos[2]);
-		metadata->compactationTime = atoi(elementos[3]);
-		list_add(lista_metadata, metadata);
-	}
+	t_metadata *metadata = malloc(sizeof(t_metadata));
+	strcpy(metadata->nombreTabla, elementos[0]);
+	strcpy(metadata->tipoConsistencia, elementos[1]);
+	metadata->particiones = atoi(elementos[2]);
+	metadata->compactationTime = atoi(elementos[3]);
+	list_add(lista_metadata, metadata);
 
 	int i = 0;
-	while(elementos[i] != NULL){
+	while (elementos[i] != NULL) {
 		free(elementos[i]);
 		i++;
 	}
-	free(nombre);
 	free(elementos);
 
+}
+
+void limpiar_metadata() {
+	if (lista_metadata != NULL) {
+		int size_metadata = list_size(lista_metadata);
+		for (int i = 0; i < size_metadata; i++) {
+			t_metadata *metadata = list_get(lista_metadata, i);
+			free(metadata);
+		}
+		list_clean(lista_metadata);
+	}
 }
