@@ -227,7 +227,7 @@ int InsertarTabla(t_request *request) {
 //	printf("Registro timestamp %llu\n", registro->timestamp);
 
 	//valido value enviado
-	if((strlen(registro->value) + 1) > (lfs_conf.tamano_value)){
+	if((strlen(registro->value)) > (lfs_conf.tamano_value)){
 		return 1;
 	}
 
@@ -256,7 +256,6 @@ int InsertarTabla(t_request *request) {
 	}
 
 	free(request);
-	free(registro);
 	return 0;
 }
 

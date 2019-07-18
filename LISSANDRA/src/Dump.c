@@ -77,7 +77,8 @@ void DumpearTabla(t_list *lista, char *nombre)
 		t_registro *registro = malloc(len);
 		registro = list_get(lista, j);
 		char *linea = string_new();
-		char *key = string_itoa(registro->key);
+		char *key = string_new();
+		string_append(&key, (string_itoa(registro->key)));
 		//char *timestamp = string_new();
 		char *timestamp = malloc(20);
 		sprintf(timestamp, "%llu", registro->timestamp);
@@ -113,7 +114,9 @@ void DumpearTabla(t_list *lista, char *nombre)
 
 		}
 
-		loggear(logger, LOG_LEVEL_WARNING, "Registro key: %d value: %s timestamp %d", registro->key, registro->value, registro->timestamp);
+		loggear(logger, LOG_LEVEL_WARNING,
+				"Registro key: %d value: %s timestamp: %llu", registro->key,
+				registro->value, registro->timestamp);
 	}
 	char *sizeAEscribir = string_from_format("SIZE=%d\n", sizeTotal);
 	fputs(sizeAEscribir, file);

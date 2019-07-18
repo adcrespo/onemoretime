@@ -75,7 +75,7 @@ int procesar_comando(char *line) {
 				break;
 			}
 			//valido tamaño del value
-			if ((strlen(request->parametro3) + 1) > lfs_conf.tamano_value) {
+			if ((strlen(request->parametro3)) > lfs_conf.tamano_value) {
 				printf("El tamaño del value con %d bytes supera lo permitido de %d bytes\n",
 						(strlen(request->parametro3) + 1),lfs_conf.tamano_value);
 				break;
