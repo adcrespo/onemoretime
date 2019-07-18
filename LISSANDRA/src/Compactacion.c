@@ -74,7 +74,7 @@ int process_compactacion(char* path_tabla)
 	int cantListaBin = 0;
 	j=0;
 	while(!string_is_empty(listasBin[j])){
-		t_list *listaBinReg = ObtenerRegistrosArchivo(rutaTabla, listasBin[j],".bin");
+		t_list *listaBinReg = ObtenerRegistrosArchivo(rutaTabla, string_itoa(j),".bin");
 		cantListaBin += list_size(listaBinReg);
 		log_info(logger, "list size de registros bin.%d %d", j+1, list_size(listaBinReg));
 		list_add(listaBin,listaBinReg);
@@ -106,29 +106,35 @@ int process_compactacion(char* path_tabla)
 	int bloquesLiberar = 0;
 	i = 0;
 	while (!string_is_empty(listasTmp[i])) {
-		log_info(logger, "Abriendo tmp de %s", listasTmp[i]);
-		t_config *config_file = cargarConfiguracion(listasTmp[i], logger);
+		char *path;
+		string_append_with_format(&path,"%s/%s",rutaTabla,listasTmp[i]);
+		log_info(logger, "Abriendo tmp de %s", path);
+		t_config *config_file = cargarConfiguracion(path, logger);
 		int size = config_get_int_value(config_file, "SIZE");
 		int cantBloques = CalcularBloques(size);
 		bloquesLiberar+=cantBloques;
 		i++;
 	}
+	int sizeListaBin = 0;
 	j = 0;
-	while (!string_is_empty(listasBin[i])) {
-		log_info(logger, "Abriendo bin de %s", listasBin[j]);
-		t_config *config_file = cargarConfiguracion(listasBin[j], logger);
+	while (!string_is_empty(listasBin[j])) {
+		char *path;
+		string_append_with_format(&path,"%s/%s",rutaTabla,listasBin[j]);
+		log_info(logger, "Abriendo bin de %s", path);
+		t_config *config_file = cargarConfiguracion(path, logger);
 		int size = config_get_int_value(config_file, "SIZE");
 		int cantBloques = CalcularBloques(size);
 		bloquesLiberar+=cantBloques;
+		t_list* listaBinRegistro = list_get(listaBin,j);
+		for (int z = 0; list_size(listaBinRegistro)> z; z++){
+			t_registro* registroTmp = list_get(listaBin, z);
+			char* timestamp = malloc(20);
+			sprintf(timestamp, "%llu", registroTmp->timestamp);
+			sizeListaBin += strlen(timestamp) + strlen(string_itoa(registroTmp->key))
+					+ strlen(registroTmp->value) + 3;
+			free(timestamp);
+		}
 		j++;
-	}
-	int sizeListaBin = 0;
-	for (int j = 0; cantListaBin > j; j++){
-		t_registro* registroTmp = list_get(listaBin, i);
-		char* timestamp = malloc(20);
-		sprintf(timestamp, "%llu", registroTmp->timestamp);
-		sizeListaBin += strlen(timestamp) + strlen(string_itoa(registroTmp->key))
-				+ strlen(registroTmp->value) + 3;
 	}
 	int bloquesAsignar = (sizeListaBin + tamanio_bloques - 1) / tamanio_bloques;
 	int bloquesLibres = GetFreeBlocks();
@@ -156,34 +162,43 @@ int process_compactacion(char* path_tabla)
 			//Liberar los bloques que contengan el archivo “.tmpc”
 	i = 0;
 	while (!string_is_empty(listasTmp[i])) {
-		log_info(logger, "Abriendo tmp de %s", listasTmp[i]);
-		t_config *config_file = cargarConfiguracion(listasTmp[i], logger);
+		char *path;
+		string_append_with_format(&path,"%s/%s",rutaTabla,listasTmp[i]);
+		log_info(logger, "Liberando tmp de %s", path);
+		t_config *config_file = cargarConfiguracion(path, logger);
 		int size = config_get_int_value(config_file, "SIZE");
 		int cantBloques = CalcularBloques(size);
 		char **bloques = malloc(sizeof(int) * cantBloques);
 		bloques = config_get_array_value(config_file, "BLOCKS");
 		LiberarBloques(bloques,cantBloques);
-		remove(listasTmp[i]);
+		remove(path);
 	}
 			//Liberar los bloques que contengan el archivo “.bin”
 	j = 0;
 	while (!string_is_empty(listasBin[j])) {
-		log_info(logger, "Abriendo bin de %s", listasBin[j]);
-		t_config *config_file = cargarConfiguracion(listasBin[j], logger);
+		char *path;
+		string_append_with_format(&path,"%s/%s",rutaTabla,listasBin[j]);
+		log_info(logger, "Liberando bin de %s", path);
+		t_config *config_file = cargarConfiguracion(path, logger);
 		int size = config_get_int_value(config_file, "SIZE");
 		int cantBloques = CalcularBloques(size);
 		char **bloques = malloc(sizeof(int) * cantBloques);
 		bloques = config_get_array_value(config_file, "BLOCKS");
-		LiberarBloques(bloques, cantBloques);
-		remove(listasTmp[j]);
-		j++;
+		LiberarBloques(bloques,cantBloques);
+		remove(path);
+		free(path);
 	}
 			//TODO:Solicitar los bloques necesarios para el nuevo archivo “.bin”
-
-
-	//********************************
 			//TODO:Grabar los datos en el nuevo archivo “.bin”
-
+	j = 0;
+	while (!string_is_empty(listasBin[j])) {
+		char *path;
+		string_append_with_format(&path,"%s/%s",rutaTabla,listasBin[j]);
+		log_info(logger, "Dumpeando bin de %s", path);
+		DumpearTabla(list_get(listaBin,j),path);
+		j++;
+	}
+	//********************************
 
 			//Desbloquer la tabla y tomar el tiempo cuanto estuvo bloqueada
 	registroEncontrado->bloqueado = 0;
