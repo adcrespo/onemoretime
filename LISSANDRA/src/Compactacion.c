@@ -40,10 +40,10 @@ int process_compactacion(char* path_tabla)
 
 			} else {
 				if (string_ends_with(entry->d_name, ".tmp")) {
-					strcpy(listasTmp[i],entry->d_name);
+					string_append(&listasTmp[i],entry->d_name);
 					i++;
 				}else if(string_ends_with(entry->d_name, ".bin")) {
-					strcpy(listasBin[j],entry->d_name);
+					string_append(&listasBin[j],entry->d_name);
 					j++;
 
 				}
@@ -78,6 +78,7 @@ int process_compactacion(char* path_tabla)
 		cantListaBin += list_size(listaBinReg);
 		log_info(logger, "list size de registros bin.%d %d", j+1, list_size(listaBinReg));
 		list_add(listaBin,listaBinReg);
+		j++;
 	}
 	log_info(logger, "list size de registros bin %d", cantListaBin);
 
@@ -118,8 +119,7 @@ int process_compactacion(char* path_tabla)
 	int sizeListaBin = 0;
 	j = 0;
 	while (!string_is_empty(listasBin[j])) {
-		char *path;
-		string_append_with_format(&path,"%s/%s",rutaTabla,listasBin[j]);
+		char *path = string_from_format("%s/%s",rutaTabla,listasBin[j]);
 		log_info(logger, "Abriendo bin de %s", path);
 		t_config *config_file = cargarConfiguracion(path, logger);
 		int size = config_get_int_value(config_file, "SIZE");
@@ -130,6 +130,7 @@ int process_compactacion(char* path_tabla)
 			t_registro* registroTmp = list_get(listaBin, z);
 			char* timestamp = malloc(20);
 			sprintf(timestamp, "%llu", registroTmp->timestamp);
+
 			sizeListaBin += strlen(timestamp) + strlen(string_itoa(registroTmp->key))
 					+ strlen(registroTmp->value) + 3;
 			free(timestamp);

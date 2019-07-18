@@ -442,7 +442,7 @@ t_list *BuscarKeyTemporales(int key, char *tabla) {
 			bloques = config_get_array_value(config_file, "BLOCKS");
 
 			for (int i = 0; cantBloques > i; i++) {
-				list_add(tempBlocksCollection, atoi(bloques[i]));
+				list_add(tempBlocksCollection, (int *)atoi(bloques[i]));
 				free(bloques[i]);
 			}
 
@@ -456,7 +456,8 @@ t_list *BuscarKeyTemporales(int key, char *tabla) {
 	//leo bloque por bloque y agrego registro si es la key buscada
 	int lenghtCollection = list_size(tempBlocksCollection);
 	for (int j = 0; lenghtCollection > j; j++) {
-		int block = list_get(tempBlocksCollection, j);
+		int block;
+		block = list_get(tempBlocksCollection, j);
 		char *pathBlock = string_from_format("%s%d.bin", rutaBloques, block);
 		log_info(logger, "Leyendo bloque: %s", pathBlock);
 
@@ -820,7 +821,7 @@ t_list *ObtenerRegistrosArchivo(char *tabla, char *archivo, char *extension) {
 
 	DIR *dir;
 	struct dirent *entry;
-	char *archivoExtension;
+	char *archivoExtension = string_new();
 
 	string_append(&archivoExtension, archivo);
 	string_append(&archivoExtension, extension);
