@@ -28,6 +28,7 @@ void cargar_configuracion_kernel(char * path_config) {
 	if (config_has_property(config, "IP_MEMORIA")) {
 		char* arr = config_get_string_value(config, "IP_MEMORIA");
 		kernel_conf.ip_memoria = string_get_string_as_array(arr);
+		remove_quotes(kernel_conf.ip_memoria[0]);
 	} else {
 		loguear_error_carga_propiedad("IP_MEMORIA");
 	}

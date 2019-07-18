@@ -107,7 +107,7 @@ int procesar_comando(char *line) {
 				t_tipoSeeds *memory;
 				switch(comando){
 				case SC:
-					printf("Agregando memoria %d a strong consistency.\n", numeroMemoria);
+					printf("CRITERIO| Agregando memoria %d a strong consistency.\n", numeroMemoria);
 					if(memoria_sc == -1){
 						memoria_sc = numeroMemoria;
 					}else{
@@ -115,7 +115,7 @@ int procesar_comando(char *line) {
 					}
 					break;
 				case SHC:
-					printf("Agregando memoria %d a strong hash consistency.\n", numeroMemoria);
+					printf("CRITERIO| Agregando memoria %d a strong hash consistency.\n", numeroMemoria);
 					memory = obtener_memoria_lista(numeroMemoria);
 					if(memory != NULL){
 						list_add(lista_criterio_shc, memory);
@@ -126,13 +126,16 @@ int procesar_comando(char *line) {
 
 					break;
 				case EV:
-					printf("Agregando memoria %d a eventual consistency.\n", numeroMemoria);
+					log_info(logger, "CRITERIO| Agregando memoria %d a eventual consistency.\n", numeroMemoria);
 					memory = obtener_memoria_lista(numeroMemoria);
+					log_info(logger, "CRITERIO| Numero Memoria: %d", memory->numeroMemoria);
 					if(memory != NULL){
+						log_info(logger, "CRITERIO| Agregando criterio");
 						list_add(lista_criterio_ev, memory);
-						printf("Memoria agregada al criterio.\n");
+						log_info(logger, "CRITERIO| Numero Memoria: %d", memory->numeroMemoria);
+						log_info(logger, "CRITERIO| Memoria agregada al criterio EV.\n");
 					} else {
-						printf("No se encontro la memoria en la lista.\n");
+						log_info(logger, "CRITERIO| No se encontro la memoria en la lista.\n");
 					}
 
 					break;
@@ -263,13 +266,22 @@ t_tipoCriterio criterio_to_enum(char *sval) {
 }
 
 t_tipoSeeds* obtener_memoria_lista(int numero){
-	bool findMemory(void* element) {
-		t_tipoSeeds *memoria = element;
+//	bool findMemory(void* element) {
+//		t_tipoSeeds *memoria = element;
+//		return memoria->numeroMemoria == numero;
+//	}
+	int findMemory(t_tipoSeeds * memoria) {
+		log_info(logger, "Memoria %d en LISTA_CONN", memoria->numeroMemoria);
+		log_info(logger, "Numero buscado %d", numero);
+		log_info(logger, "Igualdad: %d", memoria->numeroMemoria == numero);
 		return memoria->numeroMemoria == numero;
 	}
 
+
 	log_info(logger, "Buscando memoria %d en LISTA_CONN", numero);
-	return list_find(LISTA_CONN, &findMemory);
+//	return list_find(LISTA_CONN, &findMemory);
+	return list_find(LISTA_CONN, (void *)findMemory);
+
 }
 
 

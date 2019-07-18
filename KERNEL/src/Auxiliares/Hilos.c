@@ -24,7 +24,7 @@ void init_gossiping() {
 
 void *hiloGossiping()
 {
-	int tiempo = 10000;
+	int tiempo = 5000;
 	sleep (tiempo/1000);
 
 	while (1)
@@ -93,7 +93,7 @@ void crear_hilo_refresh() {
 
 void *inicializar_refresh() {
 	//actualizo metadata una vez al principio
-	actualizar_metadata();
+//	actualizar_metadata();  // Se rompe por no tener memorias conectadas.
 	//luego por hilo
 	while (1) {
 		aplicar_tiempo_refresh();

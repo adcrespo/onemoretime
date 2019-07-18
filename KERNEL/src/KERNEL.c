@@ -82,6 +82,7 @@ void actualizar_metadata() {
 	int largo_content = MAX_PATH;
 	char *content = malloc(largo_content);
 
+	log_info(logger, "METADATA| Iniciando refresh.");
 
 	memset(content, 0x00, largo_content);
 	content[MAX_PATH - 1] = 0x00;
@@ -91,7 +92,11 @@ void actualizar_metadata() {
 	//aca obtiene de criterio EV, hay que cambiar por cualquiera conectada
 	t_tipoSeeds *memoria;
 	memoria = obtener_memoria_random();
+
+	log_info(logger, "METADATA| Memoria asignada: %d", memoria->numeroMemoria);
 	int puerto = atoi(memoria->puerto);
+
+	log_info(logger, "METADATA| Conectando a memoria %d", memoria->numeroMemoria);
 	int client_socket = conectar_a_servidor(memoria->ip, puerto, kernel);
 
 	enviarMensaje(kernel, countTables, 0, NULL, client_socket, logger, mem);
