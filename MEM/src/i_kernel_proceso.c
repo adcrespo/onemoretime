@@ -116,7 +116,15 @@ void procesar_KER(t_mensaje* msg, int socketKER, fd_set* set_master) {
 				close(socketKER);
 				FD_CLR(socketKER, set_master);;
 			}
+			break;
 		//TODO: journal
+		case countTables:;
+			if(enviarMensajeConError(mem, journal, msg->header.longitud, msg->content, socketKER,
+					logger, kernel, msg->header.error)<=0){
+				close(socketKER);
+				FD_CLR(socketKER, set_master);;
+			}
+		//TODO: countTables
 			break;
 		default:
 			loggear(logger,LOG_LEVEL_ERROR, "No se reconoce el Comando: %d",msg->header.tipoMensaje);
