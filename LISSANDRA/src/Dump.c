@@ -136,9 +136,9 @@ void DumpearTabla(t_list *lista, char *nombre)
 	fputs("]\n",file);
 	free(sizeAEscribir);
 	list_clean(bloques);
-	free(bloques);
+//	free(bloques);
 	list_clean(lista);
-	free(lista);
+//	free(lista);
 	fclose(file);
 
 }

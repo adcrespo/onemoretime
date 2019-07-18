@@ -55,8 +55,13 @@ int procesar_comando(char *line) {
 			strcpy(selectMsg->nombreTabla, request->parametro1);
 			selectMsg->key = atoi(request->parametro2);
 			t_registro *regSelect = BuscarKey(selectMsg);
-			printf("Key\t Value\n");
-			printf("%d \t %s\n", regSelect->key, regSelect->value);
+
+			if (regSelect != NULL) {
+				printf("Key\t Value\n");
+				printf("%d \t %s\n", regSelect->key, regSelect->value);
+			}
+			if (regSelect == NULL)
+				printf("No se encuentra la key en FS.\n");
 			free(regSelect);
 			break;
 
@@ -118,7 +123,12 @@ int procesar_comando(char *line) {
 				printf("Numero particiones: %d\n", msgCreate->num_part);
 				printf("Compactation time: %d\n", msgCreate->comp_time);
 
-				CrearTabla(msgCreate);
+				int result_create = CrearTabla(msgCreate);
+				if (result_create == -1)
+					printf("La tabla %s ya existe en el FS.\n",
+							msgCreate->nombreTabla);
+				if (result_create == 0)
+					printf("Se creo la tabla exitosamente.\n");
 				free(msgCreate);
 			}
 			break;

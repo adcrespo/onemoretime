@@ -385,8 +385,9 @@ t_registro* BuscarKey(t_select *selectMsg) {
 
 	}
 
-	loggear(logger, LOG_LEVEL_INFO, "El timestamp mayor es %llu",
-			registroInit->timestamp);
+	if(registroInit != NULL)
+		log_debug(logger, "El timestamp mayor es %llu",
+				registroInit->timestamp);
 	free(registroAux);
 	free(selectMsg);
 	if (listaMemtable != NULL)
@@ -511,12 +512,22 @@ t_registro* BuscarKeyParticion(int key, char *bloque) {
 
 	FILE *file = fopen(pathBlock, "r");
 
+
 	if (file == NULL) {
 		loggear(logger, LOG_LEVEL_ERROR, "Error abriendo archivo %s", file);
 	}
+
+
 	loggear(logger, LOG_LEVEL_INFO, "Archivo %s abierto correctamente",
 			pathBlock);
 	t_registro *registro = malloc(sizeof(t_registro));
+	fseek(file, 0, SEEK_END); // seek to end of file
+	int size = ftell(file); // get current file pointer
+	fseek(file, 0, SEEK_SET);
+	if(size == 0){
+		registro->timestamp = 0;
+		return registro;
+	}
 	while (!feof(file))
 
 	{
@@ -583,7 +594,7 @@ int CrearTabla(t_create *msgCreate) {
 			particiones, msgCreate->comp_time);
 
 	//Creo archivo binarios
-	int particionInicial = 1;
+	int particionInicial = 0;
 	for (int i = 0; i < particiones; i++) {
 
 		char *rutaParticion = string_from_format("%s%s/%s%d.bin", rutaTablas,
@@ -684,7 +695,7 @@ int DropearTabla(char *nombre) {
 					free(bloques[i]);
 				}
 				free(bloques);
-
+				config_destroy(config_file);
 			}
 		}
 
