@@ -23,6 +23,7 @@ void* planificar() {
 		log_info(logger, "PLANIFICADOR| Agregando proceso %d a EXEC", pcb->id_proceso);
 		agregar_proceso(pcb, lista_exec, &sem_exec);
 
+		sem_wait(&sem_multiprog);
 		procesar_pcb(pcb);
 	}
 }
@@ -160,12 +161,14 @@ void retardo_ejecucion() {
 void procesar_pcb(t_pcb* pcb) {
 
 	int quantum = kernel_conf.quantum;
+	int requests_restantes = pcb->cantidad_request - pcb->program_counter;
+	log_info(logger, "PLANIFICADOR| Faltan procesar %d request", requests_restantes);
 
 //	int quantum_restante =  pcb->program_counter % quantum == 0 ? quantum: quantum - pcb->program_counter % quantum;
 	int quantum_restante = (pcb->program_counter % quantum) == 0 ? quantum: quantum - (pcb->program_counter % quantum);
 
-	if(pcb->cantidad_request < quantum_restante) {
-		quantum_restante = pcb->cantidad_request;
+	if(requests_restantes < quantum_restante) {
+		quantum_restante = requests_restantes;
 	}
 
 	log_info(logger, "PLANIFICADOR| Quantum a procesar: %d", quantum_restante);
@@ -175,14 +178,23 @@ void procesar_pcb(t_pcb* pcb) {
 		pcb->program_counter++;
 		quantum_restante--;
 
+		// Parsear request y procesarlo
+
 		log_info(logger, "PLANIFICADOR| Nuevo Program Counter: %d", pcb->program_counter);
 		log_info(logger, "PLANIFICADOR| Quantum restante: %d", quantum_restante);
 
 	}
 
+	// Saco proceso de EXEC y evaluo si finalizó o vuelve a READY
+	sacar_proceso(pcb->id_proceso, lista_exec, &sem_exec);
+	sem_post(&sem_multiprog);
+
 	if (pcb->program_counter == pcb->cantidad_request) {
+
+		agregar_proceso(pcb, lista_exit, &sem_exit);
 		log_info(logger, "PLANIFICADOR| Fin de proceso %d", pcb->id_proceso);
 	} else {
+		agregar_proceso(pcb, lista_ready, &sem_ready);
 		log_info(logger, "PLANIFICADOR| Proceso %d vuelve a READY", pcb->id_proceso);
 	}
 
