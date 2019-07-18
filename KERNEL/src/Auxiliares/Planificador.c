@@ -161,8 +161,29 @@ void procesar_pcb(t_pcb* pcb) {
 
 	int quantum = kernel_conf.quantum;
 
-	int quantum_restante =  pcb->program_counter % quantum == 0 ? quantum: quantum - pcb->program_counter % quantum;
+//	int quantum_restante =  pcb->program_counter % quantum == 0 ? quantum: quantum - pcb->program_counter % quantum;
+	int quantum_restante = (pcb->program_counter % quantum) == 0 ? quantum: quantum - (pcb->program_counter % quantum);
+
+	if(pcb->cantidad_request < quantum_restante) {
+		quantum_restante = pcb->cantidad_request;
+	}
 
 	log_info(logger, "PLANIFICADOR| Quantum a procesar: %d", quantum_restante);
+
+	for (int i=0; quantum_restante > i; i++ ) {
+		log_info(logger, "PLANIFICADOR| Proceso consumiendo quantum");
+		pcb->program_counter++;
+		quantum_restante--;
+
+		log_info(logger, "PLANIFICADOR| Nuevo Program Counter: %d", pcb->program_counter);
+		log_info(logger, "PLANIFICADOR| Quantum restante: %d", quantum_restante);
+
+	}
+
+	if (pcb->program_counter == pcb->cantidad_request) {
+		log_info(logger, "PLANIFICADOR| Fin de proceso %d", pcb->id_proceso);
+	} else {
+		log_info(logger, "PLANIFICADOR| Proceso %d vuelve a READY", pcb->id_proceso);
+	}
 
 }
