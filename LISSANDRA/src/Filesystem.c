@@ -110,7 +110,7 @@ t_metadata* ObtenerMetadataTabla(char *tabla) {
 	strcpy(metadata->tipoConsistencia, consistencia);
 	free(rutaMetadata);
 	free(consistencia);
-	//config_destroy(metadataFile);
+	free(metadataFile);
 
 	return metadata;
 }
@@ -235,6 +235,8 @@ int InsertarTabla(t_request *request) {
 	if (!ExisteTabla(request->parametro1)) {
 		loggear(logger, LOG_LEVEL_WARNING, "%s no existe en el file system",
 				request->parametro1);
+		free(request);
+		free(registro);
 		return 1;
 	}
 
@@ -253,6 +255,8 @@ int InsertarTabla(t_request *request) {
 		list_add(tabla->lista, registro);
 	}
 
+	free(request);
+	free(registro);
 	return 0;
 }
 
@@ -621,7 +625,6 @@ int CrearTabla(t_create *msgCreate) {
 
 	//CreoHiloCompactacion
 	//crearHiloCompactacion(msgCreate->comp_time, msgCreate->nombreTabla);
-
 	return 0;
 }
 

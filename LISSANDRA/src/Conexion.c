@@ -120,7 +120,7 @@ void procesar(int n_descriptor, fd_set* set_master) {
 					resultadoInsert);
 			enviarMensajeConError(lis, insert, 0, NULL, n_descriptor, logger,
 					mem, resultadoInsert);
-
+			free(msginsert);
 			break;
 
 		case create:

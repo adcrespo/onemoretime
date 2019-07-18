@@ -16,6 +16,8 @@ void _exit_with_error(char* error_msg, void * buffer) {
   if (error_msg != NULL)
 	loggear(logger,LOG_LEVEL_ERROR, error_msg);
 
+  destroy_config(config);
+  destruir_logger(logger);
   exit_gracefully(EXIT_FAILURE);
 }
 
