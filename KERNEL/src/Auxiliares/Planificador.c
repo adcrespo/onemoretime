@@ -15,7 +15,15 @@ void* planificar() {
 		sem_wait(&sem_ready);
 
 		log_info(logger, " --------- Planificando -------- ");
+		retardo_ejecucion();
 
+		t_pcb* pcb = sacar_proceso_rr(lista_ready);
+		imprimir_pcb(pcb);
+
+		log_info(logger, "PLANIFICADOR| Agregando proceso %d a EXEC", pcb->id_proceso);
+		agregar_proceso(pcb, lista_exec, &sem_exec);
+
+		procesar_pcb(pcb);
 	}
 }
 
@@ -79,8 +87,11 @@ t_pcb* sacar_proceso(int id, t_list* lista, sem_t* sem) {
 	return (t_pcb *) list_remove_by_condition(lista, (void *)buscar_pcb_por_id);
 }
 
+t_pcb* sacar_proceso_rr(t_list* lista) {
 
-
+//	sem_wait(sem);
+	return (t_pcb *) list_remove(lista_ready, 0);
+}
 
 int cantidad_request(char* buffer) {
 
@@ -141,4 +152,17 @@ t_tipoSeeds* obtener_memoria_sc(){
 	return list_find(LISTA_CONN, &findSC);
 }
 
+void retardo_ejecucion() {
 
+	sleep(kernel_conf.sleep_ejecucion/1000);
+}
+
+void procesar_pcb(t_pcb* pcb) {
+
+	int quantum = kernel_conf.quantum;
+
+	int quantum_restante =  pcb->program_counter % quantum == 0 ? quantum: quantum - pcb->program_counter % quantum;
+
+	log_info(logger, "PLANIFICADOR| Quantum a procesar: %d", quantum_restante);
+
+}

@@ -34,11 +34,14 @@ void* planificar();
 int asignar_id_proceso();
 void agregar_proceso(t_pcb* proceso,t_list* lista, sem_t* sem);
 t_pcb* sacar_proceso(int id, t_list* lista, sem_t* sem);
+t_pcb* sacar_proceso_rr(t_list* lista);
 void crear_proceso(char* line,t_request* request);
 int cantidad_request(char* buffer);
 void imprimir_pcb(t_pcb* pcb);
 t_tipoSeeds* get_memoria_por_criterio(char *criterio);
 t_tipoSeeds* obtener_memoria_random();
 t_tipoSeeds* obtener_memoria_sc();
+void retardo_ejecucion();
+void procesar_pcb(t_pcb* pcb);
 
 #endif /* AUXILIARES_PLANIFICADOR_H_ */

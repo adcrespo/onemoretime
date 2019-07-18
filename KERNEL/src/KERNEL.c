@@ -28,11 +28,11 @@ int main() {
 	crear_hilo_inotify();
 
 	/* 6. Refresh metadata */
-	crear_hilo_refresh();
+//	crear_hilo_refresh();
 
 	/* 7. Gossiping */
-	init_gossiping();
-	crear_hilo_gossiping();
+//	init_gossiping();
+//	crear_hilo_gossiping();
 
 	/* 8. Planificador */
 	crear_hilo_planificador();
