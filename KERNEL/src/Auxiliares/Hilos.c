@@ -98,7 +98,12 @@ void *inicializar_refresh() {
 	while (1) {
 		aplicar_tiempo_refresh();
 		limpiar_metadata();
-		actualizar_metadata();
+		if (hay_memorias_disponibles()) {
+			log_info(logger, "REFRESH| HAY memoria disponible");
+			actualizar_metadata();
+		} else {
+			log_info(logger, "REFRESH| NO Hay memoria disponible");
+		}
 	}
 
 }
@@ -120,6 +125,21 @@ t_metadata* validar_metadata(char *nombre){
 			return string_equals_ignore_case(nombre, metadata->nombreTabla);
 		}
 	return list_find(lista_metadata, &findMd);
+}
+
+int hay_memorias_disponibles() {
+
+	int memoria_conectada = 0;
+
+	for(int i = 0; i < LISTA_CONN->elements_count; i++) {
+		t_tipoSeeds* mem = list_get(LISTA_CONN, i);
+
+		if(string_equals_ignore_case(&mem->estado,"1")) {
+			memoria_conectada = 1;
+		}
+	}
+
+	return LISTA_CONN->elements_count > 0 && memoria_conectada > 0;
 }
 
 

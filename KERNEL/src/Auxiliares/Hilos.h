@@ -22,5 +22,6 @@ void crear_hilo_refresh();
 void *inicializar_refresh();
 void crear_hilo_planificador();
 void limpiar_metadata();
+int hay_memorias_disponibles();
 
 #endif /* AUXILIARES_HILOS_H_ */
