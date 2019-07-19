@@ -62,6 +62,7 @@ void DumpearTabla(t_list *lista, char *nombre)
 	char *temporal = string_from_format("%s%s/%d.tmp", rutaTablas, nombre, numeroDump);
 	loggear(logger, LOG_LEVEL_INFO,"Creando archivo %s", temporal);
 	FILE *file = fopen(temporal, "w+");
+	free(temporal);
 
 	int bloqueActual = AgregarBloque();
 	char *rutaActual = string_from_format("%s%d.bin", rutaBloques, bloqueActual);
@@ -73,8 +74,8 @@ void DumpearTabla(t_list *lista, char *nombre)
 	for(int j = 0; j < longitudTabla; j++)
 	{
 
-		int len = sizeof(t_registro);
-		t_registro *registro = malloc(len);
+		//int len = sizeof(t_registro);
+		t_registro *registro;// = malloc(sizeof(t_registro));
 		registro = list_get(lista, j);
 		char *linea = string_new();
 		char *key = string_new();
@@ -140,6 +141,7 @@ void DumpearTabla(t_list *lista, char *nombre)
 	free(sizeAEscribir);
 	list_clean(bloques);
 //	free(bloques);
+	free(rutaActual);
 	list_clean(lista);
 //	free(lista);
 	fclose(file);

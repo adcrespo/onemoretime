@@ -42,6 +42,8 @@ t_list *BuscarKeyTemporales(int key, char *tabla);
 void AddGlobalList(char *nombre);
 int GetFreeBlocks();
 void IniciarBloques();
+void CrearDirectorio(char *directory);
+void aplicar_retardo();
 
 t_config *config_metadata;
 t_bitarray *bitmap;

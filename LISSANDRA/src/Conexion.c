@@ -118,6 +118,7 @@ void procesar(int n_descriptor, fd_set* set_master) {
 
 			loggear(logger, LOG_LEVEL_WARNING, "Resultado create :%d",
 					resultadoInsert);
+			aplicar_retardo();
 			enviarMensajeConError(lis, insert, 0, NULL, n_descriptor, logger,
 					mem, resultadoInsert);
 			free(request);
@@ -136,6 +137,7 @@ void procesar(int n_descriptor, fd_set* set_master) {
 			int resultadoCreate = CrearTabla(msgCreate);
 			loggear(logger, LOG_LEVEL_WARNING, "Resultado create tabla %s:%d",
 					msgCreate->nombreTabla, resultadoCreate);
+			aplicar_retardo();
 			enviarMensajeConError(lis, insert, 0, NULL, n_descriptor, logger,
 					mem, resultadoCreate);
 			free(msgCreate);
@@ -152,6 +154,7 @@ void procesar(int n_descriptor, fd_set* set_master) {
 			int resultadoDrop = DropearTabla(dropTabla->nombreTabla);
 			loggear(logger, LOG_LEVEL_WARNING, "Resultado drop tabla %s:%d",
 					dropTabla->nombreTabla, resultadoDrop);
+			aplicar_retardo();
 			enviarMensajeConError(lis, insert, 0, NULL, n_descriptor, logger,
 					mem, resultadoDrop);
 
@@ -165,6 +168,7 @@ void procesar(int n_descriptor, fd_set* set_master) {
 			loggear(logger, LOG_LEVEL_INFO, "Buscando key: %d en tabla: %s",
 					selectMensaje->key, selectMensaje->nombreTabla);
 			t_registro *resultado = BuscarKey(selectMensaje);
+			aplicar_retardo();
 			if (resultado->key != -1) {
 				enviarMensajeConError(lis, selectMsg, sizeof(t_registro),
 						resultado, n_descriptor, logger, mem, 0);
@@ -205,6 +209,7 @@ void procesar(int n_descriptor, fd_set* set_master) {
 							string_itoa(metadataGlobal->compactationTime));
 					loggear(logger, LOG_LEVEL_INFO, "Enviando describe: %s",
 							describeTablaGlobal);
+					aplicar_retardo();
 					enviarMensajeConError(lis, describe,
 							(strlen(describeTablaGlobal) + 1), describeTablaGlobal,
 							n_descriptor, logger, mem, 0);
@@ -230,6 +235,7 @@ void procesar(int n_descriptor, fd_set* set_master) {
 						string_itoa(metadata->compactationTime));
 				loggear(logger, LOG_LEVEL_INFO, "Enviando describe: %s",
 						describeTabla);
+				aplicar_retardo();
 				enviarMensajeConError(lis, describe,
 						(strlen(describeTabla) + 1), describeTabla,
 						n_descriptor, logger, mem, 0);
@@ -243,6 +249,7 @@ void procesar(int n_descriptor, fd_set* set_master) {
 			log_debug(logger, "Mensaje countTables recibido");
 			int cantidadTablas = list_size(tablasGlobal);
 			log_info(logger, "countTables: %d",cantidadTablas);
+			aplicar_retardo();
 			enviarMensajeConError(lis, countTables, 0, NULL, n_descriptor,
 					logger, mem, cantidadTablas);
 
@@ -254,3 +261,4 @@ void procesar(int n_descriptor, fd_set* set_master) {
 	}
 
 }
+

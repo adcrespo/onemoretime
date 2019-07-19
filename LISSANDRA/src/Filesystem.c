@@ -13,10 +13,12 @@ void *CrearFileSystem() {
 	rutaTablas = string_new();
 	string_append(&rutaTablas, lfs_conf.punto_montaje);
 	string_append(&rutaTablas, "Tables/");
+	CrearDirectorio(rutaTablas);
 	log_debug(logger, "Ruta de tablas: %s", rutaTablas);
 	rutaBloques = string_new();
 	string_append(&rutaBloques, lfs_conf.punto_montaje);
 	string_append(&rutaBloques, "Bloques/");
+	CrearDirectorio(rutaBloques);
 	log_debug(logger, "Ruta de bloques: %s", rutaBloques);
 	CargarMetadata();
 	CargarBitmap();
@@ -30,7 +32,9 @@ void CargarMetadata() {
 	rutaMetadata = string_new();
 	string_append(&rutaMetadata, lfs_conf.punto_montaje);
 	string_append(&rutaMetadata, "Metadata/");
+	CrearDirectorio(rutaMetadata);
 	string_append(&rutaMetadata, "Metadata.bin");
+
 	log_debug(logger, "Ruta Metadata: %s", rutaMetadata);
 
 	config_metadata = cargarConfiguracion(rutaMetadata, logger);
@@ -56,6 +60,7 @@ void CargarBitmap() {
 	string_append(&rutaBitmap, lfs_conf.punto_montaje);
 	string_append(&rutaBitmap, "Metadata/");
 	string_append(&rutaBitmap, "Bitmap.bin");
+	CrearDirectorio(rutaBitmap);
     log_debug(logger, "Ruta Bitmap: %s", rutaBitmap);
 
 	FILE *file = fopen(rutaBitmap, "wb");
@@ -256,7 +261,7 @@ int InsertarTabla(t_request *request) {
 	}
 
 	//Verifico si no tiene datos a dumpear
-	t_tabla *tabla = malloc(sizeof(t_tabla));
+	t_tabla *tabla;// = malloc(sizeof(t_tabla));
 	tabla = BuscarTablaMemtable(nombre_tabla);
 
 	if (tabla == NULL) {
@@ -275,18 +280,23 @@ int InsertarTabla(t_request *request) {
 
 void CrearBloque(int numero, int bytes) {
 	//loggear(logger, LOG_LEVEL_INFO, "Creando bloque %d.bin", numero);
-	char *rutaBloque = string_from_format("%s/%d.bin", rutaBloques, numero);
+	char *rutaBloque = string_from_format("%s%d.bin", rutaBloques, numero);
 
-	FILE *binFile = fopen(rutaBloque, "w");
-
-	char *bytesAEscribir = malloc(bytes);
-	memset(bytesAEscribir, '\n', bytes);
-	fwrite(bytesAEscribir, bytes, 1, binFile);
-
-	free(rutaBloque);
-	free(bytesAEscribir);
-	fflush(binFile);
-	fclose(binFile);
+	FILE *binFile = fopen(rutaBloque, "r");
+	if (binFile) {
+		//log_debug(logger, "El bloque %s ya se encuentra creado", rutaBloque);
+		fclose(binFile);
+		free(rutaBloque);
+	} else {
+		FILE *bloque = fopen(rutaBloque, "w");
+		char *bytesAEscribir = malloc(bytes);
+		//memset(bytesAEscribir, '\n', bytes);
+		fwrite(bytesAEscribir, bytes, 0, binFile);
+		free(rutaBloque);
+		free(bytesAEscribir);
+		fflush(binFile);
+		fclose(bloque);
+	}
 
 }
 
@@ -379,7 +389,7 @@ t_registro* BuscarKey(t_select *selectMsg) {
 	log_info(logger, "Coincidencias en temp :%d", count);
 
 	for (int i = 0; i < count; i++) {
-		t_registro *registro = malloc(sizeof(t_registro));
+		t_registro *registro;// = malloc(sizeof(t_registro));
 		log_info(logger, "Obteniendo registro %d", i);
 		registro = list_get(listaTemp, i);
 		log_info(logger, "***Registro %d de Temp***", i);
@@ -398,7 +408,7 @@ t_registro* BuscarKey(t_select *selectMsg) {
 			return registroInit;
 		}
 	registroInit = list_get(listaBusqueda, 0);
-	t_registro *registroAux = malloc(sizeof(t_registro));
+	t_registro *registroAux;// = malloc(sizeof(t_registro));
 
 
 
@@ -416,13 +426,14 @@ t_registro* BuscarKey(t_select *selectMsg) {
 	if(registroInit != NULL)
 		log_debug(logger, "El timestamp mayor es %llu",
 				registroInit->timestamp);
-	free(registroAux);
+	if(registroAux != NULL) free(registroAux);
 	free(selectMsg);
 	if (listaMemtable != NULL)
 		list_clean(listaMemtable);
 	if (listaTemp != NULL)
 		list_clean(listaTemp);
 	list_clean(listaBusqueda);
+	free(rutaParticion);
 	return registroInit;
 }
 
@@ -430,7 +441,7 @@ t_list *BuscarKeyMemtable(int key, char *nombre) {
 	loggear(logger, LOG_LEVEL_INFO, "Buscando key:%d en memtable de: %s", key,
 			nombre);
 
-	t_tabla *tabla = malloc(sizeof(t_tabla));
+	t_tabla *tabla;//= malloc(sizeof(t_tabla));
 	tabla = BuscarTablaMemtable(nombre);
 
 	if (tabla == NULL) {
@@ -964,7 +975,10 @@ void CargarTablas(){
 		if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, "..")) {
 
 		} else {
-			AddGlobalList(entry->d_name);
+			char *nombre = string_new();
+			string_append(&nombre, entry->d_name);
+			AddGlobalList(nombre);
+			free(nombre);
 		}
 	}
 
@@ -1001,4 +1015,22 @@ void IniciarBloques() {
 		CrearBloque(bloque, 0);
 		bloque++;
 	}
+}
+
+void CrearDirectorio(char *directory){
+	struct stat st = {0};
+	if(stat(directory, &st) == -1 ){
+		if(mkdir(directory, 0777) == -1){
+			perror("mkdir");
+			loggear(logger, LOG_LEVEL_ERROR, "Error creando directorio: %s", directory);
+		} else {
+		loggear(logger, LOG_LEVEL_INFO, "Directorio %s creado", directory);
+		}
+	} else {
+		loggear(logger, LOG_LEVEL_ERROR, "El directorio %s ya existe", directory);
+	}
+}
+
+void aplicar_retardo() {
+	sleep(lfs_conf.retardo/1000);
 }
