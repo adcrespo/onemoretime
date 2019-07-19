@@ -198,3 +198,24 @@ void ReiniciarContadorTmp(char *nombre){
 //	log_info(logger, "contador tabla %s vale %d", tcbBusqueda->nombre_tabla, tcbBusqueda->contadorTmp);
 }
 
+int GetEstadoTabla(char *nombre){
+
+	bool findTable(void* element) {
+		t_tcb* tabla = element;
+		return string_equals_ignore_case(tabla->nombre_tabla, nombre);
+	}
+
+	t_tcb* tcbBusqueda = list_find(tablasGlobal, &findTable);
+	return tcbBusqueda->bloqueado;
+}
+
+void BloquearTabla(char *nombre){
+
+	bool findTable(void* element) {
+		t_tcb* tabla = element;
+		return string_equals_ignore_case(tabla->nombre_tabla, nombre);
+	}
+
+	t_tcb* tcbBusqueda = list_find(tablasGlobal, &findTable);
+	tcbBusqueda->bloqueado = 1;
+}

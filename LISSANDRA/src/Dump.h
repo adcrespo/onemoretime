@@ -20,5 +20,7 @@ void DumpearTabla(t_list *lista, char *nombre);
 void AumentarContadorTmp(char *nombre);
 void ReiniciarContadorTmp(char *nombre);
 int GetContadorTmp(char *nombre);
+int GetEstadoTabla(char *nombre);
+void BloquearTabla(char *nombre);
 
 #endif /* DUMP_H_ */
