@@ -68,17 +68,20 @@ typedef struct {
 
 //describe
 typedef struct {
+	int			id_proceso;
 	char 		nombreTabla[50];
 }__attribute__((packed)) t_describe;
 
 //select
 typedef struct {
+	int			id_proceso;
 	char 		nombreTabla[50];
 	int 		key;
 }__attribute__((packed)) t_select;
 
 //insert
 typedef struct {
+	int			id_proceso;
 	char 		nombreTabla[50];
 	unsigned long long 		timestamp;
 	int 		key;
@@ -87,6 +90,7 @@ typedef struct {
 
 //create
 typedef struct {
+	int			id_proceso;
 	char 		nombreTabla[50];
 	char 		tipo_cons[4];
 	int 		num_part;
@@ -95,6 +99,7 @@ typedef struct {
 
 //drop
 typedef struct {
+	int			id_proceso;
 	char 		nombreTabla[50];
 }__attribute__((packed)) t_drop;
 
