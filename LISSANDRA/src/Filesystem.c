@@ -13,10 +13,12 @@ void *CrearFileSystem() {
 	rutaTablas = string_new();
 	string_append(&rutaTablas, lfs_conf.punto_montaje);
 	string_append(&rutaTablas, "Tables/");
+	CrearDirectorio(rutaTablas);
 	log_debug(logger, "Ruta de tablas: %s", rutaTablas);
 	rutaBloques = string_new();
 	string_append(&rutaBloques, lfs_conf.punto_montaje);
 	string_append(&rutaBloques, "Bloques/");
+	CrearDirectorio(rutaBloques);
 	log_debug(logger, "Ruta de bloques: %s", rutaBloques);
 	CargarMetadata();
 	CargarBitmap();
@@ -30,7 +32,9 @@ void CargarMetadata() {
 	rutaMetadata = string_new();
 	string_append(&rutaMetadata, lfs_conf.punto_montaje);
 	string_append(&rutaMetadata, "Metadata/");
+	CrearDirectorio(rutaMetadata);
 	string_append(&rutaMetadata, "Metadata.bin");
+
 	log_debug(logger, "Ruta Metadata: %s", rutaMetadata);
 
 	config_metadata = cargarConfiguracion(rutaMetadata, logger);
@@ -56,6 +60,7 @@ void CargarBitmap() {
 	string_append(&rutaBitmap, lfs_conf.punto_montaje);
 	string_append(&rutaBitmap, "Metadata/");
 	string_append(&rutaBitmap, "Bitmap.bin");
+	CrearDirectorio(rutaBitmap);
     log_debug(logger, "Ruta Bitmap: %s", rutaBitmap);
 
 	FILE *file = fopen(rutaBitmap, "wb");
@@ -232,7 +237,9 @@ int InsertarTabla(t_request *request) {
 //	printf("Registro value %s\n", registro->value);
 //	printf("Registro timestamp %llu\n", registro->timestamp);
 
-	int bloqueado = GetEstadoTabla(request->parametro1);
+	char *nombre_tabla = string_new();
+	string_append(&nombre_tabla, request->parametro1);
+	int bloqueado = GetEstadoTabla(nombre_tabla);
 	if(bloqueado){
 		free(registro);
 		return -1;
@@ -240,49 +247,56 @@ int InsertarTabla(t_request *request) {
 	//valido value enviado
 	if((strlen(registro->value)) > (lfs_conf.tamano_value)){
 		free(registro);
+		free(nombre_tabla);
 		return 1;
 	}
 
 	//Verifico existencia en el file system
-	if (!ExisteTabla(request->parametro1)) {
+	if (!ExisteTabla(nombre_tabla)) {
 		loggear(logger, LOG_LEVEL_WARNING, "%s no existe en el file system",
-				request->parametro1);
+				nombre_tabla);
 		free(registro);
+		free(nombre_tabla);
 		return 1;
 	}
 
 	//Verifico si no tiene datos a dumpear
-	t_tabla *tabla = malloc(sizeof(t_tabla));
-	tabla = BuscarTablaMemtable(request->parametro1);
+	t_tabla *tabla;// = malloc(sizeof(t_tabla));
+	tabla = BuscarTablaMemtable(nombre_tabla);
 
 	if (tabla == NULL) {
 		//Aloco en memtable como nueva tabla
 		loggear(logger, LOG_LEVEL_INFO, "%s no posee datos a dumpear",
-				request->parametro1);
-		AlocarTabla(request->parametro1, registro);
+				nombre_tabla);
+		AlocarTabla(nombre_tabla, registro);
 	} else {
 		//Alocar en su posicion
 		loggear(logger, LOG_LEVEL_INFO, "Alocando en su pos correspondiente");
 		list_add(tabla->lista, registro);
 	}
-
+	free(nombre_tabla);
 	return 0;
 }
 
 void CrearBloque(int numero, int bytes) {
 	//loggear(logger, LOG_LEVEL_INFO, "Creando bloque %d.bin", numero);
-	char *rutaBloque = string_from_format("%s/%d.bin", rutaBloques, numero);
+	char *rutaBloque = string_from_format("%s%d.bin", rutaBloques, numero);
 
-	FILE *binFile = fopen(rutaBloque, "w");
-
-	char *bytesAEscribir = malloc(bytes);
-	memset(bytesAEscribir, '\n', bytes);
-	fwrite(bytesAEscribir, bytes, 1, binFile);
-
-	free(rutaBloque);
-	free(bytesAEscribir);
-	fflush(binFile);
-	fclose(binFile);
+	FILE *binFile = fopen(rutaBloque, "r");
+	if (binFile) {
+		//log_debug(logger, "El bloque %s ya se encuentra creado", rutaBloque);
+		fclose(binFile);
+		free(rutaBloque);
+	} else {
+		FILE *bloque = fopen(rutaBloque, "w");
+		char *bytesAEscribir = malloc(bytes);
+		//memset(bytesAEscribir, '\n', bytes);
+		fwrite(bytesAEscribir, bytes, 0, binFile);
+		free(rutaBloque);
+		free(bytesAEscribir);
+		fflush(binFile);
+		fclose(bloque);
+	}
 
 }
 
@@ -306,6 +320,15 @@ t_registro* BuscarKey(t_select *selectMsg) {
 				selectMsg->nombreTabla);
 	}
 
+	t_registro *registroInit = malloc(sizeof(t_registro));
+	int bloqueado = GetEstadoTabla(selectMsg->nombreTabla);
+	if(bloqueado){
+		registroInit->key = -1;
+		return registroInit;
+	}
+
+	//Inicializo lista donde se concatenaran las restantes
+	t_list *listaBusqueda = list_create();
 
 	//Obtengo metadata
 	t_metadata *metadata = ObtenerMetadataTabla(selectMsg->nombreTabla);
@@ -322,33 +345,25 @@ t_registro* BuscarKey(t_select *selectMsg) {
 	t_config *configFile = cargarConfiguracion(rutaParticion, logger);
 
 	int sizeArchivo = config_get_int_value(configFile, "SIZE");
-	int cantBloques = CalcularBloques(sizeArchivo);
-	char **blocksArray = malloc(sizeof(int) * cantBloques);
-	blocksArray = config_get_array_value(configFile, "BLOCKS");
+	if (sizeArchivo > 0) { //Escaneo la particion
+		int cantBloques = CalcularBloques(sizeArchivo);
+		char **blocksArray = malloc(sizeof(int) * cantBloques);
+		blocksArray = config_get_array_value(configFile, "BLOCKS");
+		int j = 0;
+		while (blocksArray[j] != NULL) {
 
-	//Inicializo lista donde se concatenaran las restantes
-	t_list *listaBusqueda = list_create();
-
-	//Escaneo la particion
-	int j = 0;
-//	t_registro *registro;
-//	while ((blocksArray[j] != NULL) && (registro->timestamp != 0)) {
-	while (blocksArray[j] != NULL) {
-
-		t_registro *registro = BuscarKeyParticion(selectMsg->key,
-				blocksArray[j]);
-		if (registro->timestamp != 0) {
-			log_info(logger, "Registro encontrado en particion");
-			list_add(listaBusqueda, registro);
+			t_registro *registro = BuscarKeyParticion(selectMsg->key,
+					blocksArray[j]);
+			//Si se encontro en particion agrego a la lista de busqueda
+			if (registro->timestamp != 0) {
+				log_info(logger, "Registro encontrado en particion");
+				list_add(listaBusqueda, registro);
+			}
+			j++;
 		}
-		j++;
 	}
 
-	//Si se encontro en particion agrego a la lista de busqueda
-//	if (registro->timestamp != 0) {
-//		log_info(logger, "Registro encontrado en particion");
-//		list_add(listaBusqueda, registro);
-//	}
+
 	int sizeList = list_size(listaBusqueda);
 	loggear(logger, LOG_LEVEL_INFO, "sizeLista %d", sizeList);
 
@@ -374,7 +389,7 @@ t_registro* BuscarKey(t_select *selectMsg) {
 	log_info(logger, "Coincidencias en temp :%d", count);
 
 	for (int i = 0; i < count; i++) {
-		t_registro *registro = malloc(sizeof(t_registro));
+		t_registro *registro;// = malloc(sizeof(t_registro));
 		log_info(logger, "Obteniendo registro %d", i);
 		registro = list_get(listaTemp, i);
 		log_info(logger, "***Registro %d de Temp***", i);
@@ -384,11 +399,19 @@ t_registro* BuscarKey(t_select *selectMsg) {
 	}
 
 	//Busco registro con mayor timestamp
-	t_registro *registroInit = malloc(sizeof(t_registro));
-	registroInit = list_get(listaBusqueda, 0);
-	t_registro *registroAux = malloc(sizeof(t_registro));
-
 	int sizeLista = list_size(listaBusqueda);
+
+
+	//si la lista esta vacia devuelvo registro con key -1
+	if(sizeLista < 1){
+			registroInit->key = -1;
+			return registroInit;
+		}
+	registroInit = list_get(listaBusqueda, 0);
+	t_registro *registroAux;// = malloc(sizeof(t_registro));
+
+
+
 	for (int i = 0; i < sizeLista; i++) {
 		registroAux = list_get(listaBusqueda, i);
 		loggear(logger, LOG_LEVEL_INFO,
@@ -403,13 +426,14 @@ t_registro* BuscarKey(t_select *selectMsg) {
 	if(registroInit != NULL)
 		log_debug(logger, "El timestamp mayor es %llu",
 				registroInit->timestamp);
-	free(registroAux);
+	if(registroAux != NULL) free(registroAux);
 	free(selectMsg);
 	if (listaMemtable != NULL)
 		list_clean(listaMemtable);
 	if (listaTemp != NULL)
 		list_clean(listaTemp);
 	list_clean(listaBusqueda);
+	free(rutaParticion);
 	return registroInit;
 }
 
@@ -417,7 +441,7 @@ t_list *BuscarKeyMemtable(int key, char *nombre) {
 	loggear(logger, LOG_LEVEL_INFO, "Buscando key:%d en memtable de: %s", key,
 			nombre);
 
-	t_tabla *tabla = malloc(sizeof(t_tabla));
+	t_tabla *tabla;//= malloc(sizeof(t_tabla));
 	tabla = BuscarTablaMemtable(nombre);
 
 	if (tabla == NULL) {
@@ -951,7 +975,10 @@ void CargarTablas(){
 		if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, "..")) {
 
 		} else {
-			AddGlobalList(entry->d_name);
+			char *nombre = string_new();
+			string_append(&nombre, entry->d_name);
+			AddGlobalList(nombre);
+			free(nombre);
 		}
 	}
 
@@ -988,4 +1015,22 @@ void IniciarBloques() {
 		CrearBloque(bloque, 0);
 		bloque++;
 	}
+}
+
+void CrearDirectorio(char *directory){
+	struct stat st = {0};
+	if(stat(directory, &st) == -1 ){
+		if(mkdir(directory, 0777) == -1){
+			perror("mkdir");
+			loggear(logger, LOG_LEVEL_ERROR, "Error creando directorio: %s", directory);
+		} else {
+		loggear(logger, LOG_LEVEL_INFO, "Directorio %s creado", directory);
+		}
+	} else {
+		loggear(logger, LOG_LEVEL_ERROR, "El directorio %s ya existe", directory);
+	}
+}
+
+void aplicar_retardo() {
+	sleep(lfs_conf.retardo/1000);
 }

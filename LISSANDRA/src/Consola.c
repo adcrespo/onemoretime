@@ -51,6 +51,13 @@ int procesar_comando(char *line) {
 				printf("Falta ingresar datos para utilizar select\n");
 				break;
 			}
+
+			int exists = ExisteTabla(request->parametro1);
+			if(!exists){
+				printf("La tabla %s no existe.\n",
+						request->parametro1);
+				break;
+			}
 			int bloqueado = GetEstadoTabla(request->parametro1);
 			if (bloqueado) {
 				printf("La tabla %s se encuentra bloqueada.\n",
@@ -62,11 +69,11 @@ int procesar_comando(char *line) {
 			selectMsg->key = atoi(request->parametro2);
 			t_registro *regSelect = BuscarKey(selectMsg);
 
-			if (regSelect != NULL) {
+			if (regSelect->key > -1) {
 				printf("Key\t Value\n");
 				printf("%d \t %s\n", regSelect->key, regSelect->value);
 			}
-			if (regSelect == NULL)
+			if (regSelect->key == -1)
 				printf("No se encuentra la key en FS.\n");
 			free(regSelect);
 			break;
@@ -87,6 +94,12 @@ int procesar_comando(char *line) {
 				break;
 			}
 
+			int existsI = ExisteTabla(request->parametro1);
+			if(!existsI){
+				printf("La tabla %s no existe.\n",
+						request->parametro1);
+				break;
+			}
 			if (string_is_empty(request->parametro4)) {
 				unsigned long long timestamp = obtenerTimeStamp();
 				request->parametro4 = malloc(20);
