@@ -211,9 +211,18 @@ int ejecutar_request(char* linea) {
 		case _select:
 			// SELECT [NOMBRE_TABLA] [KEY]
 			// SELECT TABLA1 3
+
 			log_info(logger, "PLANIFICADOR|Preparando SELECT");
-			log_info(logger, "PLANIFICADOR|Parámetro 1: %s", request->parametro1);
-			log_info(logger, "PLANIFICADOR|Parámetro 2: %s", request->parametro2);
+			t_select* req_select = malloc(sizeof(t_create));
+
+			strcpy(req_select->nombreTabla, request->parametro1);
+			req_select->key = atoi(request->parametro2);
+
+			log_info(logger, "PLANIFICADOR| SELECT OK. %s, %d", req_select->nombreTabla, req_select->key);
+			log_info(logger, "PLANIFICADOR| Enviando SELECT a MEMORIA");
+
+			resultado = request->es_valido; // Cambiar por lo que devuelve la memoria.
+			free(req_select);
 			break;
 
 		case _insert:
@@ -221,18 +230,25 @@ int ejecutar_request(char* linea) {
 			// INSERT TABLA1 3 “Mi nombre es Lissandra”
 
 			log_info(logger, "PLANIFICADOR|Preparando INSERT");
-			log_info(logger, "PLANIFICADOR|Parámetro 1: %s", request->parametro1);
-			log_info(logger, "PLANIFICADOR|Parámetro 2: %s", request->parametro2);
-			log_info(logger, "PLANIFICADOR|Parámetro 3: %s", request->parametro3);
-			log_info(logger, "PLANIFICADOR|Parámetro 4: %s", request->parametro4);
+			t_insert* req_insert = malloc(sizeof(t_insert));
+			strcpy(req_insert->nombreTabla, request->parametro1);
+			req_insert->timestamp = atoi(request->parametro2);
+			req_insert->key = atoi(request->parametro3);
+			strcpy(req_insert->value, request->parametro4);
+
+			log_info(logger, "PLANIFICADOR| INSERT OK. %s, %d, %d, %s", req_insert->nombreTabla, req_insert->timestamp, req_insert->key, req_insert->value);
+			log_info(logger, "PLANIFICADOR| Enviando INSERT a MEMORIA");
+
+			resultado = request->es_valido; // Cambiar por lo que devuelve la memoria.
+			free(req_insert);
 			break;
 
 		case _create:;
 			// CREATE [TABLA] [TIPO_CONSISTENCIA] [NUMERO_PARTICIONES] [COMPACTION_TIME]
 			// CREATE TABLA1 SC 4 60000
 
+			log_info(logger, "PLANIFICADOR|Preparando CREATE");
 			t_create* req_create = malloc(sizeof(t_create));
-
 			strcpy(req_create->nombreTabla, request->parametro1);
 			strcpy(req_create->tipo_cons, request->parametro2);
 			req_create->num_part = atoi(request->parametro3);
@@ -242,18 +258,26 @@ int ejecutar_request(char* linea) {
 			log_info(logger, "PLANIFICADOR| Enviando CREATE a MEMORIA");
 
 			resultado = request->es_valido; // Cambiar por lo que devuelve la memoria.
+			free(req_create);
 			break;
 
 		case _describe:
-			// DESCRIBE [NOMBRE_TABLA]
 			// DESCRIBE
 			// DESCRIBE TABLA1
 
 			log_info(logger, "PLANIFICADOR|Preparando DESCRIBE");
+			t_describe* req_describe = malloc(sizeof(t_describe));
+			strcpy(req_describe->nombreTabla, "");
 			if(request->parametro1 != NULL) {
 				log_info(logger, "PLANIFICADOR|Parámetro 1: %s", request->parametro1);
+				strcpy(req_describe->nombreTabla, request->parametro1);
 			}
 
+			log_info(logger, "PLANIFICADOR| DESCRIBE OK. %s", req_describe->nombreTabla);
+			log_info(logger, "PLANIFICADOR| Enviando DESCRIBE a MEMORIA");
+
+			resultado = request->es_valido; // Cambiar por lo que devuelve la memoria.
+			free(req_describe);
 			break;
 
 		case _drop:
@@ -261,12 +285,19 @@ int ejecutar_request(char* linea) {
 			// DROP TABLA1
 
 			log_info(logger, "PLANIFICADOR|Preparando DROP");
-			log_info(logger, "PLANIFICADOR|Parámetro 1: %s", request->parametro1);
+			t_drop* req_drop = malloc(sizeof(t_drop));
+			strcpy(req_drop->nombreTabla, request->parametro1);
+
+			log_info(logger, "PLANIFICADOR| DROP OK. %s", req_drop->nombreTabla);
+			log_info(logger, "PLANIFICADOR| Enviando DROP a MEMORIA");
+
+			resultado = request->es_valido; // Cambiar por lo que devuelve la memoria.
+			free(req_drop);
 			break;
 
 		default:
 			// No entra por acá porque se valida antes el enum != -1
-			log_info(logger, "PLANIFICADOR|No se reconoce operación: %s", request->parametro1);
+			log_info(logger, "PLANIFICADOR|No se reconoce operación: %s", request->request);
 			break;
 	}
 
