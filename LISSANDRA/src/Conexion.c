@@ -80,13 +80,13 @@ void procesar(int n_descriptor, fd_set* set_master) {
 		switch (msg->header.tipoMensaje) {
 
 		case handshake:
-			loggear(logger, LOG_LEVEL_INFO, "Handshake.");
+			log_debug(logger, "Handshake.");
 			enviarMensaje(lis, handshake, sizeof(lfs_conf.tamano_value),
 					&lfs_conf.tamano_value, n_descriptor, logger, mem);
 			break;
 
 		case insert:
-			loggear(logger, LOG_LEVEL_INFO, "Se recibió un insert");
+			log_debug(logger, "Se recibió un insert");
 			t_insert *msginsert = malloc(sizeof(t_insert));
 			loggear(logger, LOG_LEVEL_INFO, "Malloc ok, msg header long :%d",
 					msg->header.longitud);
@@ -124,7 +124,7 @@ void procesar(int n_descriptor, fd_set* set_master) {
 			break;
 
 		case create:
-			loggear(logger, LOG_LEVEL_INFO, "Se recibió mensaje create");
+			log_debug(logger, "Se recibió mensaje create");
 			t_create *msgCreate = malloc(sizeof(t_create));
 			memcpy(msgCreate, msg->content, msg->header.longitud);
 			loggear(logger, LOG_LEVEL_INFO,
@@ -142,7 +142,7 @@ void procesar(int n_descriptor, fd_set* set_master) {
 			break;
 
 		case drop:
-			loggear(logger, LOG_LEVEL_INFO, "Se recibió mensaje drop");
+			log_debug(logger, "Se recibió mensaje drop");
 
 			t_drop *dropTabla = malloc(sizeof(t_drop));
 			memcpy(dropTabla, msg->content, msg->header.longitud);
@@ -158,21 +158,27 @@ void procesar(int n_descriptor, fd_set* set_master) {
 			break;
 
 		case selectMsg:
-			loggear(logger, LOG_LEVEL_INFO, "Se recibió mensaje select");
+			log_debug(logger, "Se recibió mensaje select");
 			t_select *selectMensaje = malloc(sizeof(t_select));
 			memcpy(selectMensaje, msg->content, msg->header.longitud);
 			loggear(logger, LOG_LEVEL_INFO, "Buscando key: %d en tabla: %s",
 					selectMensaje->key, selectMensaje->nombreTabla);
 			t_registro *resultado = BuscarKey(selectMensaje);
-			enviarMensajeConError(lis, selectMsg, sizeof(t_registro), resultado,
-					n_descriptor, logger, mem, 0);
+			if (resultado->key != -1) {
+				enviarMensajeConError(lis, selectMsg, sizeof(t_registro),
+						resultado, n_descriptor, logger, mem, 0);
+			} else {
+				enviarMensajeConError(lis, selectMsg, 0, NULL, n_descriptor,
+						logger, mem, -1);
+			}
+
 
 			free(selectMensaje);
 			free(resultado);
 			break;
 
 		case describe:
-			loggear(logger, LOG_LEVEL_INFO, "Se recibió mensaje describe");
+			log_debug(logger, "Se recibió mensaje describe");
 			t_describe *describeMensaje = malloc(sizeof(t_describe));
 			memcpy(describeMensaje, msg->content, msg->header.longitud);
 			if (string_is_empty(describeMensaje->nombreTabla)) {
@@ -233,7 +239,7 @@ void procesar(int n_descriptor, fd_set* set_master) {
 			free(describeMensaje);
 			break;
 		case countTables:
-			log_info(logger, "Mensaje countTables recibido");
+			log_debug(logger, "Mensaje countTables recibido");
 			int cantidadTablas = list_size(tablasGlobal);
 			log_info(logger, "countTables: %d",cantidadTablas);
 			enviarMensajeConError(lis, countTables, 0, NULL, n_descriptor,

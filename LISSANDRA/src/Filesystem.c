@@ -232,7 +232,10 @@ int InsertarTabla(t_request *request) {
 //	printf("Registro value %s\n", registro->value);
 //	printf("Registro timestamp %llu\n", registro->timestamp);
 
-	int bloqueado = GetEstadoTabla(request->parametro1);
+	char *nombre_tabla = string_new();
+	string_append(&nombre_tabla, request->parametro1);
+	free(request);
+	int bloqueado = GetEstadoTabla(nombre_tabla);
 	if(bloqueado){
 		free(registro);
 		return -1;
@@ -240,32 +243,34 @@ int InsertarTabla(t_request *request) {
 	//valido value enviado
 	if((strlen(registro->value)) > (lfs_conf.tamano_value)){
 		free(registro);
+		free(nombre_tabla);
 		return 1;
 	}
 
 	//Verifico existencia en el file system
-	if (!ExisteTabla(request->parametro1)) {
+	if (!ExisteTabla(nombre_tabla)) {
 		loggear(logger, LOG_LEVEL_WARNING, "%s no existe en el file system",
-				request->parametro1);
+				nombre_tabla);
 		free(registro);
+		free(nombre_tabla);
 		return 1;
 	}
 
 	//Verifico si no tiene datos a dumpear
 	t_tabla *tabla = malloc(sizeof(t_tabla));
-	tabla = BuscarTablaMemtable(request->parametro1);
+	tabla = BuscarTablaMemtable(nombre_tabla);
 
 	if (tabla == NULL) {
 		//Aloco en memtable como nueva tabla
 		loggear(logger, LOG_LEVEL_INFO, "%s no posee datos a dumpear",
-				request->parametro1);
-		AlocarTabla(request->parametro1, registro);
+				nombre_tabla);
+		AlocarTabla(nombre_tabla, registro);
 	} else {
 		//Alocar en su posicion
 		loggear(logger, LOG_LEVEL_INFO, "Alocando en su pos correspondiente");
 		list_add(tabla->lista, registro);
 	}
-
+	free(nombre_tabla);
 	return 0;
 }
 
@@ -306,7 +311,12 @@ t_registro* BuscarKey(t_select *selectMsg) {
 				selectMsg->nombreTabla);
 	}
 
-
+	t_registro *registroInit = malloc(sizeof(t_registro));
+	int bloqueado = GetEstadoTabla(selectMsg->nombreTabla);
+	if(bloqueado){
+		registroInit->key = -1;
+		return registroInit;
+	}
 	//Obtengo metadata
 	t_metadata *metadata = ObtenerMetadataTabla(selectMsg->nombreTabla);
 	int particiones = metadata->particiones;
@@ -384,11 +394,19 @@ t_registro* BuscarKey(t_select *selectMsg) {
 	}
 
 	//Busco registro con mayor timestamp
-	t_registro *registroInit = malloc(sizeof(t_registro));
+	int sizeLista = list_size(listaBusqueda);
+
+
+	//si la lista esta vacia devuelvo registro con key -1
+	if(sizeLista < 1){
+			registroInit->key = -1;
+			return registroInit;
+		}
 	registroInit = list_get(listaBusqueda, 0);
 	t_registro *registroAux = malloc(sizeof(t_registro));
 
-	int sizeLista = list_size(listaBusqueda);
+
+
 	for (int i = 0; i < sizeLista; i++) {
 		registroAux = list_get(listaBusqueda, i);
 		loggear(logger, LOG_LEVEL_INFO,
