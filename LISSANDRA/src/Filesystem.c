@@ -224,6 +224,8 @@ void AlocarTabla(char *tabla, t_registro *registro) {
 int InsertarTabla(t_request *request) {
 	t_registro *registro = malloc(sizeof(t_registro));
 
+	int bloqueo = GetEstadoTabla(request->parametro1);
+	if(bloqueo) return -1;
 	registro->key = atoi(request->parametro2);
 	memcpy(registro->value, request->parametro3,
 			strlen(request->parametro3) + 1);
@@ -232,8 +234,14 @@ int InsertarTabla(t_request *request) {
 //	printf("Registro value %s\n", registro->value);
 //	printf("Registro timestamp %llu\n", registro->timestamp);
 
+	int bloqueado = GetEstadoTabla(request->parametro1);
+	if(bloqueado){
+		free(registro);
+		return -1;
+	}
 	//valido value enviado
 	if((strlen(registro->value)) > (lfs_conf.tamano_value)){
+		free(registro);
 		return 1;
 	}
 
@@ -241,7 +249,6 @@ int InsertarTabla(t_request *request) {
 	if (!ExisteTabla(request->parametro1)) {
 		loggear(logger, LOG_LEVEL_WARNING, "%s no existe en el file system",
 				request->parametro1);
-		free(request);
 		free(registro);
 		return 1;
 	}
@@ -261,7 +268,6 @@ int InsertarTabla(t_request *request) {
 		list_add(tabla->lista, registro);
 	}
 
-	free(request);
 	return 0;
 }
 
@@ -301,6 +307,7 @@ t_registro* BuscarKey(t_select *selectMsg) {
 		loggear(logger, LOG_LEVEL_ERROR, "%s no existe en el file system",
 				selectMsg->nombreTabla);
 	}
+
 
 	//Obtengo metadata
 	t_metadata *metadata = ObtenerMetadataTabla(selectMsg->nombreTabla);
@@ -666,6 +673,9 @@ int DropearTabla(char *nombre) {
 		loggear(logger, LOG_LEVEL_ERROR, "%s no puede ser dropeada", nombre);
 		return 1;
 	}
+
+	int bloqueado = GetEstadoTabla(nombre);
+	if(bloqueado) return -1;
 
 	DIR *dir;
 	struct dirent *entry;

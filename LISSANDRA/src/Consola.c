@@ -51,6 +51,12 @@ int procesar_comando(char *line) {
 				printf("Falta ingresar datos para utilizar select\n");
 				break;
 			}
+			int bloqueado = GetEstadoTabla(request->parametro1);
+			if (bloqueado) {
+				printf("La tabla %s se encuentra bloqueada.\n",
+						request->parametro1);
+				break;
+			}
 			t_select *selectMsg = malloc(sizeof(t_select));
 			strcpy(selectMsg->nombreTabla, request->parametro1);
 			selectMsg->key = atoi(request->parametro2);
@@ -71,13 +77,13 @@ int procesar_comando(char *line) {
 			if (string_is_empty(request->parametro1)
 					|| string_is_empty(request->parametro2)
 					|| string_is_empty(request->parametro3)) {
-				printf("Faltan ingresar datos utilizar el comando\n");
+				printf("Faltan ingresar datos para utilizar el comando\n");
 				break;
 			}
 			//valido tamaño del value
 			if ((strlen(request->parametro3)) > lfs_conf.tamano_value) {
 				printf("El tamaño del value con %d bytes supera lo permitido de %d bytes\n",
-						(strlen(request->parametro3) + 1),lfs_conf.tamano_value);
+						(strlen(request->parametro3)),lfs_conf.tamano_value);
 				break;
 			}
 
@@ -93,6 +99,11 @@ int procesar_comando(char *line) {
 			printf("Value: %s\n", request->parametro3);
 			printf("Timestamp: %s\n", request->parametro4);
 			int resultInsert = InsertarTabla(request);
+			if (resultInsert == -1) {
+				printf("La tabla %s se encuentra bloqueada.\n",
+						request->parametro1);
+				break;
+			}
 			if (resultInsert) {
 				printf("La tabla %s no se encuentra creada.\n",
 						request->parametro1);
@@ -172,15 +183,19 @@ int procesar_comando(char *line) {
 
 			if (string_is_empty(request->parametro1)) {
 				printf("Se debe ingresar la tabla a dropear\n");
-
-			} else {
-				int resultado = DropearTabla(request->parametro1);
-				if (!resultado)
-					printf("Tabla %s eliminada.\n", request->parametro1);
-				else {
-					printf("La tabla ingresada no existe.\n");
-				}
+				break;
 			}
+
+			int resultado = DropearTabla(request->parametro1);
+			if (!resultado)
+				printf("Tabla %s eliminada.\n", request->parametro1);
+			if (resultado == 1)
+				printf("La tabla ingresada no existe.\n");
+			if (resultado == -1)
+				printf("La tabla %s se encuentra bloqueada.\n",
+						request->parametro1);
+
+
 			break;
 		case _salir:
 			exit_gracefully(EXIT_SUCCESS);
