@@ -21,6 +21,7 @@ void *CrearFileSystem() {
 	CargarMetadata();
 	CargarBitmap();
 	CargarTablas();
+	IniciarBloques();
 
 	return (void*) 1;
 }
@@ -55,23 +56,28 @@ void CargarBitmap() {
 	string_append(&rutaBitmap, lfs_conf.punto_montaje);
 	string_append(&rutaBitmap, "Metadata/");
 	string_append(&rutaBitmap, "Bitmap.bin");
-	log_debug(logger, "Ruta Bitmap: %s", rutaBitmap);
+    log_debug(logger, "Ruta Bitmap: %s", rutaBitmap);
+
+	FILE *file = fopen(rutaBitmap, "wb");
 
 	int bm = open(rutaBitmap, O_RDWR);
-	 struct stat mystat;
+	ftruncate(bm, (cantidad_bloques/8) + 1);
+	bmap = mmap(NULL, cantidad_bloques / 8, PROT_WRITE | PROT_READ, MAP_SHARED,
+			bm, 0);
+	bitmap = bitarray_create_with_mode(bmap, cantidad_bloques / 8, MSB_FIRST);
 
-	 if(fstat(bm, &mystat) < 0){
-	 loggear(logger, LOG_LEVEL_ERROR, "Error al establecer fstat");
-	 }
-	 fstat(bm, &mystat);
-	 bmap = mmap(NULL, mystat.st_size, PROT_WRITE | PROT_READ, MAP_SHARED, bm, 0);
+	msync(bmap,bm, MS_SYNC);
+	struct stat mystat;
+	if (fstat(bm, &mystat) < 0) {
+		loggear(logger, LOG_LEVEL_ERROR, "Error al establecer fstat");
+	}
+	fstat(bm, &mystat);
 
-	 bitmap = bitarray_create_with_mode(bmap, cantidad_bloques/8, MSB_FIRST);
-
-	 loggear(logger, LOG_LEVEL_INFO, "Bitmap generado");
-
-	 close(bm);
-	 free(rutaBitmap);
+	loggear(logger, LOG_LEVEL_INFO, "Bitmap generado");
+//	msync(bmap, sizeof(bitmap), MS_SYNC);
+	close(bm);
+	free(rutaBitmap);
+	fclose(file);
 }
 
 int ExisteTabla(const char *tabla) {
@@ -260,7 +266,7 @@ int InsertarTabla(t_request *request) {
 }
 
 void CrearBloque(int numero, int bytes) {
-	loggear(logger, LOG_LEVEL_INFO, "Creando bloque %d.bin", numero);
+	//loggear(logger, LOG_LEVEL_INFO, "Creando bloque %d.bin", numero);
 	char *rutaBloque = string_from_format("%s/%d.bin", rutaBloques, numero);
 
 	FILE *binFile = fopen(rutaBloque, "w");
@@ -272,6 +278,7 @@ void CrearBloque(int numero, int bytes) {
 	free(rutaBloque);
 	free(bytesAEscribir);
 	fflush(binFile);
+	fclose(binFile);
 
 }
 
@@ -967,3 +974,10 @@ int GetFreeBlocks() {
 	return count;
 }
 
+void IniciarBloques() {
+	int bloque = 1;
+	for (int i = 0; i < cantidad_bloques; i++) {
+		CrearBloque(bloque, 0);
+		bloque++;
+	}
+}
