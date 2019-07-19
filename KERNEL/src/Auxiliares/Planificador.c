@@ -173,7 +173,7 @@ void procesar_pcb(t_pcb* pcb) {
 		// Parsear request y procesarlo
 		char **linea = string_split(pcb->script, "\n");
 
-		int resultado = ejecutar_request(linea[pcb->program_counter]);
+		int resultado = ejecutar_request(linea[pcb->program_counter], pcb->id_proceso);
 
 		log_info(logger, "PLANIFICADOR| Resultado del request: %d", resultado);
 
@@ -199,7 +199,7 @@ void procesar_pcb(t_pcb* pcb) {
 
 }
 
-int ejecutar_request(char* linea) {
+int ejecutar_request(char* linea, int id_proceso) {
 
 //	log_info(logger, "PLANIFICADOR| Request a ejecutar:");
 //	log_info(logger, "PLANIFICADOR| %s", linea);
@@ -215,6 +215,7 @@ int ejecutar_request(char* linea) {
 			log_info(logger, "PLANIFICADOR|Preparando SELECT");
 			t_select* req_select = malloc(sizeof(t_create));
 
+			req_select->id_proceso = id_proceso;
 			strcpy(req_select->nombreTabla, request->parametro1);
 			req_select->key = atoi(request->parametro2);
 
@@ -231,6 +232,8 @@ int ejecutar_request(char* linea) {
 
 			log_info(logger, "PLANIFICADOR|Preparando INSERT");
 			t_insert* req_insert = malloc(sizeof(t_insert));
+
+			req_insert->id_proceso = id_proceso;
 			strcpy(req_insert->nombreTabla, request->parametro1);
 			req_insert->timestamp = atoi(request->parametro2);
 			req_insert->key = atoi(request->parametro3);
@@ -248,7 +251,9 @@ int ejecutar_request(char* linea) {
 			// CREATE TABLA1 SC 4 60000
 
 			log_info(logger, "PLANIFICADOR|Preparando CREATE");
+
 			t_create* req_create = malloc(sizeof(t_create));
+			req_create->id_proceso = id_proceso;
 			strcpy(req_create->nombreTabla, request->parametro1);
 			strcpy(req_create->tipo_cons, request->parametro2);
 			req_create->num_part = atoi(request->parametro3);
@@ -266,7 +271,9 @@ int ejecutar_request(char* linea) {
 			// DESCRIBE TABLA1
 
 			log_info(logger, "PLANIFICADOR|Preparando DESCRIBE");
+
 			t_describe* req_describe = malloc(sizeof(t_describe));
+			req_describe->id_proceso = id_proceso;
 			strcpy(req_describe->nombreTabla, "");
 			if(request->parametro1 != NULL) {
 				log_info(logger, "PLANIFICADOR|Parámetro 1: %s", request->parametro1);
@@ -286,6 +293,8 @@ int ejecutar_request(char* linea) {
 
 			log_info(logger, "PLANIFICADOR|Preparando DROP");
 			t_drop* req_drop = malloc(sizeof(t_drop));
+
+			req_drop->id_proceso = id_proceso;
 			strcpy(req_drop->nombreTabla, request->parametro1);
 
 			log_info(logger, "PLANIFICADOR| DROP OK. %s", req_drop->nombreTabla);

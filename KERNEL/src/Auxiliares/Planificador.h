@@ -43,6 +43,6 @@ t_tipoSeeds* obtener_memoria_random();
 t_tipoSeeds* obtener_memoria_sc();
 void retardo_ejecucion();
 void procesar_pcb(t_pcb* pcb);
-int ejecutar_request(char* linea);
+int ejecutar_request(char* linea, int id_proceso);
 
 #endif /* AUXILIARES_PLANIFICADOR_H_ */
