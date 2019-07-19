@@ -234,7 +234,6 @@ int InsertarTabla(t_request *request) {
 
 	char *nombre_tabla = string_new();
 	string_append(&nombre_tabla, request->parametro1);
-	free(request);
 	int bloqueado = GetEstadoTabla(nombre_tabla);
 	if(bloqueado){
 		free(registro);
@@ -317,6 +316,10 @@ t_registro* BuscarKey(t_select *selectMsg) {
 		registroInit->key = -1;
 		return registroInit;
 	}
+
+	//Inicializo lista donde se concatenaran las restantes
+	t_list *listaBusqueda = list_create();
+
 	//Obtengo metadata
 	t_metadata *metadata = ObtenerMetadataTabla(selectMsg->nombreTabla);
 	int particiones = metadata->particiones;
@@ -332,33 +335,25 @@ t_registro* BuscarKey(t_select *selectMsg) {
 	t_config *configFile = cargarConfiguracion(rutaParticion, logger);
 
 	int sizeArchivo = config_get_int_value(configFile, "SIZE");
-	int cantBloques = CalcularBloques(sizeArchivo);
-	char **blocksArray = malloc(sizeof(int) * cantBloques);
-	blocksArray = config_get_array_value(configFile, "BLOCKS");
+	if (sizeArchivo > 0) { //Escaneo la particion
+		int cantBloques = CalcularBloques(sizeArchivo);
+		char **blocksArray = malloc(sizeof(int) * cantBloques);
+		blocksArray = config_get_array_value(configFile, "BLOCKS");
+		int j = 0;
+		while (blocksArray[j] != NULL) {
 
-	//Inicializo lista donde se concatenaran las restantes
-	t_list *listaBusqueda = list_create();
-
-	//Escaneo la particion
-	int j = 0;
-//	t_registro *registro;
-//	while ((blocksArray[j] != NULL) && (registro->timestamp != 0)) {
-	while (blocksArray[j] != NULL) {
-
-		t_registro *registro = BuscarKeyParticion(selectMsg->key,
-				blocksArray[j]);
-		if (registro->timestamp != 0) {
-			log_info(logger, "Registro encontrado en particion");
-			list_add(listaBusqueda, registro);
+			t_registro *registro = BuscarKeyParticion(selectMsg->key,
+					blocksArray[j]);
+			//Si se encontro en particion agrego a la lista de busqueda
+			if (registro->timestamp != 0) {
+				log_info(logger, "Registro encontrado en particion");
+				list_add(listaBusqueda, registro);
+			}
+			j++;
 		}
-		j++;
 	}
 
-	//Si se encontro en particion agrego a la lista de busqueda
-//	if (registro->timestamp != 0) {
-//		log_info(logger, "Registro encontrado en particion");
-//		list_add(listaBusqueda, registro);
-//	}
+
 	int sizeList = list_size(listaBusqueda);
 	loggear(logger, LOG_LEVEL_INFO, "sizeLista %d", sizeList);
 

@@ -34,7 +34,7 @@ void RealizarDumpeo()
 	//for para recorrer memtable
 	for(int i = 0; i < longitudMemtable; i++)
 	{
-		t_tabla *listaTabla = malloc(sizeof(t_tabla));
+		t_tabla *listaTabla;//= malloc(sizeof(t_tabla));
 		listaTabla = list_get(memtable, i);
 
 		if(listaTabla != NULL)
@@ -68,7 +68,7 @@ void DumpearTabla(t_list *lista, char *nombre)
 	int sizeTotal = 0;
 	int disponibleActual = tamanio_bloques;
 	t_list *bloques = list_create();
-	list_add(bloques, bloqueActual);
+	list_add(bloques, (int *)bloqueActual);
 	//for para recorrer cada tabla dentro de memtable
 	for(int j = 0; j < longitudTabla; j++)
 	{
