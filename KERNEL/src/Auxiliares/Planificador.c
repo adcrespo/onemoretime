@@ -15,7 +15,6 @@ void* planificar() {
 		sem_wait(&sem_ready);
 
 		log_info(logger, " --------- Planificando -------- ");
-		retardo_ejecucion();
 
 		t_pcb* pcb = sacar_proceso_rr(lista_ready);
 		imprimir_pcb(pcb);
@@ -164,7 +163,6 @@ void procesar_pcb(t_pcb* pcb) {
 	int requests_restantes = pcb->cantidad_request - pcb->program_counter;
 	log_info(logger, "PLANIFICADOR| Faltan procesar %d request", requests_restantes);
 
-//	int quantum_restante =  pcb->program_counter % quantum == 0 ? quantum: quantum - pcb->program_counter % quantum;
 	int quantum_restante = (pcb->program_counter % quantum) == 0 ? quantum: quantum - (pcb->program_counter % quantum);
 
 	if(requests_restantes < quantum_restante) {
@@ -173,15 +171,23 @@ void procesar_pcb(t_pcb* pcb) {
 
 	log_info(logger, "PLANIFICADOR| Quantum a procesar: %d", quantum_restante);
 
-	for (int i=0; quantum_restante > i; i++ ) {
+	for (int i=0; quantum_restante >= i; i++ ) {
 		log_info(logger, "PLANIFICADOR| Proceso consumiendo quantum");
-		pcb->program_counter++;
-		quantum_restante--;
+		retardo_ejecucion();
 
 		// Parsear request y procesarlo
+		char **linea = string_split(pcb->script, "\n");
+//		log_info(logger, "PLANIFICADOR| %s", linea[pcb->program_counter]);
+
+		int resultado = ejecutar_request(linea[pcb->program_counter]);
+
+		log_info(logger, "PLANIFICADOR| Resultado del request: %d", resultado);
 
 		log_info(logger, "PLANIFICADOR| Nuevo Program Counter: %d", pcb->program_counter);
 		log_info(logger, "PLANIFICADOR| Quantum restante: %d", quantum_restante);
+
+		pcb->program_counter++;
+		quantum_restante--;
 
 	}
 
@@ -198,4 +204,72 @@ void procesar_pcb(t_pcb* pcb) {
 		log_info(logger, "PLANIFICADOR| Proceso %d vuelve a READY", pcb->id_proceso);
 	}
 
+}
+
+int ejecutar_request(char* linea) {
+
+	log_info(logger, "PLANIFICADOR| Linea a ejecutar:");
+	log_info(logger, "PLANIFICADOR| %s", linea);
+
+	t_request* request = parsear(linea, logger);
+
+	switch (request->request) {
+
+		case _select:
+			// SELECT [NOMBRE_TABLA] [KEY]
+			// SELECT TABLA1 3
+			log_info(logger, "PLANIFICADOR|Preparando SELECT");
+			log_info(logger, "PLANIFICADOR|Parámetro 1: %s", request->parametro1);
+			log_info(logger, "PLANIFICADOR|Parámetro 2: %s", request->parametro2);
+			break;
+
+		case _insert:
+			// INSERT [NOMBRE_TABLA] [KEY] “[VALUE]”
+			// INSERT TABLA1 3 “Mi nombre es Lissandra”
+
+			log_info(logger, "PLANIFICADOR|Preparando INSERT");
+			log_info(logger, "PLANIFICADOR|Parámetro 1: %s", request->parametro1);
+			log_info(logger, "PLANIFICADOR|Parámetro 2: %s", request->parametro2);
+			log_info(logger, "PLANIFICADOR|Parámetro 3: %s", request->parametro3);
+			log_info(logger, "PLANIFICADOR|Parámetro 4: %s", request->parametro4);
+			break;
+
+		case _create:
+			// CREATE [TABLA] [TIPO_CONSISTENCIA] [NUMERO_PARTICIONES] [COMPACTION_TIME]
+			// CREATE TABLA1 SC 4 60000
+
+			log_info(logger, "PLANIFICADOR|Preparando CREATE");
+			log_info(logger, "PLANIFICADOR|Parámetro 1: %s", request->parametro1);
+			log_info(logger, "PLANIFICADOR|Parámetro 2: %s", request->parametro2);
+			log_info(logger, "PLANIFICADOR|Parámetro 3: %s", request->parametro3);
+			log_info(logger, "PLANIFICADOR|Parámetro 4: %s", request->parametro4);
+			break;
+
+		case _describe:
+			// DESCRIBE [NOMBRE_TABLA]
+			// DESCRIBE
+			// DESCRIBE TABLA1
+
+			log_info(logger, "PLANIFICADOR|Preparando DESCRIBE");
+			if(request->parametro1 != NULL) {
+				log_info(logger, "PLANIFICADOR|Parámetro 1: %s", request->parametro1);
+			}
+
+			break;
+
+		case _drop:
+			// DROP [NOMBRE_TABLA]
+			// DROP TABLA1
+
+			log_info(logger, "PLANIFICADOR|Preparando DROP");
+			log_info(logger, "PLANIFICADOR|Parámetro 1: %s", request->parametro1);
+			break;
+
+		default:
+			// No entra por acá porque se valida antes el enum != -1
+			log_info(logger, "PLANIFICADOR|No se reconoce operación: %s", request->parametro1);
+			break;
+	}
+
+	return request->es_valido;
 }
