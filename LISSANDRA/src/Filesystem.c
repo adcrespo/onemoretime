@@ -224,8 +224,6 @@ void AlocarTabla(char *tabla, t_registro *registro) {
 int InsertarTabla(t_request *request) {
 	t_registro *registro = malloc(sizeof(t_registro));
 
-	int bloqueo = GetEstadoTabla(request->parametro1);
-	if(bloqueo) return -1;
 	registro->key = atoi(request->parametro2);
 	memcpy(registro->value, request->parametro3,
 			strlen(request->parametro3) + 1);
