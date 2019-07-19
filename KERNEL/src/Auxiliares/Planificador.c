@@ -183,11 +183,10 @@ void procesar_pcb(t_pcb* pcb) {
 
 		log_info(logger, "PLANIFICADOR| Resultado del request: %d", resultado);
 
-		log_info(logger, "PLANIFICADOR| Nuevo Program Counter: %d", pcb->program_counter);
-		log_info(logger, "PLANIFICADOR| Quantum restante: %d", quantum_restante);
-
 		pcb->program_counter++;
 		quantum_restante--;
+		log_info(logger, "PLANIFICADOR| Nuevo Program Counter: %d", pcb->program_counter);
+		log_info(logger, "PLANIFICADOR| Quantum restante: %d", quantum_restante);
 
 	}
 
@@ -243,6 +242,16 @@ int ejecutar_request(char* linea) {
 			log_info(logger, "PLANIFICADOR|Parámetro 2: %s", request->parametro2);
 			log_info(logger, "PLANIFICADOR|Parámetro 3: %s", request->parametro3);
 			log_info(logger, "PLANIFICADOR|Parámetro 4: %s", request->parametro4);
+
+			t_create* req_create = malloc(sizeof(t_create));
+
+			strcpy(req_create->nombreTabla, request->parametro1);
+			strcpy(req_create->tipo_cons, request->parametro2);
+			req_create->num_part = atoi(request->parametro3);
+			req_create->comp_time = atoi(request->parametro4);
+
+			log_info(logger, "PLANIFICADOR| CREATE listo");
+			log_info(logger, "PLANIFICADOR| %s, %s, %d, %d", req_create->nombreTabla, req_create->tipo_cons, req_create->num_part, req_create->comp_time);
 			break;
 
 		case _describe:
