@@ -6,6 +6,7 @@
  */
 
 #include "Hilos.h"
+#include "Metadata.h"
 
 void crear_hilo_consola() {
 
@@ -92,17 +93,15 @@ void crear_hilo_refresh() {
 }
 
 void *inicializar_refresh() {
-	//actualizo metadata una vez al principio
-//	actualizar_metadata();  // Se rompe por no tener memorias conectadas.
-	//luego por hilo
+
 	while (1) {
 		aplicar_tiempo_refresh();
 		limpiar_metadata();
 		if (hay_memorias_disponibles()) {
-			log_info(logger, "REFRESH| HAY memoria disponible");
+			log_info(logger, "REFRESH| Hay memoria disponible");
 			actualizar_metadata();
 		} else {
-			log_info(logger, "REFRESH| NO Hay memoria disponible");
+			log_info(logger, "REFRESH| No Hay memoria disponible");
 		}
 	}
 
@@ -118,25 +117,12 @@ void crear_hilo_planificador() {
 }
 
 
-//busco si ya tengo metadata para esa tabla
-t_metadata* validar_metadata(char *nombre){
-	bool findMd(void* element) {
-			t_metadata *metadata = element;
-			return string_equals_ignore_case(nombre, metadata->nombreTabla);
-		}
-	return list_find(lista_metadata, &findMd);
-}
-
 int hay_memorias_disponibles() {
 
 	int memoria_conectada = 0;
 
 	for(int i = 0; i < LISTA_CONN->elements_count; i++) {
 		t_tipoSeeds* mem = list_get(LISTA_CONN, i);
-
-		log_info(logger, "REFRESH| IP: %s", mem->ip);
-		log_info(logger, "REFRESH| PUERTO: %s", mem->puerto);
-		log_info(logger, "REFRESH| ESTADO: %d", mem->estado);
 
 		if(mem->estado == 1) {
 			memoria_conectada = 1;
@@ -154,9 +140,9 @@ t_tipoSeeds* get_memoria_conectada() {
 	for(i = 0; i < LISTA_CONN->elements_count; i++) {
 		t_tipoSeeds* mem = list_get(LISTA_CONN, i);
 
-		log_info(logger, "REFRESH| IP: %s", mem->ip);
-		log_info(logger, "REFRESH| PUERTO: %s", mem->puerto);
-		log_info(logger, "REFRESH| ESTADO: %d", mem->estado);
+//		log_info(logger, "REFRESH| IP: %s", mem->ip);
+//		log_info(logger, "REFRESH| PUERTO: %s", mem->puerto);
+//		log_info(logger, "REFRESH| ESTADO: %d", mem->estado);
 
 		if(mem->estado == 1) {
 			break;

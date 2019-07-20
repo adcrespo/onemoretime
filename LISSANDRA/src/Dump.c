@@ -55,6 +55,8 @@ void RealizarDumpeo()
 
 void DumpearTabla(t_list *lista, char *nombre)
 {
+	if(GetEstadoTabla(nombre)==1)
+		return;
 	loggear(logger, LOG_LEVEL_INFO, "Dumpeando tabla: %s", nombre);
 	int numeroDump = GetContadorTmp(nombre);
 	int longitudTabla = list_size(lista);
