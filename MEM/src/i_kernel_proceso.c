@@ -77,13 +77,14 @@ void procesar_KER(t_mensaje* msg, int socketKER, fd_set* set_master) {
 		//TODO: insert
 			break;
 		case create:;
-			memcpy(&tabla,msg->content,MAX_PATH);
-			tabla[MAX_PATH-1] = 0x00;
-			memcpy(&tipo_cons,&msg->content+MAX_PATH,4);
-			memcpy(&num_part,&msg->content+MAX_PATH+4,sizeof(int));
-			memcpy(&comp_time,&msg->content+MAX_PATH+4+sizeof(int),sizeof(int));
+			t_create *msgCreate = malloc(sizeof(t_create));
+			loggear(logger, LOG_LEVEL_INFO, "Malloc ok, msg header long :%d",msg->header.longitud);
+			memcpy(msgCreate, msg->content, msg->header.longitud);
+			loggear(logger, LOG_LEVEL_INFO, "******MSJ******* ");
+			loggear(logger, LOG_LEVEL_INFO, "NOMBRE_TABLA_MSJ :%s",msgCreate->nombreTabla);
+			loggear(logger, LOG_LEVEL_INFO, "ID_PROCESO_MSJ :%d",msgCreate->id_proceso);
 
-			int create_result = proceso_create(tabla,tipo_cons,num_part,comp_time);
+			int create_result = proceso_create(msgCreate->nombreTabla,msgCreate->tipo_cons,msgCreate->num_part,msgCreate->comp_time);
 
 			if(enviarMensajeConError(mem, create, 0, NULL, socketKER,
 					logger, kernel, create_result)<=0){
@@ -92,7 +93,7 @@ void procesar_KER(t_mensaje* msg, int socketKER, fd_set* set_master) {
 			}
 		//TODO: create
 			break;
-		case describe:;
+		case describe_global_:;
 			pthread_mutex_lock(&journalingMutexDescribe);
 
 			//COUNT-TABLE
@@ -105,6 +106,7 @@ void procesar_KER(t_mensaje* msg, int socketKER, fd_set* set_master) {
 				close(socketKER);
 				FD_CLR(socketKER, set_master);
 			}
+
 			loggear(logger,LOG_LEVEL_INFO, "RESULTADO MSJ-KERNEL");
 
 			//DESCRIBE
@@ -122,7 +124,7 @@ void procesar_KER(t_mensaje* msg, int socketKER, fd_set* set_master) {
 
 			while(cantidad-->0)
 			{
-				loggear(logger,LOG_LEVEL_INFO, "INICIO DE RECIVE");
+				loggear(logger,LOG_LEVEL_INFO, "INICIO DE RECIVE %d", cantidad);
 				t_mensaje* mensaje = recibirMensaje(socket_lis, logger);
 				if(mensaje == NULL) {
 					loggear(logger,LOG_LEVEL_ERROR,"No se pudo recibir mensaje de lis");
@@ -140,7 +142,7 @@ void procesar_KER(t_mensaje* msg, int socketKER, fd_set* set_master) {
 				destruirMensaje(mensaje);
 				loggear(logger,LOG_LEVEL_DEBUG,"Data: %s",bufferMsjDescribe);
 			}
-
+			destruirMensaje(mensajeCantidad);
 			free(bufferMsjDescribe);
 			pthread_mutex_unlock(&journalingMutexDescribe);
 		//TODO: describe
