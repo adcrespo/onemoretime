@@ -13,15 +13,24 @@ void* planificar() {
 	while(1) {
 
 		sem_wait(&sem_ready);
-
-		t_pcb* pcb = sacar_proceso_rr(lista_ready);
-		log_info(logger, "PLANIFICADOR| Proceso N°: %d.", pcb->id_proceso);
-
-		log_info(logger, "PLANIFICADOR| Proceso %d pasa a EXEC", pcb->id_proceso);
-		agregar_proceso(pcb, lista_exec, &sem_exec);
-
 		sem_wait(&sem_multiprog);
-		procesar_pcb(pcb);
+
+		imprimir_listas();
+
+//		t_pcb* pcb = sacar_proceso_rr(lista_ready);
+//		log_info(logger, "PLANIFICADOR| Proceso N°: %d.", pcb->id_proceso);
+//
+//		log_info(logger, "PLANIFICADOR| Proceso %d pasa a EXEC", pcb->id_proceso);
+//		agregar_proceso(pcb, lista_exec, &sem_exec);
+//
+////		sem_wait(&sem_multiprog);
+//		procesar_pcb(pcb);
+
+		int hilo_algoritmo = pthread_create(&thread_planificacion, NULL, aplicar_algoritmo_rr(), NULL);
+		if (hilo_algoritmo == -1) {
+			log_error(logger, "THREAD|No se pudo generar el hilo para el algoritmo.");
+		}
+		log_info(logger, "THREAD|Se generó el hilo para el algoritmo.");
 	}
 }
 
@@ -305,4 +314,25 @@ int ejecutar_request(char* linea, int id_proceso) {
 	}
 
 	return resultado;
+}
+
+
+void* aplicar_algoritmo_rr() { // @suppress("No return")
+	t_pcb* pcb = sacar_proceso_rr(lista_ready);
+	log_info(logger, "PLANIFICADOR| Proceso N°: %d.", pcb->id_proceso);
+
+	log_info(logger, "PLANIFICADOR| Proceso %d pasa a EXEC", pcb->id_proceso);
+	agregar_proceso(pcb, lista_exec, &sem_exec);
+
+//		sem_wait(&sem_multiprog);
+	procesar_pcb(pcb);
+	return NULL;
+}
+
+void imprimir_listas() {
+
+	log_info(logger, "LISTA NEW: %d", lista_new->elements_count);
+	log_info(logger, "LISTA READY: %d", lista_ready->elements_count);
+	log_info(logger, "LISTA EXEC: %d", lista_exec->elements_count);
+	log_info(logger, "LISTA EXIT: %d", lista_exit->elements_count);
 }
