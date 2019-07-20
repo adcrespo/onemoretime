@@ -12,8 +12,17 @@ void* planificar() {
 
 	while(1) {
 
+		int valor= 0;
+		int valor_2= 0;
 		sem_wait(&sem_ready);
 		sem_wait(&sem_multiprog);
+
+		sem_getvalue(&sem_ready, &valor);
+		sem_getvalue(&sem_multiprog, &valor_2);
+
+		log_info(logger, "Sem Ready: %d", valor);
+		log_info(logger, "Sem Multiprog: %d", valor_2);
+
 
 		imprimir_listas();
 
@@ -256,6 +265,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 			log_info(logger, "PLANIFICADOR|Preparando CREATE");
 
 			t_create* req_create = malloc(sizeof(t_create));
+
 			req_create->id_proceso = id_proceso;
 			strcpy(req_create->nombreTabla, request->parametro1);
 			strcpy(req_create->tipo_cons, request->parametro2);
@@ -265,7 +275,18 @@ int ejecutar_request(char* linea, int id_proceso) {
 			log_info(logger, "PLANIFICADOR| CREATE OK. %s, %s, %d, %d", req_create->nombreTabla, req_create->tipo_cons, req_create->num_part, req_create->comp_time);
 			log_info(logger, "PLANIFICADOR| Enviando CREATE a MEMORIA");
 
-			resultado = request->es_valido; // Cambiar por lo que devuelve la memoria.
+			t_tipoSeeds* memoria = obtener_memoria_sc(); // ----- cambiar para hacerlo dinamico para los criterios
+			int cliente = conectar_a_memoria(memoria);
+
+			int resultado_mensaje = enviarMensaje(kernel, create, sizeof(t_create), req_create, cliente, logger, mem);
+
+			log_info(logger, "Resultado de enviar mensaje: %d", resultado_mensaje);
+
+			t_mensaje* resultado_req = recibirMensaje(cliente, logger);
+			resultado = resultado_req->header.error;
+			log_info(logger, "PLANIFICADOR| Resultado de CREATE: %d", resultado);
+
+//			close(cliente);
 			free(req_create);
 			break;
 
@@ -326,7 +347,7 @@ void* aplicar_algoritmo_rr() { // @suppress("No return")
 
 //		sem_wait(&sem_multiprog);
 	procesar_pcb(pcb);
-	return NULL;
+//	return NULL;
 }
 
 void imprimir_listas() {

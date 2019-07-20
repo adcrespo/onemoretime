@@ -16,6 +16,8 @@ void actualizar_metadata();
 void guardar_metadata(char *buffer);
 //t_metadata* validar_metadata(char *nombre);
 void describe_global(int cliente);
+int validar_tabla(char *nombre);
+t_metadata* buscar_tabla(char *nombre);
 
 
 #endif /* AUXILIARES_METADATA_H_ */

@@ -44,7 +44,8 @@ typedef enum tipoMensaje {
 	journal,
 	dump,
 	countTables,
-	salir
+	salir,
+	describe_global_
 }t_tipoMensaje;
 
 typedef enum tipoProceso {

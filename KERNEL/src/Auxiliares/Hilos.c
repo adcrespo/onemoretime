@@ -6,6 +6,7 @@
  */
 
 #include "Hilos.h"
+#include "Metadata.h"
 
 void crear_hilo_consola() {
 
@@ -115,15 +116,6 @@ void crear_hilo_planificador() {
 	log_info(logger, "THREAD|Se generó el hilo para el planificador.");
 }
 
-
-//busco si ya tengo metadata para esa tabla
-t_metadata* validar_metadata(char *nombre){
-	bool findMd(void* element) {
-			t_metadata *metadata = element;
-			return string_equals_ignore_case(nombre, metadata->nombreTabla);
-		}
-	return list_find(lista_metadata, &findMd);
-}
 
 int hay_memorias_disponibles() {
 

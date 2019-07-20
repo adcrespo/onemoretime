@@ -21,8 +21,7 @@ void actualizar_metadata() {
 	t_tipoSeeds *memoria = get_memoria_conectada();
 
 	log_info(logger, "METADATA| Memoria asignada: %d", memoria->numeroMemoria);
-	int puerto = atoi(memoria->puerto);
-	int cliente = conectar_a_servidor(memoria->ip, puerto, mem);
+	int cliente = conectar_a_memoria(memoria);
 
 	// Solicitud
 	describe_global(cliente);
@@ -67,7 +66,7 @@ void limpiar_metadata() {
 void describe_global(int cliente) {
 	int cantidad = 0;
 	log_info(logger, "METADATA| Inicio de DESCRIBE");
-	enviarMensaje(kernel, describe_global, 0, NULL, cliente, logger, mem);
+	enviarMensaje(kernel, describe_global_, 0, NULL, cliente, logger, mem);
 	t_mensaje* mensajeCantidad = recibirMensaje(cliente, logger);
 	log_info(logger, "METADATA| Respuesta de DESCRIBE");
 	cantidad = mensajeCantidad->header.error;
@@ -99,4 +98,22 @@ void describe_global(int cliente) {
 //		loggear(logger, LOG_LEVEL_DEBUG, "Metadata: %s", *buffer_describe);
 		free(buffer_describe);
 	}
+}
+
+int validar_tabla(char *nombre){
+	bool findMd(void* element) {
+			t_metadata *metadata = element;
+			return string_equals_ignore_case(nombre, metadata->nombreTabla);
+		}
+	return list_any_satisfy(lista_metadata, &findMd);
+}
+
+t_metadata* buscar_tabla(char *nombre) {
+
+	int EsLaTabla(t_metadata *tabla) {
+		return string_equals_ignore_case(nombre, tabla->nombreTabla);
+	}
+
+	loggear(logger, LOG_LEVEL_INFO, "Buscando %s en Memtable", nombre);
+	return list_find(lista_metadata, (void*) EsLaTabla);
 }
