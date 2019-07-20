@@ -24,7 +24,7 @@ void init_gossiping() {
 
 void *hiloGossiping()
 {
-	int tiempo = 5000;
+	int tiempo = 15000;
 	sleep (tiempo/1000);
 
 	while (1)
@@ -134,12 +134,36 @@ int hay_memorias_disponibles() {
 	for(int i = 0; i < LISTA_CONN->elements_count; i++) {
 		t_tipoSeeds* mem = list_get(LISTA_CONN, i);
 
-		if(string_equals_ignore_case(&mem->estado,"1")) {
+		log_info(logger, "REFRESH| IP: %s", mem->ip);
+		log_info(logger, "REFRESH| PUERTO: %s", mem->puerto);
+		log_info(logger, "REFRESH| ESTADO: %d", mem->estado);
+
+		if(mem->estado == 1) {
 			memoria_conectada = 1;
+			break;
 		}
 	}
 
 	return LISTA_CONN->elements_count > 0 && memoria_conectada > 0;
+}
+
+t_tipoSeeds* get_memoria_conectada() {
+
+	int i;
+
+	for(i = 0; i < LISTA_CONN->elements_count; i++) {
+		t_tipoSeeds* mem = list_get(LISTA_CONN, i);
+
+		log_info(logger, "REFRESH| IP: %s", mem->ip);
+		log_info(logger, "REFRESH| PUERTO: %s", mem->puerto);
+		log_info(logger, "REFRESH| ESTADO: %d", mem->estado);
+
+		if(mem->estado == 1) {
+			break;
+		}
+	}
+
+	return list_get(LISTA_CONN,i);
 }
 
 

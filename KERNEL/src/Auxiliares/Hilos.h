@@ -23,5 +23,6 @@ void *inicializar_refresh();
 void crear_hilo_planificador();
 void limpiar_metadata();
 int hay_memorias_disponibles();
+t_tipoSeeds* get_memoria_conectada();
 
 #endif /* AUXILIARES_HILOS_H_ */

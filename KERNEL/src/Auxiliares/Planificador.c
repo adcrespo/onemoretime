@@ -127,14 +127,8 @@ t_tipoSeeds* get_memoria_por_criterio(char *criterio) {
 }
 
 t_tipoSeeds* obtener_memoria_random() {
-	int n;
-	int size_ev = list_size(lista_criterio_ev);
-	log_info(logger, "REFRESH| Size EV: %d", size_ev);
-	n = rand() % size_ev;
-	log_info(logger, "REFRESH| Random n: %d", n);
 
-	t_tipoSeeds *memory;
-	memory = (t_tipoSeeds*)list_get(lista_criterio_ev, n);
+	t_tipoSeeds *memory = get_memoria_conectada();;
 	log_info(logger, "REFRESH| Numero Memoria: %d", memory->numeroMemoria);
 	return memory;
 }

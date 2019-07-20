@@ -91,8 +91,8 @@ void actualizar_metadata() {
 	sleep(kernel_conf.sleep_ejecucion / 1000);
 	int cantidad = 1;
 	//aca obtiene de criterio EV, hay que cambiar por cualquiera conectada
-	t_tipoSeeds *memoria;
-	memoria = obtener_memoria_random();
+	t_tipoSeeds *memoria = get_memoria_conectada();
+//	memoria = obtener_memoria_random();
 
 	log_info(logger, "METADATA| Memoria asignada: %d", memoria->numeroMemoria);
 	int puerto = atoi(memoria->puerto);
