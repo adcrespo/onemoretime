@@ -92,17 +92,15 @@ void crear_hilo_refresh() {
 }
 
 void *inicializar_refresh() {
-	//actualizo metadata una vez al principio
-//	actualizar_metadata();  // Se rompe por no tener memorias conectadas.
-	//luego por hilo
+
 	while (1) {
 		aplicar_tiempo_refresh();
 		limpiar_metadata();
 		if (hay_memorias_disponibles()) {
-			log_info(logger, "REFRESH| HAY memoria disponible");
+			log_info(logger, "REFRESH| Hay memoria disponible");
 			actualizar_metadata();
 		} else {
-			log_info(logger, "REFRESH| NO Hay memoria disponible");
+			log_info(logger, "REFRESH| No Hay memoria disponible");
 		}
 	}
 
@@ -133,10 +131,6 @@ int hay_memorias_disponibles() {
 
 	for(int i = 0; i < LISTA_CONN->elements_count; i++) {
 		t_tipoSeeds* mem = list_get(LISTA_CONN, i);
-
-		log_info(logger, "REFRESH| IP: %s", mem->ip);
-		log_info(logger, "REFRESH| PUERTO: %s", mem->puerto);
-		log_info(logger, "REFRESH| ESTADO: %d", mem->estado);
 
 		if(mem->estado == 1) {
 			memoria_conectada = 1;
