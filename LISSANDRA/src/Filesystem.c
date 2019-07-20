@@ -659,7 +659,7 @@ int CrearTabla(t_create *msgCreate) {
 	}
 
 	//CreoHiloCompactacion
-	//crearHiloCompactacion(msgCreate->comp_time, msgCreate->nombreTabla);
+	crearHiloCompactacion(msgCreate->comp_time, msgCreate->nombreTabla);
 	return 0;
 }
 
@@ -761,9 +761,12 @@ int CalcularBloques(int bytes) {
 void LiberarBloques(char **bloques, int cantBloques) {
 	for (int i = 0; i < cantBloques; i++) {
 		printf("Eliminando bloque %d\n", atoi(bloques[i]));
-		//int pos = atoi(bloques[i]);
-		//bitarray_clean_bit(bitmap, pos);
-
+		int pos = atoi(bloques[i]);
+		bitarray_clean_bit(bitmap, pos);
+		char* ruta = string_new();
+		string_append_with_format(&ruta,"%s/%d.bin",rutaBloques,pos);
+		FILE *file = fopen(ruta,"w");
+		fclose(file);
 	}
 }
 
@@ -800,7 +803,7 @@ void LevantarHilosCompactacionFS() {
 				int compactationTime = config_get_int_value(config_file,
 						"COMPACTATION_TIME");
 				//printf("Tiempo de compactacion tabla %s: %d\n", entry->d_name, compactationTime);
-				//crearHiloCompactacion(compactationTime, entry->d_name);
+				crearHiloCompactacion(compactationTime, entry->d_name);
 			}
 		}
 	}
@@ -841,20 +844,26 @@ t_list *ObtenerRegistros(char *tabla, char *extension) {
 						char linea[100];
 						char **elementos;
 
+						strcpy(linea,"");
 						//recorrer
 						while (!feof(archivo)) {
-							fgets(linea, 100, archivo);
-							elementos = string_split(linea, ";");
-							int cantElementos = ContarElementosArray(elementos);
-							t_registro *registro = malloc(sizeof(t_registro));
-							registro->timestamp = atoll(elementos[0]);
-							registro->key = atoi(elementos[1]);
-							strcpy(registro->value, elementos[2]);
-							list_add(registros, registro);
-							for (int i = 0; cantElementos > i; i++) {
-								free(elementos[i]);
+							char * rd = fgets(linea,100,archivo);
+							if(rd!=NULL){
+								elementos = string_split(linea, ";");
+								int cantElementos = ContarElementosArray(elementos);
+								t_registro *registro = malloc(sizeof(t_registro));
+								registro->timestamp = atoll(elementos[0]);
+								registro->key = atoi(elementos[1]);
+								char *value = string_new();
+								string_append(&value, elementos[2]);
+								value[strcspn(value, "\n")] = 0;
+								strcpy(registro->value, value);
+								list_add(registros, registro);
+								for (int i = 0; cantElementos > i; i++) {
+									free(elementos[i]);
+								}
+								free(elementos);
 							}
-							free(elementos);
 						}
 						free(bloque);
 						fclose(archivo);
@@ -908,20 +917,26 @@ t_list *ObtenerRegistrosArchivo(char *tabla, char *archivo, char *extension) {
 						char linea[100];
 						char **elementos;
 
+						strcpy(linea,"");
 						//recorrer
 						while (!feof(archivo)) {
-							fgets(linea, 100, archivo);
-							elementos = string_split(linea, ";");
-							int cantElementos = ContarElementosArray(elementos);
-							t_registro *registro = malloc(sizeof(t_registro));
-							registro->timestamp = atoll(elementos[0]);
-							registro->key = atoi(elementos[1]);
-							strcpy(registro->value, elementos[2]);
-							list_add(registros, registro);
-							for (int i = 0; cantElementos > i; i++) {
-								free(elementos[i]);
+							char *rd = fgets(linea,100,archivo);
+							if(rd!=NULL){
+								elementos = string_split(linea, ";");
+								int cantElementos = ContarElementosArray(elementos);
+								t_registro *registro = malloc(sizeof(t_registro));
+								registro->timestamp = atoll(elementos[0]);
+								registro->key = atoi(elementos[1]);
+								char *value = string_new();
+								string_append(&value, elementos[2]);
+								value[strcspn(value, "\n")] = 0;
+								strcpy(registro->value, value);
+								list_add(registros, registro);
+								for (int i = 0; cantElementos > i; i++) {
+									free(elementos[i]);
+								}
+								free(elementos);
 							}
-							free(elementos);
 						}
 						free(bloque);
 						fclose(archivo);
@@ -1010,8 +1025,8 @@ int GetFreeBlocks() {
 }
 
 void IniciarBloques() {
-	int bloque = 1;
-	for (int i = 0; i < cantidad_bloques; i++) {
+	int bloque = 0;
+	for (int i = 0; i < cantidad_bloques-1; i++) {
 		CrearBloque(bloque, 0);
 		bloque++;
 	}
