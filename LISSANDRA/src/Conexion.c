@@ -217,7 +217,8 @@ void procesar(int n_descriptor, fd_set* set_master) {
 					free(metadataGlobal);
 				}
 				loggear(logger, LOG_LEVEL_INFO, "Fin mensaje describe");
-			} else {
+			} else if(ExisteTabla(describeMensaje->nombreTabla)){
+
 				loggear(logger, LOG_LEVEL_INFO,
 						"Buscando metadata para tabla %s",
 						describeMensaje->nombreTabla);
@@ -242,6 +243,9 @@ void procesar(int n_descriptor, fd_set* set_master) {
 
 				free(metadata);
 				free(describeTabla);
+			} else {
+				enviarMensajeConError(lis, describe, 0, NULL, n_descriptor,
+						logger, mem, -1);
 			}
 			free(describeMensaje);
 			break;
