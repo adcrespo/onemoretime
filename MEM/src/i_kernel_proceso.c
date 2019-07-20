@@ -10,6 +10,9 @@
 #include "i_kernel_proceso.h"
 #include "memory.h"
 #include "proceso.h"
+#include "connection.h"
+#include "journaling.h"
+
 
 void procesar_KER(t_mensaje* msg, int socketKER, fd_set* set_master) {
 	char tabla[MAX_PATH];
@@ -25,6 +28,13 @@ void procesar_KER(t_mensaje* msg, int socketKER, fd_set* set_master) {
 			}
 			break;
 		case selectMsg:;
+			t_select *msgselect = malloc(sizeof(t_select));
+			loggear(logger, LOG_LEVEL_INFO, "Malloc ok, msg header long :%d",msg->header.longitud);
+			memcpy(msgselect, msg->content, msg->header.longitud);
+			loggear(logger, LOG_LEVEL_INFO, "******MSJ******* ");
+			loggear(logger, LOG_LEVEL_INFO, "NOMBRE_TABLA_MSJ :%s",msgselect->nombreTabla);
+			loggear(logger, LOG_LEVEL_INFO, "ID_PROCESO_MSJ :%d",msgselect->id_proceso);
+
 			memcpy(&tabla,msg->content,MAX_PATH);
 			tabla[MAX_PATH-1] = 0x00;
 			memcpy(&clave,&msg->content+MAX_PATH,sizeof(int));
@@ -83,16 +93,56 @@ void procesar_KER(t_mensaje* msg, int socketKER, fd_set* set_master) {
 		//TODO: create
 			break;
 		case describe:;
-			memcpy(&tabla,msg->content,MAX_PATH);
-			tabla[MAX_PATH-1] = 0x00;
-			int describe_result = proceso_describe(tabla[0]!=0x00?tabla:"",&buffer,&largo_buffer);
+			pthread_mutex_lock(&journalingMutexDescribe);
 
-			if(enviarMensajeConError(mem, describe, 0, NULL, socketKER,
-					logger, kernel, describe_result)<=0){
+			//COUNT-TABLE
+			loggear(logger,LOG_LEVEL_INFO, "INICIANDO PROCESO DESCRIBE KERNEL");
+			enviarMensaje(mem,countTables,0,NULL,socket_lis,logger,lis);
+			t_mensaje* mensajeCantidad = recibirMensaje(socket_lis, logger);
+			loggear(logger,LOG_LEVEL_INFO, "Cantidad TABLAS DESCRIBE: %d",mensajeCantidad->header.error);
+			if(enviarMensajeConError(mem,countTables,mensajeCantidad->header.longitud,mensajeCantidad->content,socketKER,logger,kernel,mensajeCantidad->header.error)<=0)
+			{
 				close(socketKER);
-				FD_CLR(socketKER, set_master);;
+				FD_CLR(socketKER, set_master);
 			}
-			free(buffer);
+			loggear(logger,LOG_LEVEL_INFO, "RESULTADO MSJ-KERNEL");
+
+			//DESCRIBE
+			int largo_content = MAX_PATH;
+			char *content = malloc(largo_content);
+			memset(content, 0x00, largo_content);
+			content[MAX_PATH-1] = 0x00;
+			enviarMensaje(mem,describe,largo_content,content,socket_lis,logger,lis);
+			loggear(logger,LOG_LEVEL_INFO, "MENSAJE ENVIADO LFS");
+			free(content);
+
+			int cantidad = mensajeCantidad->header.error;
+			int longAcum = 0;
+			char* bufferMsjDescribe=NULL;
+
+			while(cantidad-->0)
+			{
+				loggear(logger,LOG_LEVEL_INFO, "INICIO DE RECIVE");
+				t_mensaje* mensaje = recibirMensaje(socket_lis, logger);
+				if(mensaje == NULL) {
+					loggear(logger,LOG_LEVEL_ERROR,"No se pudo recibir mensaje de lis");
+				}
+				longAcum += mensaje->header.longitud;
+				bufferMsjDescribe = realloc(bufferMsjDescribe,longAcum);
+				memset(bufferMsjDescribe,0x00,mensaje->header.longitud);
+				memcpy(bufferMsjDescribe,mensaje->content,mensaje->header.longitud);
+				//*largo_buffer = mensaje->header.longitud;
+				if(enviarMensajeConError(mem,describe,mensaje->header.longitud,mensaje->content,socketKER,logger,kernel,mensaje->header.error)<=0)
+				{
+					close(socketKER);
+					FD_CLR(socketKER, set_master);
+				}
+				destruirMensaje(mensaje);
+				loggear(logger,LOG_LEVEL_DEBUG,"Data: %s",bufferMsjDescribe);
+			}
+
+			free(bufferMsjDescribe);
+			pthread_mutex_unlock(&journalingMutexDescribe);
 		//TODO: describe
 			break;
 		case drop:;
@@ -119,6 +169,9 @@ void procesar_KER(t_mensaje* msg, int socketKER, fd_set* set_master) {
 			break;
 		//TODO: journal
 		case countTables:;
+			//enviarMensaje(mem,countTables,0,NULL,socket_lis,logger,lis);
+			//t_mensaje* mensajeCantidad = recibirMensaje(socket_lis, logger);
+			//enviarMensajeConError(mem,countTables,mensajeCantidad->header.longitud,mensajeCantidad->content,socketKER,logger,kernel,mensajeCantidad->header.error);
 			if(enviarMensajeConError(mem, journal, msg->header.longitud, msg->content, socketKER,
 					logger, kernel, msg->header.error)<=0){
 				close(socketKER);
