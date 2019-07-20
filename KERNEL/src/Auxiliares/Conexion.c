@@ -77,3 +77,10 @@ void enviar_mensaje_journal(t_tipoSeeds *memoria) {
 		close(client_socket);
 	}
 }
+
+int conectar_a_memoria(t_tipoSeeds* memoria) {
+
+	log_info(logger, "Conectando a Memoria: %d", memoria->numeroMemoria);
+	int puerto = atoi(memoria->puerto);
+	return conectar_a_servidor(memoria->ip, puerto, mem);
+}

@@ -19,6 +19,7 @@ void enviar_journal_sc();
 void enviar_journal_shc();
 void enviar_journal_ev();
 void enviar_mensaje_journal(t_tipoSeeds *memoria);
+int conectar_a_memoria(t_tipoSeeds* memoria);
 
 
 #endif /* AUXILIARES_CONEXION_H_ */

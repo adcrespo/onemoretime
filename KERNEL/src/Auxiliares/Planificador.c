@@ -12,16 +12,34 @@ void* planificar() {
 
 	while(1) {
 
+		int valor= 0;
+		int valor_2= 0;
 		sem_wait(&sem_ready);
-
-		t_pcb* pcb = sacar_proceso_rr(lista_ready);
-		log_info(logger, "PLANIFICADOR| Proceso N°: %d.", pcb->id_proceso);
-
-		log_info(logger, "PLANIFICADOR| Proceso %d pasa a EXEC", pcb->id_proceso);
-		agregar_proceso(pcb, lista_exec, &sem_exec);
-
 		sem_wait(&sem_multiprog);
-		procesar_pcb(pcb);
+
+		sem_getvalue(&sem_ready, &valor);
+		sem_getvalue(&sem_multiprog, &valor_2);
+
+		log_info(logger, "Sem Ready: %d", valor);
+		log_info(logger, "Sem Multiprog: %d", valor_2);
+
+
+		imprimir_listas();
+
+//		t_pcb* pcb = sacar_proceso_rr(lista_ready);
+//		log_info(logger, "PLANIFICADOR| Proceso N°: %d.", pcb->id_proceso);
+//
+//		log_info(logger, "PLANIFICADOR| Proceso %d pasa a EXEC", pcb->id_proceso);
+//		agregar_proceso(pcb, lista_exec, &sem_exec);
+//
+////		sem_wait(&sem_multiprog);
+//		procesar_pcb(pcb);
+
+		int hilo_algoritmo = pthread_create(&thread_planificacion, NULL, aplicar_algoritmo_rr(), NULL);
+		if (hilo_algoritmo == -1) {
+			log_error(logger, "THREAD|No se pudo generar el hilo para el algoritmo.");
+		}
+		log_info(logger, "THREAD|Se generó el hilo para el algoritmo.");
 	}
 }
 
@@ -127,14 +145,8 @@ t_tipoSeeds* get_memoria_por_criterio(char *criterio) {
 }
 
 t_tipoSeeds* obtener_memoria_random() {
-	int n;
-	int size_ev = list_size(lista_criterio_ev);
-	log_info(logger, "REFRESH| Size EV: %d", size_ev);
-	n = rand() % size_ev;
-	log_info(logger, "REFRESH| Random n: %d", n);
 
-	t_tipoSeeds *memory;
-	memory = (t_tipoSeeds*)list_get(lista_criterio_ev, n);
+	t_tipoSeeds *memory = get_memoria_conectada();;
 	log_info(logger, "REFRESH| Numero Memoria: %d", memory->numeroMemoria);
 	return memory;
 }
@@ -173,7 +185,7 @@ void procesar_pcb(t_pcb* pcb) {
 		// Parsear request y procesarlo
 		char **linea = string_split(pcb->script, "\n");
 
-		int resultado = ejecutar_request(linea[pcb->program_counter]);
+		int resultado = ejecutar_request(linea[pcb->program_counter], pcb->id_proceso);
 
 		log_info(logger, "PLANIFICADOR| Resultado del request: %d", resultado);
 
@@ -199,7 +211,7 @@ void procesar_pcb(t_pcb* pcb) {
 
 }
 
-int ejecutar_request(char* linea) {
+int ejecutar_request(char* linea, int id_proceso) {
 
 //	log_info(logger, "PLANIFICADOR| Request a ejecutar:");
 //	log_info(logger, "PLANIFICADOR| %s", linea);
@@ -215,6 +227,7 @@ int ejecutar_request(char* linea) {
 			log_info(logger, "PLANIFICADOR|Preparando SELECT");
 			t_select* req_select = malloc(sizeof(t_create));
 
+			req_select->id_proceso = id_proceso;
 			strcpy(req_select->nombreTabla, request->parametro1);
 			req_select->key = atoi(request->parametro2);
 
@@ -231,6 +244,8 @@ int ejecutar_request(char* linea) {
 
 			log_info(logger, "PLANIFICADOR|Preparando INSERT");
 			t_insert* req_insert = malloc(sizeof(t_insert));
+
+			req_insert->id_proceso = id_proceso;
 			strcpy(req_insert->nombreTabla, request->parametro1);
 			req_insert->timestamp = atoi(request->parametro2);
 			req_insert->key = atoi(request->parametro3);
@@ -248,7 +263,10 @@ int ejecutar_request(char* linea) {
 			// CREATE TABLA1 SC 4 60000
 
 			log_info(logger, "PLANIFICADOR|Preparando CREATE");
+
 			t_create* req_create = malloc(sizeof(t_create));
+
+			req_create->id_proceso = id_proceso;
 			strcpy(req_create->nombreTabla, request->parametro1);
 			strcpy(req_create->tipo_cons, request->parametro2);
 			req_create->num_part = atoi(request->parametro3);
@@ -257,7 +275,18 @@ int ejecutar_request(char* linea) {
 			log_info(logger, "PLANIFICADOR| CREATE OK. %s, %s, %d, %d", req_create->nombreTabla, req_create->tipo_cons, req_create->num_part, req_create->comp_time);
 			log_info(logger, "PLANIFICADOR| Enviando CREATE a MEMORIA");
 
-			resultado = request->es_valido; // Cambiar por lo que devuelve la memoria.
+			t_tipoSeeds* memoria = obtener_memoria_sc(); // ----- cambiar para hacerlo dinamico para los criterios
+			int cliente = conectar_a_memoria(memoria);
+
+			int resultado_mensaje = enviarMensaje(kernel, create, sizeof(t_create), req_create, cliente, logger, mem);
+
+			log_info(logger, "Resultado de enviar mensaje: %d", resultado_mensaje);
+
+			t_mensaje* resultado_req = recibirMensaje(cliente, logger);
+			resultado = resultado_req->header.error;
+			log_info(logger, "PLANIFICADOR| Resultado de CREATE: %d", resultado);
+
+//			close(cliente);
 			free(req_create);
 			break;
 
@@ -266,7 +295,9 @@ int ejecutar_request(char* linea) {
 			// DESCRIBE TABLA1
 
 			log_info(logger, "PLANIFICADOR|Preparando DESCRIBE");
+
 			t_describe* req_describe = malloc(sizeof(t_describe));
+			req_describe->id_proceso = id_proceso;
 			strcpy(req_describe->nombreTabla, "");
 			if(request->parametro1 != NULL) {
 				log_info(logger, "PLANIFICADOR|Parámetro 1: %s", request->parametro1);
@@ -286,6 +317,8 @@ int ejecutar_request(char* linea) {
 
 			log_info(logger, "PLANIFICADOR|Preparando DROP");
 			t_drop* req_drop = malloc(sizeof(t_drop));
+
+			req_drop->id_proceso = id_proceso;
 			strcpy(req_drop->nombreTabla, request->parametro1);
 
 			log_info(logger, "PLANIFICADOR| DROP OK. %s", req_drop->nombreTabla);
@@ -302,4 +335,25 @@ int ejecutar_request(char* linea) {
 	}
 
 	return resultado;
+}
+
+
+void* aplicar_algoritmo_rr() { // @suppress("No return")
+	t_pcb* pcb = sacar_proceso_rr(lista_ready);
+	log_info(logger, "PLANIFICADOR| Proceso N°: %d.", pcb->id_proceso);
+
+	log_info(logger, "PLANIFICADOR| Proceso %d pasa a EXEC", pcb->id_proceso);
+	agregar_proceso(pcb, lista_exec, &sem_exec);
+
+//		sem_wait(&sem_multiprog);
+	procesar_pcb(pcb);
+//	return NULL;
+}
+
+void imprimir_listas() {
+
+	log_info(logger, "LISTA NEW: %d", lista_new->elements_count);
+	log_info(logger, "LISTA READY: %d", lista_ready->elements_count);
+	log_info(logger, "LISTA EXEC: %d", lista_exec->elements_count);
+	log_info(logger, "LISTA EXIT: %d", lista_exit->elements_count);
 }

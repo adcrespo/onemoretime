@@ -44,7 +44,8 @@ typedef enum tipoMensaje {
 	journal,
 	dump,
 	countTables,
-	salir
+	salir,
+	describe_global_
 }t_tipoMensaje;
 
 typedef enum tipoProceso {
@@ -69,12 +70,14 @@ typedef struct {
 //describe
 typedef struct {
 	char 		nombreTabla[50];
+	int			id_proceso;
 }__attribute__((packed)) t_describe;
 
 //select
 typedef struct {
 	char 		nombreTabla[50];
 	int 		key;
+	int			id_proceso;
 }__attribute__((packed)) t_select;
 
 //insert
@@ -83,6 +86,7 @@ typedef struct {
 	unsigned long long 		timestamp;
 	int 		key;
 	char 		value[VALUE];
+	int			id_proceso;
 }__attribute__((packed)) t_insert;
 
 //create
@@ -91,11 +95,13 @@ typedef struct {
 	char 		tipo_cons[4];
 	int 		num_part;
 	int 		comp_time;
+	int			id_proceso;
 }__attribute__((packed)) t_create;
 
 //drop
 typedef struct {
 	char 		nombreTabla[50];
+	int			id_proceso;
 }__attribute__((packed)) t_drop;
 
 //registro
