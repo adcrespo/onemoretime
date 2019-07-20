@@ -154,9 +154,9 @@ t_tipoSeeds* get_memoria_conectada() {
 	for(i = 0; i < LISTA_CONN->elements_count; i++) {
 		t_tipoSeeds* mem = list_get(LISTA_CONN, i);
 
-		log_info(logger, "REFRESH| IP: %s", mem->ip);
-		log_info(logger, "REFRESH| PUERTO: %s", mem->puerto);
-		log_info(logger, "REFRESH| ESTADO: %d", mem->estado);
+//		log_info(logger, "REFRESH| IP: %s", mem->ip);
+//		log_info(logger, "REFRESH| PUERTO: %s", mem->puerto);
+//		log_info(logger, "REFRESH| ESTADO: %d", mem->estado);
 
 		if(mem->estado == 1) {
 			break;

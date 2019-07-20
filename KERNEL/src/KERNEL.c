@@ -72,67 +72,68 @@ void inicializar_semaforos() {
 
 void aplicar_tiempo_refresh() {
 	int segundos_refresh = (kernel_conf.metadata_refresh / 1000);
-	log_info(logger, "REFRESH|Iniciando refresh de metadata en %d segundos",
-			segundos_refresh);
+//	log_info(logger, "REFRESH|Iniciando refresh de metadata en %d segundos", segundos_refresh);
 	sleep(segundos_refresh);
 }
 
 
 
 void actualizar_metadata() {
-	int largo_content = MAX_PATH;
-	char *content = malloc(largo_content);
 
 	log_info(logger, "METADATA| Iniciando refresh.");
-
-	memset(content, 0x00, largo_content);
-	content[MAX_PATH - 1] = 0x00;
-
-	sleep(kernel_conf.sleep_ejecucion / 1000);
-	int cantidad = 1;
-	//aca obtiene de criterio EV, hay que cambiar por cualquiera conectada
+	int cantidad = 0;
 	t_tipoSeeds *memoria = get_memoria_conectada();
-//	memoria = obtener_memoria_random();
 
 	log_info(logger, "METADATA| Memoria asignada: %d", memoria->numeroMemoria);
 	int puerto = atoi(memoria->puerto);
 
 	log_info(logger, "METADATA| Conectando a memoria %d", memoria->numeroMemoria);
-	int client_socket = conectar_a_servidor(memoria->ip, puerto, kernel);
+	int client_socket = conectar_a_servidor(memoria->ip, puerto, mem);
 
-	enviarMensaje(kernel, countTables, 0, NULL, client_socket, logger, mem);
+
+	// Solicitud
+	log_info(logger, "METADATA| Inicio de DESCRIBE");
+	enviarMensaje(kernel, describe, 0, NULL, client_socket, logger, mem);
 	t_mensaje* mensajeCantidad = recibirMensaje(client_socket, logger);
+	log_info(logger, "METADATA| Respuesta de DESCRIBE");
 	cantidad = mensajeCantidad->header.error;
+	log_info(logger, "METADATA| La cantidad de tablas es: %d", cantidad);
 	destruirMensaje(mensajeCantidad);
-	loggear(logger, LOG_LEVEL_DEBUG, "La cantidad es: %d", cantidad);
+//	loggear(logger, LOG_LEVEL_DEBUG, "METADATA| La cantidad de tablas es: %d", cantidad);
 
-	enviarMensaje(kernel, describe, largo_content, content, client_socket,
-			logger, mem);
-	free(content);
 	int longAcum = 0;
 
 	while (cantidad-- > 0) {
+
+		log_info(logger, "METADATA| Empiezo a recibir metadata: %d", cantidad);
 		t_mensaje* mensaje = recibirMensaje(client_socket, logger);
 		if (mensaje == NULL) {
 			loggear(logger, LOG_LEVEL_ERROR,
 					"No se pudo recibir mensaje de mem");
 			return;
 		}
+		log_info(logger, "METADATA| Mensaje recibido: %d", cantidad);
 		char* buffer_describe= string_new();
 		longAcum += mensaje->header.longitud;
-		memcpy(buffer_describe, mensaje->content, mensaje->header.longitud);
+//		memcpy(buffer_describe, mensaje->content, mensaje->header.longitud);
+		string_append(&buffer_describe, mensaje->content);
+
+		log_info(logger, "METADATA| Metadata: %s", buffer_describe);
+
 		guardar_metadata(buffer_describe);
 		destruirMensaje(mensaje);
 
-		loggear(logger, LOG_LEVEL_DEBUG, "Data: %s", *buffer_describe);
+//		loggear(logger, LOG_LEVEL_DEBUG, "Metadata: %s", *buffer_describe);
+		free(buffer_describe);
 	}
 }
 
 void guardar_metadata(char *buffer) {
 	//nombre_tabla;tipoConsistencia;particiones;compactationTime
-	char **elementos;
+	// PERSONAS;SHC;5;1000
 
-	elementos = string_split(buffer, ";");
+	log_info(logger, "METADATA| Guardo Metadata");
+	char **elementos = string_split(buffer, ";");
 
 	t_metadata *metadata = malloc(sizeof(t_metadata));
 	strcpy(metadata->nombreTabla, elementos[0]);
@@ -140,6 +141,8 @@ void guardar_metadata(char *buffer) {
 	metadata->particiones = atoi(elementos[2]);
 	metadata->compactationTime = atoi(elementos[3]);
 	list_add(lista_metadata, metadata);
+
+	log_info(logger, "METADATA| Cantidad de Metadatas: %d", lista_metadata->elements_count);
 
 	int i = 0;
 	while (elementos[i] != NULL) {
