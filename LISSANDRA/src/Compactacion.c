@@ -123,9 +123,9 @@ int process_compactacion(char* path_tabla)
 		t_registro* registroBin = NULL;
 		int pos = 0;
 		log_info(logger, "List count %d", listReg->elements_count);
+		log_info(logger, "Buscando Registro %d %llu", registroTmp->key,
+							registroTmp->timestamp);
 		for(int z = 0; listReg!=NULL && z<listReg->elements_count; z++){
-			log_info(logger, "Buscando Registro %d %llu", registroTmp->key,
-					registroTmp->timestamp);
 			registroBin = list_get(listReg,z);
 			log_info(logger, "BIN Registro %d %llu", registroBin->key,
 					registroBin->timestamp);
@@ -136,18 +136,25 @@ int process_compactacion(char* path_tabla)
 			}
 		}
 		if (registroBin == NULL) {
-			log_info(logger, "Insertando Registro %llu", registroTmp->timestamp);
+			log_info(logger, "Insertando Registro %d %llu", registroTmp->key, registroTmp->timestamp);
 			list_add(list_get(listaBin,registroTmp->key%list_size(listaBin)), registroTmp);//Si la key no existe -> agregarlo
 		} else {
-			log_info(logger, "Reemplazando Registro %llu", registroTmp->timestamp);
+			log_info(logger, "Comparando Registro (%d %llu) vs (%d %llu)"
+					,registroTmp->key , registroTmp->timestamp
+					,registroBin->key , registroBin->timestamp);
 			if (registroTmp->key == registroBin->key &&
 					registroTmp->timestamp > registroBin->timestamp) {
 				//Si la key existe pero el timestamp del .tmp es mas reciente -> agregarlo
-				log_info(logger, "Reemplazando Registro %llu (pos %d)", registroTmp->timestamp, pos);
+				log_info(logger, "Reemplazando Registro %d %llu (pos %d)",
+						registroTmp->key, registroTmp->timestamp, pos);
 				registroBin->key = registroTmp->key;
 				registroBin->timestamp = registroTmp->timestamp;
 				strcpy(registroBin->value,registroTmp->value);
 				list_replace(listReg,pos,registroBin);
+			}
+			if(registroTmp->key != registroBin->key){
+				log_info(logger, "Insertando Registro %d %llu", registroTmp->key, registroTmp->timestamp);
+				list_add(list_get(listaBin,registroTmp->key%list_size(listaBin)), registroTmp);
 			}
 			//Si no no hacer nada
 		}
@@ -176,16 +183,16 @@ int process_compactacion(char* path_tabla)
 		t_config *config_file = cargarConfiguracion(path, logger);
 		int size = config_get_int_value(config_file, "SIZE");
 		int cantBloques = CalcularBloques(size);
-		bloquesLiberar+=cantBloques;
+		log_info(logger, "size %d cantBloques %d", size, cantBloques);
+		bloquesLiberar+=(cantBloques==0)?1:cantBloques;
+		sizeListaBin += size;
 		t_list* listaBinRegistro = list_get(listaBin,j);
 		for (int z = 0; listaBinRegistro != NULL && list_size(listaBinRegistro)> z; z++){
 			t_registro* registroTmp = list_get(listaBinRegistro, z);
 			char* timestamp = malloc(20);
 			sprintf(timestamp, "%llu", registroTmp->timestamp);
-
-			sizeListaBin += strlen(timestamp) + strlen(string_itoa(registroTmp->key))
-					+ strlen(registroTmp->value) + 3;
-			log_info(logger, "timestamp %s", timestamp);
+			log_info(logger, "Registro a insertar %d %s",
+					registroTmp->key, timestamp);
 			free(timestamp);
 		}
 		free(path);
@@ -241,6 +248,7 @@ int process_compactacion(char* path_tabla)
 		t_config *config_file = cargarConfiguracion(path, logger);
 		int size = config_get_int_value(config_file, "SIZE");
 		int cantBloques = CalcularBloques(size);
+		cantBloques = (cantBloques==0)?1:cantBloques;
 		char **bloques = malloc(sizeof(int) * cantBloques);
 		bloques = config_get_array_value(config_file, "BLOCKS");
 		LiberarBloques(bloques,cantBloques);
@@ -272,14 +280,14 @@ int process_compactacion(char* path_tabla)
 		int size = sizeBin;
 		int nroBLoque;
 		if(size == 0){
-			nroBLoque = AgregarBloque(lbloques);
+			nroBLoque = AgregarBloque();
 			list_add(lbloques,(int *)nroBLoque);
 			size = size - tamanio_bloques;
 			log_info(logger, "Size Bin %d", sizeBin);
 		}
 		else {
 			while(size>0){
-				int nroBLoque= AgregarBloque(lbloques);
+				int nroBLoque= AgregarBloque();
 				list_add(lbloques,(int *)nroBLoque);
 				size = size - tamanio_bloques;
 				log_info(logger, "Size Bin %d", sizeBin);
@@ -298,7 +306,7 @@ int process_compactacion(char* path_tabla)
 		char *stringBlocks = string_from_format("BLOCKS=[");
 		fputs(stringBlocks, file);
 		for(int i= 0; lbloques!=NULL && i<lbloques->elements_count;i++){
-			int bloque = list_get(lbloques,i);
+			int bloque = (int)list_get(lbloques,i);
 			fputs(string_itoa(bloque), file);
 			if(i==lbloques->elements_count-1)
 				fputs("]", file);
