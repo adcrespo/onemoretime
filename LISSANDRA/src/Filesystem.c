@@ -117,18 +117,17 @@ t_metadata* ObtenerMetadataTabla(char *tabla) {
 	loggear(logger, LOG_LEVEL_INFO, "Obteniendo metadata en ruta %s",
 			rutaMetadata);
 
-	t_config *metadataFile = cargarConfiguracion(rutaMetadata, logger);
-
-	metadata->particiones = config_get_int_value(metadataFile, "PARTITIONS");
-	metadata->compactationTime = config_get_int_value(metadataFile,
+	t_config* config = cargarConfiguracion(rutaMetadata, logger);
+	metadata->particiones = config_get_int_value(config, "PARTITIONS");
+	metadata->compactationTime = config_get_int_value(config,
 			"COMPACTATION_TIME");
 	char *consistencia = string_new();
-	consistencia = config_get_string_value(metadataFile, "CONSISTENCY");
+	string_append(&consistencia, config_get_string_value(config, "CONSISTENCY"));
 	strcpy(metadata->tipoConsistencia, consistencia);
 	free(rutaMetadata);
 	free(consistencia);
-	free(metadataFile);
 
+	config_destroy(config);
 	return metadata;
 }
 
@@ -268,7 +267,7 @@ int InsertarTabla(t_request *request) {
 	}
 
 	//Verifico si no tiene datos a dumpear
-	t_tabla *tabla;// = malloc(sizeof(t_tabla));
+	t_tabla *tabla;
 	tabla = BuscarTablaMemtable(nombre_tabla);
 
 	if (tabla == NULL) {
@@ -374,6 +373,7 @@ t_registro* BuscarKey(t_select *selectMsg) {
 			j++;
 		}
 	}
+	config_destroy(configFile);
 
 	//Escaneo memtable
 	t_list *listaMemtable = list_create();
@@ -416,15 +416,15 @@ t_registro* BuscarKey(t_select *selectMsg) {
 			registroInit->key = -1;
 			return registroInit;
 		}
+
 	registroInit = list_get(listaBusqueda, 0);
 	t_registro *registroAux;
 
 	if (1 < size_busqueda) {
 		for (int i = 0; i < size_busqueda; i++) {
 			registroAux = list_get(listaBusqueda, i);
-			loggear(logger, LOG_LEVEL_INFO,
-			"Elemento %d tiene value %s y timestamp %llu", i,
-			registroAux->value, registroAux->timestamp);
+			log_info(logger, "Elemento %d tiene value %s y timestamp %llu", i,
+					registroAux->value, registroAux->timestamp);
 
 			if (registroInit->timestamp < registroAux->timestamp)
 				registroInit = registroAux;
@@ -432,33 +432,25 @@ t_registro* BuscarKey(t_select *selectMsg) {
 	}
 
 
-	log_debug(logger, "Devolviendo registro key %d value %s timestamp %llu",
+	log_info(logger, "Devolviendo registro key %d value %s timestamp %llu",
 			registroInit->key, registroInit->value, registroInit->timestamp);
 
-	if(registroInit != NULL)
-		log_debug(logger, "El timestamp mayor es %llu",
-				registroInit->timestamp);
-
 	//libero listas
-	int size_memtable = list_size(listaMemtable);
-	for (int i = 0; i < size_memtable; i++) {
-		t_registro *regMem = list_get(listaMemtable, i);
-		free(regMem);
-	}
+//	for (int i = 0; list_size(listaMemtable) > i; i++) {
+//		free(list_remove(listaMemtable, 0));
+//	}
+
 	list_destroy(listaMemtable);
 
-	int size_temp = list_size(listaTemp);
-	for (int i = 0; i < size_temp; i++) {
-		t_registro *regTmp = list_get(listaTemp, i);
-		free(regTmp);
-	}
+//	for (int i = 0; list_size(listaTemp) > i; i++) {
+//		free(list_remove(listaTemp, 0));
+//	}
+
 	list_destroy(listaTemp);
 
-	size_busqueda = list_size(listaBusqueda);
-	for (int i = 0; i < size_busqueda; i++) {
-		t_registro *regClean = list_get(listaBusqueda, i);
-		free(regClean);
-	}
+//	for (int i = 0; list_size(listaBusqueda) > i; i++) {
+//		free(list_remove(listaBusqueda, 0));
+//	}
 	list_destroy(listaBusqueda);
 
 	free(rutaParticion);
@@ -487,6 +479,7 @@ t_list *BuscarKeyMemtable(int key, char *nombre) {
 
 	log_info(logger, "filtrando lista en memtable");
 	return list_filter(tabla->lista, (void*) findKey);
+
 }
 
 t_list *BuscarKeyTemporales(int key, char *tabla) {
@@ -776,6 +769,7 @@ int DropearTabla(char *nombre) {
 	remove(path);
 	free(pathMetadata);
 	free(path);
+	RemoveGlobalList(nombre);
 	return 0;
 }
 

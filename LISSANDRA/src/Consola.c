@@ -70,13 +70,16 @@ int procesar_comando(char *line) {
 			t_registro *regSelect = BuscarKey(selectMsg);
 
 			if (regSelect->key != -1) {
+				log_info(logger, "Registro key %d value %s timestamp %llu",
+						regSelect->key, regSelect->value, regSelect->timestamp);
 				printf("Key\t Value\n");
 				printf("%d \t %s\n", regSelect->key, regSelect->value);
 			}
 			if (regSelect->key == -1)
 				printf("No se encuentra la key en FS.\n");
 
-			if(regSelect != NULL) free(regSelect);
+//			free(regSelect);
+
 			break;
 
 		case _insert:
