@@ -124,7 +124,7 @@ void *crearConsola() {
 				string_append_with_format(&registroInsertar,"%s ",comando[i]);
 			}
 			registroInsertar[strlen(registroInsertar)-1]=0x00;
-			if(strlen(registroInsertar)+1>tamanio_value){
+			if(strlen(registroInsertar)>tamanio_value){
 				free(registroInsertar);
 				printf("error: insert {tabla} {key} {\"value\"}.\n");
 				printf("error: el tamao del {value} debe ser menor a %d.\n",tamanio_value);

@@ -221,8 +221,8 @@ int proceso_drop(char* tabla){
 
 	if(totalPaginas<0){
 		loggear(logger,LOG_LEVEL_ERROR,"No se pudo obtener la cantidad de paginas");
-		pthread_mutex_unlock(&journalingMutexDrop);
-		return -1;
+		//pthread_mutex_unlock(&journalingMutexDrop);
+		//return -1;
 	}
 
 	for(i=0;i<totalPaginas;i++) {
