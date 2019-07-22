@@ -199,15 +199,17 @@ int proceso_describe(char* tabla, char** buffer, int* largo_buffer){
 			return -1;
 		}
 		desc = mensaje->header.error;
+
 		longAcum += mensaje->header.longitud;
-		*buffer = realloc(*buffer,longAcum);
-		memset(*buffer,0x00,mensaje->header.longitud);
-		memcpy(*buffer,mensaje->content,mensaje->header.longitud);
-		*largo_buffer = mensaje->header.longitud;
+		/**buffer = realloc(*buffer,longAcum+1);
+		memcpy(*buffer+longAnte,mensaje->content,mensaje->header.longitud);
+		(*buffer)[longAcum] = 0x00;*/
+		string_append_with_format(buffer,"%s\n",mensaje->content);
+		*largo_buffer += mensaje->header.longitud;
 		destruirMensaje(mensaje);
 
-		loggear(logger,LOG_LEVEL_DEBUG,"Data: %s",*buffer);
 	}
+	loggear(logger,LOG_LEVEL_DEBUG,"Data: %s",*buffer);
 	pthread_mutex_unlock(&journalingMutexDescribe);
 	return desc;
 }
