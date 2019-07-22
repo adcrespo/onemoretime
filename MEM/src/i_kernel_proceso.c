@@ -20,7 +20,6 @@ int proceso_describe_global(char* tabla,int socketKER, fd_set* set_master){
 	char *content = NULL;
 	int cantidad;
 	int longAcum = 0;
-	char* bufferMsjDescribe=NULL;
 	t_mensaje* mensajeDescribe=NULL;
 
 	//SEM_MUTEX
@@ -60,27 +59,20 @@ int proceso_describe_global(char* tabla,int socketKER, fd_set* set_master){
 			loggear(logger,LOG_LEVEL_ERROR,"No se pudo recibir mensaje de lis");
 		}
 
-		longAcum = mensajeDescribe->header.longitud;
-		bufferMsjDescribe = malloc(longAcum);
-		memset(bufferMsjDescribe,0x00,mensajeDescribe->header.longitud);
-		memcpy(bufferMsjDescribe,mensajeDescribe->content,mensajeDescribe->header.longitud);
-
 		if(enviarMensajeConError(mem,describe,mensajeDescribe->header.longitud,mensajeDescribe->content,socketKER,logger,kernel,mensajeDescribe->header.error)<=0)
 		{
 			close(socketKER);
 			FD_CLR(socketKER, set_master);
 		}
 
-		loggear(logger,LOG_LEVEL_DEBUG,"Data: %s",bufferMsjDescribe);
+		loggear(logger,LOG_LEVEL_DEBUG,"Data: %s",mensajeDescribe->content);
 
 		//LIBERO_MEM_ITERACION
-		free(bufferMsjDescribe);
 		destruirMensaje(mensajeDescribe);
 	}
 
 	//LIBERAR_MEMORIA
 	destruirMensaje(mensajeCantidad);
-	//destruirMensaje(mensajeDescribe);
 	free(content);
 
 	//SEM_MUTEX
