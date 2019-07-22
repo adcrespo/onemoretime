@@ -16,11 +16,12 @@ void *crear_consola() {
 
 	while (1) {
 		line = readline("Ingrese un comando > ");
-		if (line) {
-			add_history(line);
-		}
 
-		estado = procesar_comando(line);
+		if (!string_is_empty(line)) {
+			printf("Se procesa algo\n");
+			add_history(line);
+			estado = procesar_comando(line);
+		}
 
 		if (estado != 0) {
 			return (void*)EXIT_FAILURE;
