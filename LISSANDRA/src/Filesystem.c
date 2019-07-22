@@ -839,8 +839,7 @@ t_list *ObtenerRegistros(char *tabla, char *extension) {
 					int size = config_get_int_value(config_file, "SIZE");
 
 					int cantBloques = CalcularBloques(size);
-					char **bloques = malloc(sizeof(int) * cantBloques);
-					bloques = config_get_array_value(config_file, "BLOCKS");
+					char **bloques = config_get_array_value(config_file, "BLOCKS");
 					config_destroy(config_file);
 					for (int i = 0; cantBloques > i; i++) {
 						char *bloque = string_from_format("%s%s.bin",
@@ -876,6 +875,9 @@ t_list *ObtenerRegistros(char *tabla, char *extension) {
 						free(bloque);
 						fclose(archivo);
 					}
+					int cBloques = (cantBloques==0)?1:cantBloques;
+					for(int z=0;z<cBloques;z++)
+						free(bloques[z]);
 					free(bloques);
 					free(pathFile);
 				}
@@ -915,8 +917,7 @@ t_list *ObtenerRegistrosArchivo(char *tabla, char *archivo, char *extension) {
 					int size = config_get_int_value(config_file, "SIZE");
 
 					int cantBloques = CalcularBloques(size);
-					char **bloques = malloc(sizeof(int) * cantBloques);
-					bloques = config_get_array_value(config_file, "BLOCKS");
+					char **bloques = config_get_array_value(config_file, "BLOCKS");
 					config_destroy(config_file);
 					for (int i = 0; cantBloques > i; i++) {
 						char *bloque = string_from_format("%s%s.bin",
@@ -952,6 +953,9 @@ t_list *ObtenerRegistrosArchivo(char *tabla, char *archivo, char *extension) {
 						free(bloque);
 						fclose(archivo);
 					}
+					int cBloques = (cantBloques==0)?1:cantBloques;
+					for(int z=0;z<cBloques;z++)
+						free(bloques[z]);
 					free(bloques);
 					free(pathFile);
 				}

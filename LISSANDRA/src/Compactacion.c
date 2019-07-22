@@ -245,8 +245,7 @@ int process_compactacion(char* path_tabla)
 		t_config *config_file = cargarConfiguracion(path, logger);
 		int size = config_get_int_value(config_file, "SIZE");
 		int cantBloques = CalcularBloques(size);
-		char **bloques = malloc(sizeof(int) * cantBloques);
-		bloques = config_get_array_value(config_file, "BLOCKS");
+		char **bloques = config_get_array_value(config_file, "BLOCKS");
 		config_destroy(config_file);
 		LiberarBloques(bloques,cantBloques);
 		for(int z=0;z<cantBloques;z++)
@@ -266,8 +265,7 @@ int process_compactacion(char* path_tabla)
 		int size = config_get_int_value(config_file, "SIZE");
 		int cantBloques = CalcularBloques(size);
 		cantBloques = (cantBloques==0)?1:cantBloques;
-		char **bloques = malloc(sizeof(int) * cantBloques);
-		bloques = config_get_array_value(config_file, "BLOCKS");
+		char **bloques = config_get_array_value(config_file, "BLOCKS");
 		config_destroy(config_file);
 		LiberarBloques(bloques,cantBloques);
 		for(int z=0;z<cantBloques;z++)
@@ -290,9 +288,11 @@ int process_compactacion(char* path_tabla)
 			t_registro* registroTmp = list_get(listaBinRegistro, z);
 			char* timestamp = malloc(20);
 			sprintf(timestamp, "%llu", registroTmp->timestamp);
-			sizeBin += strlen(timestamp) + strlen(string_itoa(registroTmp->key))
+			char *len = string_itoa(registroTmp->key);
+			sizeBin += strlen(timestamp) + strlen(len)
 					+ strlen(registroTmp->value) + 3;
 			free(timestamp);
+			free(len);
 		}
 
 		log_info(logger, "Size Bin %d", sizeBin);
@@ -328,7 +328,9 @@ int process_compactacion(char* path_tabla)
 		fputs(stringBlocks, file);
 		for(int i= 0;i<lbloques->elements_count;i++){
 			int bloque = (int)list_get(lbloques,i);
-			fputs(string_itoa(bloque), file);
+			char *len = string_itoa(bloque);
+			fputs(len, file);
+			free(len);
 			if(i==lbloques->elements_count-1)
 				fputs("]", file);
 			else
@@ -344,7 +346,8 @@ int process_compactacion(char* path_tabla)
 			t_registro *registro = list_get(listaBinRegistro, z);
 			char *linea = string_new();
 			char *key = string_new();
-			string_append(&key, (string_itoa(registro->key)));
+			char *len = string_itoa(registro->key);
+			string_append(&key, len);
 			//char *timestamp = string_new();
 			char *timestamp = malloc(20);
 			sprintf(timestamp, "%llu", registro->timestamp);
@@ -356,6 +359,7 @@ int process_compactacion(char* path_tabla)
 			string_append(&linea, "\n");
 			free(key);
 			free(timestamp);
+			free(len);
 			int lenLinea = strlen(linea);
 			log_info(logger, "strlen de linea %s es %d", linea, lenLinea);
 
