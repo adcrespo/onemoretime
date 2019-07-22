@@ -73,6 +73,9 @@ int process_compactacion(char* path_tabla)
 	i=0;
 	if(string_is_empty(listasTmp[i])){
 		log_info(logger, "No hay tmp! %s",listasTmp[i]);
+		for (i = 0; 100 > i; i++) free(listasTmp[i]);
+		for (j = 0; 100 > j; j++) free(listasBin[j]);
+		free(rutaTabla);
 		return -1;
 	}
 	while(!string_is_empty(listasTmp[i])){
@@ -125,7 +128,7 @@ int process_compactacion(char* path_tabla)
 		log_info(logger, "List count %d", listReg->elements_count);
 		log_info(logger, "Buscando Registro %d %llu", registroTmp->key,
 							registroTmp->timestamp);
-		for(int z = 0; listReg!=NULL && z<listReg->elements_count; z++){
+		for(int z = 0;z<listReg->elements_count; z++){
 			registroBin = list_get(listReg,z);
 			log_info(logger, "BIN Registro %d %llu", registroBin->key,
 					registroBin->timestamp);
@@ -137,7 +140,11 @@ int process_compactacion(char* path_tabla)
 		}
 		if (registroBin == NULL) {
 			log_info(logger, "Insertando Registro %d %llu", registroTmp->key, registroTmp->timestamp);
-			list_add(list_get(listaBin,registroTmp->key%list_size(listaBin)), registroTmp);//Si la key no existe -> agregarlo
+			t_registro *registroInsertar = malloc(sizeof(t_registro));
+			registroInsertar->key = registroTmp->key;
+			registroInsertar->timestamp = registroTmp->timestamp;
+			strcpy(registroInsertar->value,registroTmp->value);
+			list_add(list_get(listaBin,registroTmp->key%list_size(listaBin)), registroInsertar);//Si la key no existe -> agregarlo
 		} else {
 			log_info(logger, "Comparando Registro (%d %llu) vs (%d %llu)"
 					,registroTmp->key , registroTmp->timestamp
@@ -154,7 +161,11 @@ int process_compactacion(char* path_tabla)
 			}
 			if(registroTmp->key != registroBin->key){
 				log_info(logger, "Insertando Registro %d %llu", registroTmp->key, registroTmp->timestamp);
-				list_add(list_get(listaBin,registroTmp->key%list_size(listaBin)), registroTmp);
+				t_registro *registroInsertar = malloc(sizeof(t_registro));
+				registroInsertar->key = registroTmp->key;
+				registroInsertar->timestamp = registroTmp->timestamp;
+				strcpy(registroInsertar->value,registroTmp->value);
+				list_add(list_get(listaBin,registroTmp->key%list_size(listaBin)), registroInsertar);
 			}
 			//Si no no hacer nada
 		}
@@ -169,6 +180,7 @@ int process_compactacion(char* path_tabla)
 		log_info(logger, "Abriendo tmp de %s", path);
 		t_config *config_file = cargarConfiguracion(path, logger);
 		int size = config_get_int_value(config_file, "SIZE");
+		config_destroy(config_file);
 		int cantBloques = CalcularBloques(size);
 		bloquesLiberar+=cantBloques;
 		free(path);
@@ -182,12 +194,13 @@ int process_compactacion(char* path_tabla)
 		log_info(logger, "Abriendo bin de %s", path);
 		t_config *config_file = cargarConfiguracion(path, logger);
 		int size = config_get_int_value(config_file, "SIZE");
+		config_destroy(config_file);
 		int cantBloques = CalcularBloques(size);
 		log_info(logger, "size %d cantBloques %d", size, cantBloques);
 		bloquesLiberar+=(cantBloques==0)?1:cantBloques;
 		sizeListaBin += size;
 		t_list* listaBinRegistro = list_get(listaBin,j);
-		for (int z = 0; listaBinRegistro != NULL && list_size(listaBinRegistro)> z; z++){
+		for (int z = 0; list_size(listaBinRegistro)> z; z++){
 			t_registro* registroTmp = list_get(listaBinRegistro, z);
 			char* timestamp = malloc(20);
 			sprintf(timestamp, "%llu", registroTmp->timestamp);
@@ -234,7 +247,11 @@ int process_compactacion(char* path_tabla)
 		int cantBloques = CalcularBloques(size);
 		char **bloques = malloc(sizeof(int) * cantBloques);
 		bloques = config_get_array_value(config_file, "BLOCKS");
+		config_destroy(config_file);
 		LiberarBloques(bloques,cantBloques);
+		for(int z=0;z<cantBloques;z++)
+			free(bloques[z]);
+		free(bloques);
 		remove(path);
 		free(path);
 		i++;
@@ -251,7 +268,11 @@ int process_compactacion(char* path_tabla)
 		cantBloques = (cantBloques==0)?1:cantBloques;
 		char **bloques = malloc(sizeof(int) * cantBloques);
 		bloques = config_get_array_value(config_file, "BLOCKS");
+		config_destroy(config_file);
 		LiberarBloques(bloques,cantBloques);
+		for(int z=0;z<cantBloques;z++)
+			free(bloques[z]);
+		free(bloques);
 		remove(path);
 		free(path);
 		j++;
@@ -265,7 +286,7 @@ int process_compactacion(char* path_tabla)
 		log_info(logger, "Asignando bin de %s", path);
 		int sizeBin = 0;
 		t_list* listaBinRegistro = list_get(listaBin,j);
-		for (int z = 0; listaBinRegistro != NULL && list_size(listaBinRegistro)> z; z++){
+		for (int z = 0;list_size(listaBinRegistro)> z; z++){
 			t_registro* registroTmp = list_get(listaBinRegistro, z);
 			char* timestamp = malloc(20);
 			sprintf(timestamp, "%llu", registroTmp->timestamp);
@@ -305,7 +326,7 @@ int process_compactacion(char* path_tabla)
 		fputs(stringSize, file);
 		char *stringBlocks = string_from_format("BLOCKS=[");
 		fputs(stringBlocks, file);
-		for(int i= 0; lbloques!=NULL && i<lbloques->elements_count;i++){
+		for(int i= 0;i<lbloques->elements_count;i++){
 			int bloque = (int)list_get(lbloques,i);
 			fputs(string_itoa(bloque), file);
 			if(i==lbloques->elements_count-1)
@@ -319,7 +340,7 @@ int process_compactacion(char* path_tabla)
 
 		int disponibleActual = tamanio_bloques;
 
-		for (int z = 0; listaBinRegistro != NULL && list_size(listaBinRegistro)> z; z++){
+		for (int z = 0; list_size(listaBinRegistro)> z; z++){
 			t_registro *registro = list_get(listaBinRegistro, z);
 			char *linea = string_new();
 			char *key = string_new();
@@ -358,7 +379,11 @@ int process_compactacion(char* path_tabla)
 			}
 			free(rutaActual);
 		}
-
+		for (int z = 0;list_size(lbloques)> z; z++){
+			list_remove(lbloques,0);
+		}
+		list_destroy(lbloques);
+		free(path);
 		j++;
 	}
 	//********************************
@@ -369,21 +394,30 @@ int process_compactacion(char* path_tabla)
 	log_info(logger, "Tiempo consumido %d", tiempo);
 
 	//Liberar
-	i=0;
-	while (!string_is_empty(listasTmp[i])) {
-		free(listasTmp[i]);
-		i++;
+
+	for (int z = 0;list_size(listaTmp)> z; z++){
+		free(list_remove(listaTmp,0));
+		log_info(logger, "Liberando registro tmp %d", z);
 	}
+
 	j = 0;
 	while (!string_is_empty(listasBin[j])) {
-		t_list* listaBinRegistro = list_get(listaBin,j);
-		for (int z = 0; listaBinRegistro != NULL && list_size(listaBinRegistro)> z; z++){
+		t_list* listaBinRegistro = list_remove(listaBin,0);
+		log_info(logger, "Liberando registro - Count %d", list_size(listaBinRegistro));
+		int countList = list_size(listaBinRegistro);
+		for (int z = 0;countList > z; z++){
 			free(list_remove(listaBinRegistro,0));
+			log_info(logger, "Liberando registro bin %d", z);
 		}
 		list_destroy(listaBinRegistro);
-		free(listasBin[j]);
 		j++;
 	}
+
+	list_destroy(listaTmp);
+	list_destroy(listaBin);
+
+	for (i = 0; 100 > i; i++) free(listasTmp[i]);
+	for (j = 0; 100 > j; j++) free(listasBin[j]);
 
 	free(rutaTabla);
 

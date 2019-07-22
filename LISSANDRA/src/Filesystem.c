@@ -767,6 +767,7 @@ void LiberarBloques(char **bloques, int cantBloques) {
 		string_append_with_format(&ruta,"%s/%d.bin",rutaBloques,pos);
 		FILE *file = fopen(ruta,"w");
 		fclose(file);
+		free(ruta);
 	}
 }
 
@@ -802,10 +803,12 @@ void LevantarHilosCompactacionFS() {
 
 				int compactationTime = config_get_int_value(config_file,
 						"COMPACTATION_TIME");
+				config_destroy(config_file);
 				//printf("Tiempo de compactacion tabla %s: %d\n", entry->d_name, compactationTime);
 				crearHiloCompactacion(compactationTime, entry->d_name);
 			}
 		}
+		closedir(dir);
 	}
 }
 
@@ -835,6 +838,7 @@ t_list *ObtenerRegistros(char *tabla, char *extension) {
 					int cantBloques = CalcularBloques(size);
 					char **bloques = malloc(sizeof(int) * cantBloques);
 					bloques = config_get_array_value(config_file, "BLOCKS");
+					config_destroy(config_file);
 					for (int i = 0; cantBloques > i; i++) {
 						char *bloque = string_from_format("%s%s.bin",
 								rutaBloques, bloques[i]);
@@ -862,19 +866,21 @@ t_list *ObtenerRegistros(char *tabla, char *extension) {
 								for (int i = 0; cantElementos > i; i++) {
 									free(elementos[i]);
 								}
+								free(value);
 								free(elementos);
 							}
 						}
 						free(bloque);
 						fclose(archivo);
 					}
+					free(bloques);
 					free(pathFile);
 				}
 			}
 		}
+		closedir(dir);
 		return registros;
 	}
-	closedir(dir);
 	return NULL;
 }
 
@@ -908,6 +914,7 @@ t_list *ObtenerRegistrosArchivo(char *tabla, char *archivo, char *extension) {
 					int cantBloques = CalcularBloques(size);
 					char **bloques = malloc(sizeof(int) * cantBloques);
 					bloques = config_get_array_value(config_file, "BLOCKS");
+					config_destroy(config_file);
 					for (int i = 0; cantBloques > i; i++) {
 						char *bloque = string_from_format("%s%s.bin",
 								rutaBloques, bloques[i]);
@@ -935,19 +942,23 @@ t_list *ObtenerRegistrosArchivo(char *tabla, char *archivo, char *extension) {
 								for (int i = 0; cantElementos > i; i++) {
 									free(elementos[i]);
 								}
+								free(value);
 								free(elementos);
 							}
 						}
 						free(bloque);
 						fclose(archivo);
 					}
+					free(bloques);
 					free(pathFile);
 				}
 			}
 		}
+		closedir(dir);
+		free(archivoExtension);
 		return registros;
 	}
-	closedir(dir);
+	free(archivoExtension);
 	return NULL;
 }
 
