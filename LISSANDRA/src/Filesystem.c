@@ -209,13 +209,14 @@ void CrearMetadataTabla(char *tabla, char *consistencia, int particiones,
 }
 
 t_tabla* BuscarTablaMemtable(char *nombre) {
-
-	int EsLaTabla(t_tabla *tabla) {
-		return string_equals_ignore_case(nombre, tabla->nombre_tabla);
+	bool findTable(void* element) {
+		t_tabla* tabla = element;
+		return string_equals_ignore_case(tabla->nombre_tabla, nombre);
 	}
 
+
 	loggear(logger, LOG_LEVEL_INFO, "Buscando %s en Memtable", nombre);
-	return list_find(memtable, (void*) EsLaTabla);
+	return list_find(memtable, &findTable);
 }
 
 void AlocarTabla(char *tabla, t_registro *registro) {
@@ -320,13 +321,17 @@ void GuardarEnBloque(char *linea, char *path) {
 
 t_registro* BuscarKey(t_select *selectMsg) {
 
+	//declaro registro a retornar
+	t_registro *registroInit = malloc(sizeof(t_registro));
+
 	//Verifico existencia en el file system
 	if (!ExisteTabla(selectMsg->nombreTabla)) {
 		loggear(logger, LOG_LEVEL_ERROR, "%s no existe en el file system",
 				selectMsg->nombreTabla);
+		registroInit->key = -1;
+		return registroInit;
 	}
 
-	t_registro *registroInit = malloc(sizeof(t_registro));
 	int bloqueado = GetEstadoTabla(selectMsg->nombreTabla);
 	if(bloqueado){
 		registroInit->key = -1;
@@ -335,6 +340,7 @@ t_registro* BuscarKey(t_select *selectMsg) {
 
 	//Inicializo lista donde se concatenaran las restantes
 	t_list *listaBusqueda = list_create();
+	int size_busqueda;
 
 	//Obtengo metadata
 	t_metadata *metadata = ObtenerMetadataTabla(selectMsg->nombreTabla);
@@ -369,33 +375,30 @@ t_registro* BuscarKey(t_select *selectMsg) {
 		}
 	}
 
-
-	int sizeList = list_size(listaBusqueda);
-	loggear(logger, LOG_LEVEL_INFO, "sizeLista %d", sizeList);
-
-//	//Escaneo memtable
+	//Escaneo memtable
 	t_list *listaMemtable = list_create();
 	listaMemtable = BuscarKeyMemtable(selectMsg->key, selectMsg->nombreTabla);
-	if (listaMemtable != NULL) {
-		list_add_all(listaBusqueda, listaMemtable);
+	if (listaMemtable == NULL) {
+		log_debug(logger, "No se encontraron registros en memtable");
 	} else {
-		log_info(logger, "Lista de memtable vacia");
+		log_debug(logger, "Registros encontrados en memtable");
+		list_add_all(listaBusqueda, listaMemtable);
 	}
-
-	int sizeSelect = list_size(listaBusqueda);
-	loggear(logger, LOG_LEVEL_INFO, "Lista de select tiene size %d",
-			sizeSelect);
 
 	//Escaneo temporales
 	t_list *listaTemp;
 	listaTemp = BuscarKeyTemporales(selectMsg->key, selectMsg->nombreTabla);
-	list_add_all(listaBusqueda, listaTemp);
+	if (list_is_empty(listaTemp)) {
+		log_debug(logger, "No se encontraron registro en .tmp");
+	} else {
+		log_debug(logger, "Registros encontrados en .tmp");
+		list_add_all(listaBusqueda, listaTemp);
+	}
 
 	int count = list_size(listaTemp);
-	log_info(logger, "Coincidencias en temp :%d", count);
 
 	for (int i = 0; i < count; i++) {
-		t_registro *registro;// = malloc(sizeof(t_registro));
+		t_registro *registro;
 		log_info(logger, "Obteniendo registro %d", i);
 		registro = list_get(listaTemp, i);
 		log_info(logger, "***Registro %d de Temp***", i);
@@ -405,41 +408,62 @@ t_registro* BuscarKey(t_select *selectMsg) {
 	}
 
 	//Busco registro con mayor timestamp
-	int sizeLista = list_size(listaBusqueda);
+	size_busqueda = list_size(listaBusqueda);
 
 
 	//si la lista esta vacia devuelvo registro con key -1
-	if(sizeLista < 1){
+	if(list_is_empty(listaBusqueda)) {
 			registroInit->key = -1;
 			return registroInit;
 		}
 	registroInit = list_get(listaBusqueda, 0);
-	t_registro *registroAux;// = malloc(sizeof(t_registro));
+	t_registro *registroAux;
 
+	if (1 < size_busqueda) {
+		for (int i = 0; i < size_busqueda; i++) {
+			registroAux = list_get(listaBusqueda, i);
+			loggear(logger, LOG_LEVEL_INFO,
+			"Elemento %d tiene value %s y timestamp %llu", i,
+			registroAux->value, registroAux->timestamp);
 
-
-	for (int i = 0; i < sizeLista; i++) {
-		registroAux = list_get(listaBusqueda, i);
-		loggear(logger, LOG_LEVEL_INFO,
-				"Elemento %d tiene value %s y timestamp %llu", i,
-				registroAux->value, registroAux->timestamp);
-		if (registroInit->timestamp < registroAux->timestamp) {
-			registroInit = registroAux;
+			if (registroInit->timestamp < registroAux->timestamp)
+				registroInit = registroAux;
 		}
-
 	}
+
+
+	log_debug(logger, "Devolviendo registro key %d value %s timestamp %llu",
+			registroInit->key, registroInit->value, registroInit->timestamp);
 
 	if(registroInit != NULL)
 		log_debug(logger, "El timestamp mayor es %llu",
 				registroInit->timestamp);
-	if(registroAux != NULL) free(registroAux);
-	free(selectMsg);
-	if (listaMemtable != NULL)
-		list_clean(listaMemtable);
-	if (listaTemp != NULL)
-		list_clean(listaTemp);
-	list_clean(listaBusqueda);
+
+	//libero listas
+	int size_memtable = list_size(listaMemtable);
+	for (int i = 0; i < size_memtable; i++) {
+		t_registro *regMem = list_get(listaMemtable, i);
+		free(regMem);
+	}
+	list_destroy(listaMemtable);
+
+	int size_temp = list_size(listaTemp);
+	for (int i = 0; i < size_temp; i++) {
+		t_registro *regTmp = list_get(listaTemp, i);
+		free(regTmp);
+	}
+	list_destroy(listaTemp);
+
+	size_busqueda = list_size(listaBusqueda);
+	for (int i = 0; i < size_busqueda; i++) {
+		t_registro *regClean = list_get(listaBusqueda, i);
+		free(regClean);
+	}
+	list_destroy(listaBusqueda);
+
 	free(rutaParticion);
+	free(selectMsg);
+
 	return registroInit;
 }
 
@@ -447,7 +471,7 @@ t_list *BuscarKeyMemtable(int key, char *nombre) {
 	loggear(logger, LOG_LEVEL_INFO, "Buscando key:%d en memtable de: %s", key,
 			nombre);
 
-	t_tabla *tabla;//= malloc(sizeof(t_tabla));
+	t_tabla *tabla;
 	tabla = BuscarTablaMemtable(nombre);
 
 	if (tabla == NULL) {
@@ -456,10 +480,12 @@ t_list *BuscarKeyMemtable(int key, char *nombre) {
 		return NULL;
 	}
 
+	log_info(logger, "hay registros en memtable...");
 	int findKey(t_registro *registro) {
 		return (registro->key == key);
 	}
 
+	log_info(logger, "filtrando lista en memtable");
 	return list_filter(tabla->lista, (void*) findKey);
 }
 
@@ -503,7 +529,7 @@ t_list *BuscarKeyTemporales(int key, char *tabla) {
 	int lenghtCollection = list_size(tempBlocksCollection);
 	for (int j = 0; lenghtCollection > j; j++) {
 		int block;
-		block = list_get(tempBlocksCollection, j);
+		block = (int)list_get(tempBlocksCollection, j);
 		char *pathBlock = string_from_format("%s%d.bin", rutaBloques, block);
 		log_info(logger, "Leyendo bloque: %s", pathBlock);
 
@@ -1044,7 +1070,7 @@ int GetFreeBlocks() {
 
 void IniciarBloques() {
 	int bloque = 0;
-	for (int i = 0; i < cantidad_bloques-1; i++) {
+	for (int i = 0; i < cantidad_bloques; i++) {
 		CrearBloque(bloque, 0);
 		bloque++;
 	}

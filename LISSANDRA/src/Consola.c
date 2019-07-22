@@ -69,13 +69,14 @@ int procesar_comando(char *line) {
 			selectMsg->key = atoi(request->parametro2);
 			t_registro *regSelect = BuscarKey(selectMsg);
 
-			if (regSelect->key > -1) {
+			if (regSelect->key != -1) {
 				printf("Key\t Value\n");
 				printf("%d \t %s\n", regSelect->key, regSelect->value);
 			}
 			if (regSelect->key == -1)
 				printf("No se encuentra la key en FS.\n");
-			free(regSelect);
+
+			if(regSelect != NULL) free(regSelect);
 			break;
 
 		case _insert:

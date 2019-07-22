@@ -81,6 +81,8 @@ void DumpearTabla(t_list *lista, char *nombre)
 		registro = list_get(lista, j);
 		char *linea = string_new();
 		char *key = string_new();
+		char *value = string_new();
+		strcpy(value, registro->value);
 		string_append(&key, (string_itoa(registro->key)));
 		//char *timestamp = string_new();
 		char *timestamp = malloc(20);
@@ -89,10 +91,11 @@ void DumpearTabla(t_list *lista, char *nombre)
 		string_append(&linea, ";");
 		string_append(&linea, key);
 		string_append(&linea, ";");
-		string_append(&linea, registro->value);
+		string_append(&linea, value);
 		string_append(&linea, "\n");
 		free(key);
 		free(timestamp);
+		free(value);
 		int lenLinea = strlen(linea);
 		log_info(logger, "strlen de linea %s es %d", linea, lenLinea);
 
@@ -127,7 +130,7 @@ void DumpearTabla(t_list *lista, char *nombre)
 	int longitudBloques = list_size(bloques);
 	for(int i = 0; i < longitudBloques; i++)
 	{
-		int idBloque = list_get(bloques, i);
+		int idBloque = (int)list_get(bloques, i);
 		if(i < (longitudBloques - 1))
 		{
 			fprintf(file, "%d", idBloque);
