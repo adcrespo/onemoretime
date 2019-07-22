@@ -62,17 +62,24 @@ void CargarBitmap() {
 	CrearDirectorio(rutaBitmap);
 	string_append(&rutaBitmap, "Bitmap.bin");
 
-    log_debug(logger, "Ruta Bitmap: %s", rutaBitmap);
-
-	FILE *file = fopen(rutaBitmap, "wb");
-
-	int bm = open(rutaBitmap, O_RDWR);
-	ftruncate(bm, (cantidad_bloques/8) + 1);
+	log_debug(logger, "Ruta Bitmap: %s", rutaBitmap);
+//		verifico si abre bitmap en readonly
+	int bm = open(rutaBitmap, O_RDONLY);
+	if (bm == -1) {
+//		si no esta creo el archivo
+		log_debug(logger, "Generando Bitmap.bin");
+		FILE *file = fopen(rutaBitmap, "wb");
+		fclose(file);
+	}
+	if(bm != -1) close(bm);
+//  lo abro en modo WR
+	bm = open(rutaBitmap, O_RDWR);
+	ftruncate(bm, (cantidad_bloques / 8) + 1);
 	bmap = mmap(NULL, cantidad_bloques / 8, PROT_WRITE | PROT_READ, MAP_SHARED,
 			bm, 0);
 	bitmap = bitarray_create_with_mode(bmap, cantidad_bloques / 8, MSB_FIRST);
 
-	msync(bmap,bm, MS_SYNC);
+	msync(bmap, bm, MS_SYNC);
 	struct stat mystat;
 	if (fstat(bm, &mystat) < 0) {
 		loggear(logger, LOG_LEVEL_ERROR, "Error al establecer fstat");
@@ -82,7 +89,6 @@ void CargarBitmap() {
 	loggear(logger, LOG_LEVEL_INFO, "Bitmap generado");
 	close(bm);
 	free(rutaBitmap);
-	fclose(file);
 }
 
 int ExisteTabla(const char *tabla) {
@@ -719,15 +725,12 @@ int DropearTabla(char *nombre) {
 				t_config *config_file = cargarConfiguracion(pathFile, logger);
 
 				int size = config_get_int_value(config_file, "SIZE");
-
-				int cantBloques = CalcularBloques(size);
+				int cantBloques;
+				cantBloques = (size != 0) ? CalcularBloques(size) : 1;
 				char **bloques = malloc(sizeof(int) * cantBloques);
 				bloques = config_get_array_value(config_file, "BLOCKS");
 
 				LiberarBloques(bloques, cantBloques);
-//				LiberarMetadata(bloques, cantBloques);
-
-//				printf("PATHFILE %s\n", pathFile);
 				remove(pathFile);
 				free(pathFile);
 
