@@ -44,6 +44,7 @@ int GetFreeBlocks();
 void IniciarBloques();
 void CrearDirectorio(char *directory);
 void aplicar_retardo();
+void RemoveGlobalList(char *tabla);
 
 t_config *config_metadata;
 t_bitarray *bitmap;
