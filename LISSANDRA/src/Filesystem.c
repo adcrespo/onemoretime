@@ -736,7 +736,6 @@ int DropearTabla(char *nombre) {
 		while ((entry = readdir(dir)) != NULL) {
 			if (string_ends_with(entry->d_name, ".tmp")
 					|| string_ends_with(entry->d_name, ".bin")) {
-//				printf("Archivo: %s\n", entry->d_name);
 				char *pathFile = string_from_format("%s/%s", path,
 						entry->d_name);
 
@@ -760,16 +759,14 @@ int DropearTabla(char *nombre) {
 				config_destroy(config_file);
 			}
 		}
-
-
 	}
-	closedir(dir);
 
 	remove(pathMetadata);
 	remove(path);
 	free(pathMetadata);
 	free(path);
 	RemoveGlobalList(nombre);
+	closedir(dir);
 	return 0;
 }
 
