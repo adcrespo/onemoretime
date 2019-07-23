@@ -451,6 +451,7 @@ t_registro* BuscarKey(t_select *selectMsg) {
 //	for (int i = 0; list_size(listaBusqueda) > i; i++) {
 //		free(list_remove(listaBusqueda, 0));
 //	}
+
 	list_destroy(listaBusqueda);
 
 	free(rutaParticion);
@@ -684,7 +685,11 @@ int CrearTabla(t_create *msgCreate) {
 	}
 
 	//CreoHiloCompactacion
-	crearHiloCompactacion(msgCreate->comp_time, msgCreate->nombreTabla);
+	int idHilo = crearHiloCompactacion(msgCreate->comp_time, msgCreate->nombreTabla);
+	t_datos_hilo_compactacion* compactacion = malloc(sizeof(t_datos_hilo_compactacion));
+	compactacion->hilo = idHilo;
+	strcpy(compactacion->path_tabla,msgCreate->nombreTabla);
+	list_add(listaHilos,compactacion);
 	return 0;
 }
 
@@ -761,6 +766,16 @@ int DropearTabla(char *nombre) {
 		}
 	}
 
+	for(int i = 0; i<listaHilos->elements_count;i++){
+		t_datos_hilo_compactacion *compact = list_get(listaHilos,i);
+		log_info(logger,"Eliminando hilo %s(%d) vs %s",compact->path_tabla,compact->hilo,nombre);
+		if(string_equals_ignore_case(compact->path_tabla,nombre)){
+			pthread_cancel(compact->hilo);
+			free(list_remove(listaHilos,i));
+			break;
+		}
+	}
+
 	remove(pathMetadata);
 	remove(path);
 	free(pathMetadata);
@@ -825,7 +840,11 @@ void LevantarHilosCompactacionFS() {
 						"COMPACTATION_TIME");
 				config_destroy(config_file);
 				//printf("Tiempo de compactacion tabla %s: %d\n", entry->d_name, compactationTime);
-				crearHiloCompactacion(compactationTime, entry->d_name);
+				int idHilo = crearHiloCompactacion(compactationTime, entry->d_name);
+				t_datos_hilo_compactacion* compactacion = malloc(sizeof(t_datos_hilo_compactacion));
+				compactacion->hilo = idHilo;
+				strcpy(compactacion->path_tabla,entry->d_name);
+				list_add(listaHilos,compactacion);
 			}
 		}
 		closedir(dir);
