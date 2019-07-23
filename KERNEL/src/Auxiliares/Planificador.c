@@ -178,7 +178,7 @@ void procesar_pcb(t_pcb* pcb) {
 
 	log_info(logger, "PLANIFICADOR| Quantum disponible: %d", quantum_restante);
 
-	for (int i=0; quantum_restante >= i; i++ ) {
+	for (int i=0; quantum_restante > i; i++ ) {
 		log_info(logger, "PLANIFICADOR| --- Consumiendo Quantum ---");
 		retardo_ejecucion();
 
@@ -214,7 +214,7 @@ void procesar_pcb(t_pcb* pcb) {
 int ejecutar_request(char* linea, int id_proceso) {
 
 //	log_info(logger, "PLANIFICADOR| Request a ejecutar:");
-//	log_info(logger, "PLANIFICADOR| %s", linea);
+	log_info(logger, "PLANIFICADOR| Request a ejecutar: %s", linea);
 	t_request* request = parsear(linea, logger);
 	int resultado;
 
@@ -278,7 +278,8 @@ int ejecutar_request(char* linea, int id_proceso) {
 			t_tipoSeeds* memoria = obtener_memoria_sc(); // ----- cambiar para hacerlo dinamico para los criterios
 			int cliente = conectar_a_memoria(memoria);
 
-			int resultado_mensaje = enviarMensaje(kernel, create, sizeof(t_create), req_create, cliente, logger, mem);
+//			int resultado_mensaje = enviarMensaje(kernel, create, sizeof(t_create), req_create, cliente, logger, mem);
+			int resultado_mensaje = enviarMensajeConError(kernel, create, sizeof(t_create), req_create, cliente, logger, mem, 0);
 
 			log_info(logger, "Resultado de enviar mensaje: %d", resultado_mensaje);
 
@@ -287,7 +288,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 			log_info(logger, "PLANIFICADOR| Resultado de CREATE: %d", resultado);
 
 //			close(cliente);
-			free(req_create);
+//			free(req_create);
 			break;
 
 		case _describe:
@@ -347,7 +348,9 @@ void* aplicar_algoritmo_rr() { // @suppress("No return")
 
 //		sem_wait(&sem_multiprog);
 	procesar_pcb(pcb);
-//	return NULL;
+
+	log_info(logger, "Finaliza hilo planificación para proceso N° %d", pcb->id_proceso);
+	return NULL;
 }
 
 void imprimir_listas() {
