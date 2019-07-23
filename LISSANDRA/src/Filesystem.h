@@ -22,7 +22,7 @@ void CrearMetadataTabla(char *tabla, char *consistencia, int particiones, int ti
 int InsertarTabla(t_request *request);
 void CrearBloque(int numero, int bytes);
 int ContarElementosArray(char **cadena);
-t_registro* BuscarKeyParticion(int key, char *bloque);
+t_registro* BuscarKeyParticion(int key, char *bloque, t_registro *registro);
 t_registro* BuscarKey(t_select *selectMsg);
 int AgregarBloque();
 int CrearTabla(t_create *msgCreate);

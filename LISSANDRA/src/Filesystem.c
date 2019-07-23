@@ -245,11 +245,6 @@ int InsertarTabla(t_request *request) {
 
 	char *nombre_tabla = string_new();
 	string_append(&nombre_tabla, request->parametro1);
-	int bloqueado = GetEstadoTabla(nombre_tabla);
-	if(bloqueado){
-		free(registro);
-		return -1;
-	}
 	//valido value enviado
 	if((strlen(registro->value)) > (lfs_conf.tamano_value)){
 		free(registro);
@@ -264,6 +259,13 @@ int InsertarTabla(t_request *request) {
 		free(registro);
 		free(nombre_tabla);
 		return 1;
+	}
+
+	//Valido tabla bloqueada
+	int bloqueado = GetEstadoTabla(nombre_tabla);
+	if(bloqueado){
+		free(registro);
+		return -1;
 	}
 
 	//Verifico si no tiene datos a dumpear
@@ -364,7 +366,7 @@ t_registro* BuscarKey(t_select *selectMsg) {
 		while (blocksArray[j] != NULL) {
 
 			t_registro *registro = BuscarKeyParticion(selectMsg->key,
-					blocksArray[j]);
+					blocksArray[j], registroInit);
 			//Si se encontro en particion agrego a la lista de busqueda
 			if (registro->timestamp != 0) {
 				log_info(logger, "Registro encontrado en particion");
@@ -584,7 +586,7 @@ t_list *BuscarKeyTemporales(int key, char *tabla) {
 	return listaTmp;
 }
 
-t_registro* BuscarKeyParticion(int key, char *bloque) {
+t_registro* BuscarKeyParticion(int key, char *bloque, t_registro *registro) {
 	loggear(logger, LOG_LEVEL_INFO, "Buscando key : %d en bloque: %s", key,
 			bloque);
 	char *pathBlock = string_from_format("%s%s.bin", rutaBloques, bloque);
@@ -602,7 +604,7 @@ t_registro* BuscarKeyParticion(int key, char *bloque) {
 
 	loggear(logger, LOG_LEVEL_INFO, "Archivo %s abierto correctamente",
 			pathBlock);
-	t_registro *registro = malloc(sizeof(t_registro));
+//	t_registro *registro = malloc(sizeof(t_registro));
 	fseek(file, 0, SEEK_END); // seek to end of file
 	int size = ftell(file); // get current file pointer
 	fseek(file, 0, SEEK_SET);
