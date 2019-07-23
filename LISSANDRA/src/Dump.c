@@ -184,14 +184,27 @@ void AumentarContadorTmp(char *nombre){
 
 int GetContadorTmp(char *nombre){
 
-	bool findTable(void* element) {
-		t_tcb* tabla = element;
-		return string_equals_ignore_case(tabla->nombre_tabla, nombre);
+	DIR *dir;
+	struct dirent *entry;
+	int contador = 0;
+
+	char *path = string_from_format("%s%s", rutaTablas, nombre);
+
+	if ((dir = opendir(path)) == NULL) {
+		perror("openndir() error");
 	}
 
-	t_tcb* tcbBusqueda = list_find(tablasGlobal, &findTable);
-	log_info(logger, "Contador tabla %s es %d", nombre, tcbBusqueda->contadorTmp);
-	return tcbBusqueda->contadorTmp;
+	while ((entry = readdir(dir)) != NULL) {
+		if (string_ends_with(entry->d_name, ".tmp")){
+			contador ++;
+		}
+
+	}
+
+	free(entry);
+	free(path);
+	closedir(dir);
+	return contador;
 }
 
 void ReiniciarContadorTmp(char *nombre){

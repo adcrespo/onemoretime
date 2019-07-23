@@ -102,7 +102,6 @@ int process_compactacion(char* path_tabla)
 		free(rutaTmpc);
 		i++;
 	}
-	ReiniciarContadorTmp(path_tabla);
 
 	//Por cada .tmpc:
 		//Analizar registro por registro y compararlos contra el .bin (en memoria)
