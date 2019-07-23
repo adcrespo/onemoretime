@@ -170,11 +170,13 @@ void *crearConsola() {
 			break;
 		case describe_:;
 			printf("describe...\n");
-			char* buffer_describe=NULL;
+			char* buffer_describe=string_new();
 			int largo_buffer_describe;
 			int describe = proceso_describe(comando[1]!=NULL?comando[1]:"",&buffer_describe, &largo_buffer_describe);
-			if(describe >= 0)
+			if(describe >= 0){
 				printf("[OK] Se pudo realizar el describe\n");
+				printf("%s",buffer_describe);
+			}
 			else
 				printf("[ERR] No se pudo realizar el describe\n");
 			free(buffer_describe);

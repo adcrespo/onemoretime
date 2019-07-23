@@ -59,7 +59,7 @@ int process_journaling(){
 					pthread_mutex_unlock(&journalingMutexCreate);
 					pthread_mutex_unlock(&journalingMutexDescribe);
 					pthread_mutex_unlock(&journalingMutexDrop);
-					return -1;
+					_exit_with_error("ERROR - Se desconecto LISSANDRA",NULL);
 				}
 				int insert_error = mensaje->header.error;
 				destruirMensaje(mensaje);

@@ -12,6 +12,7 @@
 #include "connection.h"
 #include "journaling.h"
 #include "file_conf.h"
+#include "error.h"
 
 int solicitarPagina(char *tabla, unsigned long long timestamp) {
 	int paginaNueva = add_spa(tabla,1,timestamp);
@@ -56,6 +57,13 @@ int proceso_select(char* tabla, int clave, char** buffer, int* largo_buffer) {
 	sleep(MEM_CONF.RETARDO_FS/1000);
 	enviarMensaje(mem,selectMsg,largo_content,content,socket_lis,logger,lis);
 	t_mensaje* mensaje = recibirMensaje(socket_lis, logger);
+
+	if(mensaje == NULL) {
+		loggear(logger,LOG_LEVEL_ERROR,"No se pudo recibir mensaje de lis");
+		pthread_mutex_unlock(&journalingMutexDescribe);
+		_exit_with_error("ERROR - Se desconecto LISSANDRA",NULL);
+	}
+
 	free(content);
 
 	if(mensaje == NULL) {
@@ -151,6 +159,12 @@ int proceso_create(char* tabla,char* tipo_cons, int num_part, int compact_time){
 	enviarMensaje(mem,create,largo_content,content,socket_lis,logger,lis);
 	t_mensaje* mensaje = recibirMensaje(socket_lis, logger);
 
+	if(mensaje == NULL) {
+		loggear(logger,LOG_LEVEL_ERROR,"No se pudo recibir mensaje de lis");
+		pthread_mutex_unlock(&journalingMutexDescribe);
+		_exit_with_error("ERROR - Se desconecto LISSANDRA",NULL);
+	}
+
 	free(content);
 
 	if(mensaje == NULL) {
@@ -182,6 +196,11 @@ int proceso_describe(char* tabla, char** buffer, int* largo_buffer){
 	if(string_is_empty(tabla)){
 		enviarMensaje(mem,countTables,0,NULL,socket_lis,logger,lis);
 		t_mensaje* mensajeCantidad = recibirMensaje(socket_lis, logger);
+		if(mensajeCantidad == NULL) {
+			loggear(logger,LOG_LEVEL_ERROR,"No se pudo recibir mensaje de lis");
+			pthread_mutex_unlock(&journalingMutexDescribe);
+			_exit_with_error("ERROR - Se desconecto LISSANDRA",NULL);
+		}
 		cantidad=mensajeCantidad->header.error;
 		destruirMensaje(mensajeCantidad);
 		loggear(logger,LOG_LEVEL_DEBUG,"La cantidad es: %d",cantidad);
@@ -196,18 +215,20 @@ int proceso_describe(char* tabla, char** buffer, int* largo_buffer){
 		if(mensaje == NULL) {
 			loggear(logger,LOG_LEVEL_ERROR,"No se pudo recibir mensaje de lis");
 			pthread_mutex_unlock(&journalingMutexDescribe);
-			return -1;
+			_exit_with_error("ERROR - Se desconecto LISSANDRA",NULL);
 		}
 		desc = mensaje->header.error;
+
 		longAcum += mensaje->header.longitud;
-		*buffer = realloc(*buffer,longAcum);
-		memset(*buffer,0x00,mensaje->header.longitud);
-		memcpy(*buffer,mensaje->content,mensaje->header.longitud);
-		*largo_buffer = mensaje->header.longitud;
+		/**buffer = realloc(*buffer,longAcum+1);
+		memcpy(*buffer+longAnte,mensaje->content,mensaje->header.longitud);
+		(*buffer)[longAcum] = 0x00;*/
+		string_append_with_format(buffer,"%s\n",mensaje->content);
+		*largo_buffer += mensaje->header.longitud;
 		destruirMensaje(mensaje);
 
-		loggear(logger,LOG_LEVEL_DEBUG,"Data: %s",*buffer);
 	}
+	loggear(logger,LOG_LEVEL_DEBUG,"Data: %s",*buffer);
 	pthread_mutex_unlock(&journalingMutexDescribe);
 	return desc;
 }
@@ -239,6 +260,12 @@ int proceso_drop(char* tabla){
 	sleep(MEM_CONF.RETARDO_FS/1000);
 	enviarMensaje(mem,drop,largo_content,content,socket_lis,logger,lis);
 	t_mensaje* mensaje = recibirMensaje(socket_lis, logger);
+
+	if(mensaje == NULL) {
+		loggear(logger,LOG_LEVEL_ERROR,"No se pudo recibir mensaje de lis");
+		pthread_mutex_unlock(&journalingMutexDescribe);
+		_exit_with_error("ERROR - Se desconecto LISSANDRA",NULL);
+	}
 
 	free(content);
 

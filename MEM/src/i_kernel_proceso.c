@@ -20,7 +20,6 @@ int proceso_describe_global(char* tabla,int socketKER, fd_set* set_master){
 	char *content = NULL;
 	int cantidad;
 	int longAcum = 0;
-	char* bufferMsjDescribe=NULL;
 	t_mensaje* mensajeDescribe=NULL;
 
 	//SEM_MUTEX
@@ -32,6 +31,11 @@ int proceso_describe_global(char* tabla,int socketKER, fd_set* set_master){
 		loggear(logger,LOG_LEVEL_INFO, "INICIANDO PROCESO DESCRIBE KERNEL");
 		enviarMensaje(mem,countTables,0,NULL,socket_lis,logger,lis);
 		mensajeCantidad = recibirMensaje(socket_lis, logger);
+		if(mensajeCantidad == NULL) {
+			loggear(logger,LOG_LEVEL_ERROR,"No se pudo recibir mensaje de lis");
+			pthread_mutex_unlock(&journalingMutexDescribe);
+			_exit_with_error("ERROR - Se desconecto LISSANDRA",NULL);
+		}
 		cantidad=mensajeCantidad->header.error;
 		//loggear(logger,LOG_LEVEL_INFO, "CANTIDAD DE TABLAS DESCRIBE: %d",cantidad);
 		if(enviarMensajeConError(mem,countTables,mensajeCantidad->header.longitud,mensajeCantidad->content,socketKER,logger,kernel,mensajeCantidad->header.error)<=0)
@@ -58,12 +62,13 @@ int proceso_describe_global(char* tabla,int socketKER, fd_set* set_master){
 
 		if(mensajeDescribe == NULL) {
 			loggear(logger,LOG_LEVEL_ERROR,"No se pudo recibir mensaje de lis");
+			pthread_mutex_unlock(&journalingMutexDescribe);
+			_exit_with_error("ERROR - Se desconecto LISSANDRA",NULL);
 		}
 
-		longAcum = mensajeDescribe->header.longitud;
-		bufferMsjDescribe = malloc(longAcum);
-		memset(bufferMsjDescribe,0x00,mensajeDescribe->header.longitud);
-		memcpy(bufferMsjDescribe,mensajeDescribe->content,mensajeDescribe->header.longitud);
+		if(mensajeDescribe == NULL) {
+			loggear(logger,LOG_LEVEL_ERROR,"No se pudo recibir mensaje de lis");
+		}
 
 		if(enviarMensajeConError(mem,describe,mensajeDescribe->header.longitud,mensajeDescribe->content,socketKER,logger,kernel,mensajeDescribe->header.error)<=0)
 		{
@@ -71,16 +76,14 @@ int proceso_describe_global(char* tabla,int socketKER, fd_set* set_master){
 			FD_CLR(socketKER, set_master);
 		}
 
-		loggear(logger,LOG_LEVEL_DEBUG,"Data: %s",bufferMsjDescribe);
+		loggear(logger,LOG_LEVEL_DEBUG,"Data: %s",mensajeDescribe->content);
 
 		//LIBERO_MEM_ITERACION
-		free(bufferMsjDescribe);
 		destruirMensaje(mensajeDescribe);
 	}
 
 	//LIBERAR_MEMORIA
 	destruirMensaje(mensajeCantidad);
-	//destruirMensaje(mensajeDescribe);
 	free(content);
 
 	//SEM_MUTEX
