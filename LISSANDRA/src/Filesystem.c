@@ -421,7 +421,7 @@ t_registro* BuscarKey(t_select *selectMsg) {
 	t_registro *registroAux;
 
 	if (1 < size_busqueda) {
-		for (int i = 0; i < size_busqueda; i++) {
+		for (int i = 0; i < size_busqueda ; i++) {
 			registroAux = list_get(listaBusqueda, i);
 			log_info(logger, "Elemento %d tiene value %s y timestamp %llu", i,
 					registroAux->value, registroAux->timestamp);
@@ -436,30 +436,42 @@ t_registro* BuscarKey(t_select *selectMsg) {
 			registroInit->key, registroInit->value, registroInit->timestamp);
 
 	//libero listas
-/*	if (listaMemtable != NULL) {
-		for (int i = 0; list_size(listaMemtable) > i; i++) {
-			free(list_remove(listaMemtable, 0));
-		}
 
-		list_destroy(listaMemtable);
-	}
+	int size_memtable;
+	int size_temp;
 
-	if (!list_is_empty(listaTemp)) {
-		for (int i = 0; list_size(listaTemp) > i; i++) {
-			free(list_remove(listaTemp, 0));
-		}
-
-		list_destroy(listaTemp);
-	}
-
-	if (!list_is_empty(listaBusqueda)) {
-		for (int i = 0; list_size(listaBusqueda) > i; i++) {
+	if (listaBusqueda != NULL) {
+		for (int i = 0; size_busqueda > i; i++) {
+			log_info(logger, "Remove busqueda %d", i);
 			free(list_remove(listaBusqueda, 0));
 		}
+		size_busqueda = list_size(listaBusqueda);
+		log_info(logger, "Size busqueda %d", size_busqueda);
 
 		list_destroy(listaBusqueda);
 	}
-*/
+
+	if (listaTemp != NULL) {
+		size_temp = list_size(listaTemp);
+		for (int j = 0; size_temp > j; j++) {
+			log_info(logger, "Remove temp %d", j);
+			free(list_remove(listaTemp, 0));
+		}
+		size_temp = list_size(listaTemp);
+		log_info(logger, "Size temp %d", size_temp);
+		list_destroy(listaTemp);
+	}
+
+	if (listaMemtable != NULL) {
+		size_memtable = list_size(listaMemtable);
+		for (int k = 0; size_memtable > k; k++) {
+			log_info(logger, "Remove memtable %d", k);
+			free(list_remove(listaMemtable, 0));
+		}
+		size_memtable = list_size(listaMemtable);
+		log_info(logger, "Size memtable %d", size_memtable);
+		list_destroy(listaTemp);
+	}
 
 	free(rutaParticion);
 	free(selectMsg);
@@ -480,12 +492,10 @@ t_list *BuscarKeyMemtable(int key, char *nombre) {
 		return NULL;
 	}
 
-	log_info(logger, "hay registros en memtable...");
 	int findKey(t_registro *registro) {
 		return (registro->key == key);
 	}
 
-	log_info(logger, "filtrando lista en memtable");
 	return list_filter(tabla->lista, (void*) findKey);
 
 }
@@ -598,6 +608,8 @@ t_registro* BuscarKeyParticion(int key, char *bloque) {
 	fseek(file, 0, SEEK_SET);
 	if(size == 0){
 		registro->timestamp = 0;
+		free(pathBlock);
+		fclose(file);
 		return registro;
 	}
 	while (!feof(file))
@@ -619,7 +631,7 @@ t_registro* BuscarKeyParticion(int key, char *bloque) {
 					registro->timestamp);
 			loggear(logger, LOG_LEVEL_INFO, "Key:%d", registro->key);
 			loggear(logger, LOG_LEVEL_INFO, "Value:%s", registro->value);
-			return registro;
+//			return registro;
 		} else {
 			registro->timestamp = 0;
 		}
@@ -671,7 +683,7 @@ int CrearTabla(t_create *msgCreate) {
 
 		char *rutaParticion = string_from_format("%s%s/%s%d.bin", rutaTablas,
 				msgCreate->nombreTabla, "part", particionInicial);
-		printf("Abriendo particiones %s\n", rutaParticion);
+		log_debug(logger, "Creando particion %s", rutaParticion);
 		FILE *file = fopen(rutaParticion, "w");
 
 		if (file == NULL) {
@@ -802,7 +814,7 @@ int CalcularBloques(int bytes) {
 
 void LiberarBloques(char **bloques, int cantBloques) {
 	for (int i = 0; i < cantBloques; i++) {
-		printf("Eliminando bloque %d\n", atoi(bloques[i]));
+		//printf("Eliminando bloque %d\n", atoi(bloques[i]));
 		int pos = atoi(bloques[i]);
 		bitarray_clean_bit(bitmap, pos);
 		char* ruta = string_new();
