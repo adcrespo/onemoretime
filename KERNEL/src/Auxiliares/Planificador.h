@@ -43,9 +43,10 @@ t_tipoSeeds* get_memoria_por_criterio(char *criterio);
 t_tipoSeeds* obtener_memoria_random();
 t_tipoSeeds* obtener_memoria_sc();
 void retardo_ejecucion();
-void procesar_pcb(t_pcb* pcb);
+int procesar_pcb(t_pcb* pcb);
 int ejecutar_request(char* linea, int id_proceso);
 void* aplicar_algoritmo_rr();
 void imprimir_listas();
+int calcular_quantum(t_pcb* pcb);
 
 #endif /* AUXILIARES_PLANIFICADOR_H_ */

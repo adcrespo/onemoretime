@@ -12,20 +12,11 @@ void* planificar() {
 
 	while(1) {
 
-		int valor= 0;
-		int valor_2= 0;
-
-		sem_wait(&sem_ready);
+		// Encuentro nuevo proceso en READY
 		sem_wait(&sem_multiprog);
+		sem_wait(&sem_ready);
 
-		sem_getvalue(&sem_ready, &valor);
-		sem_getvalue(&sem_multiprog, &valor_2);
-
-		log_info(logger, "Sem Ready: %d", valor);
-		log_info(logger, "Sem Multiprog: %d", valor_2);
-
-
-		imprimir_listas();
+//		imprimir_listas();
 
 //		t_pcb* pcb = sacar_proceso_rr(lista_ready);
 //		log_info(logger, "PLANIFIC| Proceso N°: %d.", pcb->id_proceso);
@@ -33,14 +24,15 @@ void* planificar() {
 //		log_info(logger, "PLANIFIC| Proceso %d pasa a EXEC", pcb->id_proceso);
 //		agregar_proceso(pcb, lista_exec, &sem_exec);
 //
-////		sem_wait(&sem_multiprog);
 //		procesar_pcb(pcb);
+		aplicar_algoritmo_rr();
 
-		int hilo_algoritmo = pthread_create(&thread_planificacion, NULL, aplicar_algoritmo_rr(), NULL);
-		if (hilo_algoritmo == -1) {
-			log_error(logger, "THREAD|No se pudo generar el hilo para el algoritmo.");
-		}
-		log_info(logger, "THREAD|Se generó el hilo para el algoritmo.");
+
+//		int hilo_algoritmo = pthread_create(&thread_planificacion, NULL, aplicar_algoritmo_rr(), NULL);
+//		if (hilo_algoritmo == -1) {
+//			log_error(logger, "THREAD|No se pudo generar el hilo para el algoritmo.");
+//		}
+//		log_info(logger, "THREAD|Se generó el hilo para el algoritmo.");
 	}
 }
 
@@ -59,34 +51,34 @@ void crear_proceso(char* line,t_request* request) {
 	log_info(logger, "PLANIFIC| Proceso %d generado", id_proceso);
 	agregar_proceso(proceso, lista_new, &sem_new);
 	log_info(logger, "PLANIFIC| Proceso %d agregado a NEW", id_proceso);
+	imprimir_listas(); // SACAR
 
 	/* 3. Carga de PCB */
-	log_info(logger, "PLANIFIC| Generando PCB.");
+	log_info(logger, "PLANIFIC| Cargando PCB.");
 	proceso->script = string_new();
 	proceso->ruta_archivo = string_new();
-
-	if( request->request == _run) {
-		string_append(&proceso->ruta_archivo, request->parametro1);
-	}
-
 	proceso->id_proceso = id_proceso;
 	proceso->program_counter = 0;
 	string_append(&proceso->script, line);
 	proceso->cantidad_request = cantidad_request(line);
 
-	/* 4. Pasar PCB de NEW a READY */
-	log_info(logger, "PLANIFIC|Pasando proceso %d de NEW a READY.", id_proceso);
-	proceso = sacar_proceso(id_proceso, lista_new, &sem_new);
-	agregar_proceso(proceso, lista_ready, &sem_ready);
+	if( request->request == _run) {
+		string_append(&proceso->ruta_archivo, request->parametro1);
+	}
 
 	imprimir_pcb(proceso);
+
+	/* 4. Pasar PCB de NEW a READY */
+	proceso = sacar_proceso(id_proceso, lista_new, &sem_new);
+	agregar_proceso(proceso, lista_ready, &sem_ready);
+	log_info(logger, "PLANIFIC| Proceso %d de NEW a READY.", id_proceso);
 
 }
 
 void agregar_proceso(t_pcb* proceso,t_list* lista, sem_t* sem) {
 
-	sem_post(sem);
 	list_add(lista, proceso);
+	sem_post(sem);
 }
 
 t_pcb* sacar_proceso(int id, t_list* lista, sem_t* sem) {
@@ -94,16 +86,22 @@ t_pcb* sacar_proceso(int id, t_list* lista, sem_t* sem) {
 	int buscar_pcb_por_id(t_pcb* pcb) {
 		return pcb->id_proceso == id;
 	}
-
+	t_pcb* proceso = list_remove_by_condition(lista, (void *)buscar_pcb_por_id);
 	sem_wait(sem);
-	return (t_pcb *) list_remove_by_condition(lista, (void *)buscar_pcb_por_id);
+
+	return proceso;
 }
 
 t_pcb* sacar_proceso_rr(t_list* lista) {
 
-//	sem_wait(sem);
 	log_info(logger, "PLANIFIC| Buscando PCB por ROUND ROBIN");
 	return (t_pcb *) list_remove(lista_ready, 0);
+
+//	int buscar_primer_elemento(t_pcb* pcb) {
+//		return pcb != NULL;
+//	}
+//
+//	return (t_pcb*) list_remove_by_condition(lista, (void *)buscar_primer_elemento);
 }
 
 int cantidad_request(char* buffer) {
@@ -164,19 +162,9 @@ void retardo_ejecucion() {
 	sleep(kernel_conf.sleep_ejecucion/1000);
 }
 
-void procesar_pcb(t_pcb* pcb) {
+int procesar_pcb(t_pcb* pcb) {
 
-	int quantum = kernel_conf.quantum;
-	int requests_restantes = pcb->cantidad_request - pcb->program_counter;
-	log_info(logger, "PLANIFIC| Request restantes: %d", requests_restantes);
-
-	int quantum_restante = (pcb->program_counter % quantum) == 0 ? quantum: quantum - (pcb->program_counter % quantum);
-
-	if(requests_restantes < quantum_restante) {
-		quantum_restante = requests_restantes;
-	}
-
-	log_info(logger, "PLANIFIC| Quantum disponible: %d", quantum_restante);
+	int quantum_restante = calcular_quantum(pcb);
 
 	for (int i=0; quantum_restante > i; i++ ) {
 		log_info(logger, "PLANIFIC| --- Consumiendo Quantum ---");
@@ -186,6 +174,15 @@ void procesar_pcb(t_pcb* pcb) {
 		char **linea = string_split(pcb->script, "\n");
 
 		int resultado = ejecutar_request(linea[pcb->program_counter], pcb->id_proceso);
+
+		// Si el request falla, se termina el proceso
+		if(resultado != 0) {
+			sacar_proceso(pcb->id_proceso, lista_exec, &sem_exec);
+			sem_post(&sem_multiprog);
+			agregar_proceso(pcb, lista_exit, &sem_exit);
+			log_info(logger, "PLANIFIC| Proceso %d pasa a EXIT", pcb->id_proceso);
+			return EXIT_FAILURE;
+		}
 
 		log_info(logger, "PLANIFIC| Resultado del request: %d", resultado);
 
@@ -209,6 +206,8 @@ void procesar_pcb(t_pcb* pcb) {
 		log_info(logger, "PLANIFIC| Proceso %d vuelve a READY", pcb->id_proceso);
 	}
 
+	return EXIT_SUCCESS;
+
 }
 
 int ejecutar_request(char* linea, int id_proceso) {
@@ -224,14 +223,25 @@ int ejecutar_request(char* linea, int id_proceso) {
 			// SELECT [NOMBRE_TABLA] [KEY]
 			// SELECT TABLA1 3
 
-			int existe = validar_tabla(request->parametro1);
+//			int existe = validar_tabla(request->parametro1);
+//
+//			if (existe == 0) {
+//				log_info(logger, "PLANIFIC| La tabla no existe.");
+//			} else {
+//				log_info(logger, "PLANIFIC| La tabla existe.");
+//			}
 
-			log_info(logger, "Existe: %d", existe);
-			if (existe == 0) {
+			t_metadata* tabla = buscar_tabla(request->parametro1);
+
+			if(tabla == NULL) {
 				log_info(logger, "PLANIFIC| La tabla no existe.");
-			} else {
-				log_info(logger, "PLANIFIC| La tabla existe.");
+//				break;
+				return -1;
 			}
+
+			log_info(logger, "Buscando memoria del criterio %s", tabla->tipoConsistencia);
+
+			// FALTA BUSCAR MEMORIA POR CRITERIO Y CONECTARSE
 
 
 			log_info(logger, "PLANIFIC| Preparando SELECT");
@@ -349,18 +359,28 @@ int ejecutar_request(char* linea, int id_proceso) {
 }
 
 
-void* aplicar_algoritmo_rr() { // @suppress("No return")
+void* aplicar_algoritmo_rr() {
 	t_pcb* pcb = sacar_proceso_rr(lista_ready);
-	log_info(logger, "PLANIFIC| Proceso N°: %d.", pcb->id_proceso);
+
+	if (pcb == NULL) {
+		log_info(logger, "PLANIFIC| No se encontró el PCB");
+	} else {
+		log_info(logger, "PLANIFIC| Proceso %d removido", pcb->id_proceso);
+	}
+
+	agregar_proceso(pcb, lista_exec, &sem_exec);
+	imprimir_listas(); // SACAR
 
 	log_info(logger, "PLANIFIC| Proceso %d pasa a EXEC", pcb->id_proceso);
-	agregar_proceso(pcb, lista_exec, &sem_exec);
 
-//		sem_wait(&sem_multiprog);
-	procesar_pcb(pcb);
+	int resultado = procesar_pcb(pcb);
 
 	log_info(logger, "PLANIFIC| Fin hilo planificación proceso N° %d", pcb->id_proceso);
-	return NULL;
+
+	imprimir_listas();
+//	return NULL;
+//	return (void*)EXIT_SUCCESS;
+	return (void*)resultado;
 }
 
 void imprimir_listas() {
@@ -369,4 +389,22 @@ void imprimir_listas() {
 	log_info(logger, "LISTA READY: %d", lista_ready->elements_count);
 	log_info(logger, "LISTA EXEC: %d", lista_exec->elements_count);
 	log_info(logger, "LISTA EXIT: %d", lista_exit->elements_count);
+}
+
+int calcular_quantum(t_pcb* pcb) {
+
+	int quantum = kernel_conf.quantum;
+	int requests_restantes = pcb->cantidad_request - pcb->program_counter;
+//	log_info(logger, "PLANIFIC| Request restantes: %d", requests_restantes);
+
+	int quantum_restante = (pcb->program_counter % quantum) == 0 ? quantum: quantum - (pcb->program_counter % quantum);
+
+	if(requests_restantes < quantum_restante) {
+		quantum_restante = requests_restantes;
+	}
+
+	log_info(logger, "PLANIFIC| Quantum disponible: %d", quantum_restante);
+
+	return quantum_restante;
+
 }

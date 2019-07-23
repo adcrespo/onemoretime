@@ -103,10 +103,10 @@ int validar_tabla(char *nombre){
 
 t_metadata* buscar_tabla(char *nombre) {
 
-	int EsLaTabla(t_metadata *tabla) {
+	int esLaTabla(t_metadata *tabla) {
 		return string_equals_ignore_case(nombre, tabla->nombreTabla);
 	}
 
-	loggear(logger, LOG_LEVEL_INFO, "Buscando %s en Memtable", nombre);
-	return list_find(lista_metadata, (void*) EsLaTabla);
+	loggear(logger, LOG_LEVEL_INFO, "Buscando %s en Metadata", nombre);
+	return list_find(lista_metadata, (void*) esLaTabla);
 }

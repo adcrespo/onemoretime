@@ -60,12 +60,6 @@ int procesar_comando(char *line) {
 			case _select:
 				crear_proceso(linea_auxiliar, request);
 
-				printf("Validando existencia de Tabla.\n");
-				printf("Seleccionando Memoria según Criterio.\n");
-				printf("Enviando SELECT a una Memoria.\n");
-
-//				free(linea_auxiliar);
-//				free(request);
 				break;
 
 			case _insert:
@@ -76,16 +70,12 @@ int procesar_comando(char *line) {
 				printf("Seleccionando Memoria según Criterio.\n");
 				printf("Enviando INSERT a una Memoria.\n");
 
-//				free(linea_auxiliar);
-//				free(request);
 				break;
 
 			case _create:
 				// Generar nuevo proceso.
 				crear_proceso(linea_auxiliar, request);
 
-//				free(linea_auxiliar);
-//				free(request);
 				break;
 
 			case _describe:
@@ -93,8 +83,6 @@ int procesar_comando(char *line) {
 				// elegir memoria
 				//enviarMensaje(kernel, describe, sizeof(request), &request, 10/* socket memoria*/, logger, mem);
 
-//				free(linea_auxiliar);
-//				free(request);
 				break;
 
 			case _drop:
@@ -105,8 +93,6 @@ int procesar_comando(char *line) {
 				printf("Seleccionando Memoria según Criterio.\n");
 				printf("Enviando DROP a una Memoria.\n");
 
-//				free(linea_auxiliar);
-//				free(request);
 				break;
 
 			case _journal:
@@ -114,8 +100,6 @@ int procesar_comando(char *line) {
 				enviar_journal_memorias();
 				printf("Journal enviado a las memorias asociadas.\n");
 
-//				free(linea_auxiliar);
-//				free(request);
 				break;
 
 			case _add:
@@ -161,8 +145,6 @@ int procesar_comando(char *line) {
 					printf("Criterio no reconocido.\n");
 				}
 
-//				free(linea_auxiliar);
-//				free(request);
 				break;
 
 			case _run:;
@@ -171,8 +153,6 @@ int procesar_comando(char *line) {
 				crear_proceso(contenido, request);
 
 				free(contenido);
-//				free(linea_auxiliar);
-//				free(request);
 				break;
 
 			case _metrics:
@@ -182,8 +162,6 @@ int procesar_comando(char *line) {
 				log_info(logger, "Lista EXEC: %d elementos.", list_size(lista_exec));
 				log_info(logger, "Lista EXIT: %d elementos.", list_size(lista_exit));
 
-//				free(linea_auxiliar);
-//				free(request);
 				break;
 
 			default:;
@@ -265,47 +243,11 @@ char *character_name_generator(const char *text, int state) {
 
 void imprimir_pcb(t_pcb* pcb) {
 
-	log_info(logger, "PCB|Proceso N°: %d.", pcb->id_proceso);
-	log_info(logger, "PCB|Ruta archivo: %s.", pcb->ruta_archivo);
-	log_info(logger, "PCB|Program Counter: %d.", pcb->program_counter);
-	log_info(logger, "PCB|Cantidad request: %d.", pcb->cantidad_request);
-	log_info(logger, "PCB|Script: %s", pcb->script);
-
-}
-
-
-char* criterio_str[] = {
-		"SC"
-		, "SHC"
-		, "EV"
-		, NULL
-};
-
-t_tipoCriterio criterio_to_enum(char *sval) {
-	t_tipoCriterio result = SC;
-	int i = 0;
-	for (i = 0; criterio_str[i] != NULL; ++i, ++result)
-		if (0 == strcmp(sval, criterio_str[i]))
-			return result;
-	return -1;
-}
-
-t_tipoSeeds* obtener_memoria_lista(int numero){
-//	bool findMemory(void* element) {
-//		t_tipoSeeds *memoria = element;
-//		return memoria->numeroMemoria == numero;
-//	}
-	int findMemory(t_tipoSeeds * memoria) {
-		log_info(logger, "Memoria %d en LISTA_CONN", memoria->numeroMemoria);
-		log_info(logger, "Numero buscado %d", numero);
-		log_info(logger, "Igualdad: %d", memoria->numeroMemoria == numero);
-		return memoria->numeroMemoria == numero;
-	}
-
-
-	log_info(logger, "Buscando memoria %d en LISTA_CONN", numero);
-//	return list_find(LISTA_CONN, &findMemory);
-	return list_find(LISTA_CONN, (void *)findMemory);
+	log_info(logger, "PCB| Proceso N°: %d.", pcb->id_proceso);
+	log_info(logger, "PCB| Ruta archivo: %s.", pcb->ruta_archivo);
+	log_info(logger, "PCB| Program Counter: %d.", pcb->program_counter);
+	log_info(logger, "PCB| Cantidad request: %d.", pcb->cantidad_request);
+	log_info(logger, "PCB| Script: %s", pcb->script);
 
 }
 

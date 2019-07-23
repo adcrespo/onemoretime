@@ -14,21 +14,12 @@
 
 
 
-
-typedef enum tipoCriterio {
-	SC,SHC,EV
-} t_tipoCriterio;
-
-
 // Definición de funciones
 void *crear_consola();
 int procesar_comando(char *line);
 char* abrir_archivo_LQL(t_request* request);
 char **character_name_completion(const char *, int, int);
 char *character_name_generator(const char *, int);
-t_tipoCriterio criterio_to_enum(char *sval);
-t_tipoSeeds* obtener_memoria_lista(int numero);
-
 
 
 #endif /* AUXILIARES_CONSOLA_H_ */

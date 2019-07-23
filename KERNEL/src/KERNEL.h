@@ -21,6 +21,7 @@
 #include "Auxiliares/Configuracion.h"
 #include "Auxiliares/Conexion.h"
 #include "Auxiliares/Hilos.h"
+#include "Auxiliares/Criterios.h"
 #include <semaphore.h>
 
 #define BUF_LEN (10 * (sizeof(struct inotify_event) + NAME_MAX + 1))
