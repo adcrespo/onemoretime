@@ -13,6 +13,7 @@
 void aplicar_tiempo_refresh();
 t_metadata* buscar_tabla(char *nombre);
 void actualizar_metadata();
+void limpiar_metadata();
 void guardar_metadata(char *buffer);
 //t_metadata* validar_metadata(char *nombre);
 void describe_global(int cliente);

@@ -7,31 +7,29 @@
 #include "Metadata.h"
 
 void aplicar_tiempo_refresh() {
-	int segundos_refresh = (kernel_conf.metadata_refresh / 1000);
-//	log_info(logger, "REFRESH|Iniciando refresh de metadata en %d segundos", segundos_refresh);
-	sleep(segundos_refresh);
+
+	sleep(kernel_conf.metadata_refresh / 1000);
 }
-
-
 
 void actualizar_metadata() {
 
-	log_info(logger, "METADATA| Iniciando refresh.");
+	log_info(logger, "REFRESH| Iniciando.");
 
 	t_tipoSeeds *memoria = get_memoria_conectada();
 
-	log_info(logger, "METADATA| Memoria asignada: %d", memoria->numeroMemoria);
+	log_info(logger, "REFRESH| Memoria asignada: %d", memoria->numeroMemoria);
 	int cliente = conectar_a_memoria(memoria);
 
 	// Solicitud
 	describe_global(cliente);
+	log_info(logger, "REFRESH| Finalizado.");
 }
 
 void guardar_metadata(char *buffer) {
 	//nombre_tabla;tipoConsistencia;particiones;compactationTime
 	// PERSONAS;SHC;5;1000
 
-	log_info(logger, "METADATA| Guardo Metadata");
+	log_info(logger, "REFRESH| Guardo Metadata");
 	char **elementos = string_split(buffer, ";");
 
 	t_metadata *metadata = malloc(sizeof(t_metadata));
@@ -41,7 +39,7 @@ void guardar_metadata(char *buffer) {
 	metadata->compactationTime = atoi(elementos[3]);
 	list_add(lista_metadata, metadata);
 
-	log_info(logger, "METADATA| Cantidad de Metadatas: %d", lista_metadata->elements_count);
+	log_info(logger, "REFRESH| Cantidad de Metadatas: %d", lista_metadata->elements_count);
 
 	int i = 0;
 	while (elementos[i] != NULL) {
@@ -68,7 +66,6 @@ void describe_global(int cliente) {
 	log_info(logger, "METADATA| Inicio de DESCRIBE");
 	enviarMensaje(kernel, describe_global_, 0, NULL, cliente, logger, mem);
 	t_mensaje* mensajeCantidad = recibirMensaje(cliente, logger);
-	log_info(logger, "METADATA| Respuesta de DESCRIBE");
 	cantidad = mensajeCantidad->header.error;
 	log_info(logger, "METADATA| La cantidad de tablas es: %d", cantidad);
 	destruirMensaje(mensajeCantidad);
@@ -77,7 +74,6 @@ void describe_global(int cliente) {
 
 	while (cantidad-- > 0) {
 
-		log_info(logger, "METADATA| Empiezo a recibir metadata: %d", cantidad);
 		t_mensaje* mensaje = recibirMensaje(cliente, logger);
 		if (mensaje == NULL) {
 			loggear(logger, LOG_LEVEL_ERROR,
@@ -87,15 +83,12 @@ void describe_global(int cliente) {
 		log_info(logger, "METADATA| Mensaje recibido: %d", cantidad);
 		char* buffer_describe= string_new();
 		longAcum += mensaje->header.longitud;
-//		memcpy(buffer_describe, mensaje->content, mensaje->header.longitud);
 		string_append(&buffer_describe, mensaje->content);
 
 		log_info(logger, "METADATA| Metadata: %s", buffer_describe);
 
 		guardar_metadata(buffer_describe);
 		destruirMensaje(mensaje);
-
-//		loggear(logger, LOG_LEVEL_DEBUG, "Metadata: %s", *buffer_describe);
 		free(buffer_describe);
 	}
 }

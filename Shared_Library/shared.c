@@ -96,8 +96,7 @@ t_config* cargarConfiguracion(char *nombreArchivo, t_log* logger) {
 				"No se pudo abrir el archivo de configuración.");
 		return NULL;
 	}
-	loggear(logger, LOG_LEVEL_INFO,
-			"Se abrió el archivo de configuración correctamente.");
+	loggear(logger, LOG_LEVEL_INFO, "Archivo de configuración OK.");
 	return config;
 }
 

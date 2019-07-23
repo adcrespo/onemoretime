@@ -20,6 +20,9 @@ void* planificar() {
 		sem_getvalue(&sem_ready, &valor);
 		sem_getvalue(&sem_multiprog, &valor_2);
 
+		log_info(logger, "Sem Ready Align: %d", sem_ready.__align);
+		log_info(logger, "Sem Ready Size: %s", sem_ready.__size);
+
 		log_info(logger, "Sem Ready: %d", valor);
 		log_info(logger, "Sem Multiprog: %d", valor_2);
 

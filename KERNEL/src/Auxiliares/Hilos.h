@@ -12,17 +12,19 @@
 #include <stdlib.h>
 #include "Planificador.h"
 
-
-void crear_hilo_consola();
-void crear_hilo_gossiping();
-void init_gossiping();
+// Funciones
+void *crearInotify();
 void *hiloGossiping();
-int crear_hilo_inotify();
-void crear_hilo_refresh();
+void init_gossiping();
 void *inicializar_refresh();
-void crear_hilo_planificador();
-void limpiar_metadata();
 int hay_memorias_disponibles();
 t_tipoSeeds* get_memoria_conectada();
+
+// Creación de Hilos
+void crear_hilo_consola();
+int crear_hilo_inotify();
+void crear_hilo_gossiping();
+void crear_hilo_refresh();
+void crear_hilo_planificador();
 
 #endif /* AUXILIARES_HILOS_H_ */
