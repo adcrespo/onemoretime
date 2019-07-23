@@ -21,7 +21,6 @@
 #include "Dump.h"
 #include "Error.h"
 #include "Compactacion.h"
-#include "InotifyLfs.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -32,6 +31,7 @@
 #include <sys/inotify.h>
 #include <limits.h>
 #include <signal.h>
+#include "Hilos.h"
 
 t_log *logger;
 t_list *memtable;
@@ -57,14 +57,6 @@ typedef struct {
 
 
 
-pthread_t thread_consola;
-pthread_t thread_conexiones;
-pthread_t thread_dump;
-
-
-void CrearHiloConsola();
-void CrearHiloConexiones();
-void CrearHiloDump();
 void Inicializar();
 t_tabla* ObtenerTabla(char *nombre);
 void AlocarTabla(char *tabla, t_registro *registro);
