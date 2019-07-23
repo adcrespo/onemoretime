@@ -58,18 +58,25 @@ int proceso_select(char* tabla, int clave, char** buffer, int* largo_buffer) {
 	enviarMensaje(mem,selectMsg,largo_content,content,socket_lis,logger,lis);
 	t_mensaje* mensaje = recibirMensaje(socket_lis, logger);
 
+	free(content);
+
 	if(mensaje == NULL) {
 		loggear(logger,LOG_LEVEL_ERROR,"No se pudo recibir mensaje de lis");
 		pthread_mutex_unlock(&journalingMutexDescribe);
 		_exit_with_error("ERROR - Se desconecto LISSANDRA",NULL);
 	}
 
-	free(content);
-
 	if(mensaje == NULL) {
 		loggear(logger,LOG_LEVEL_ERROR,"No se pudo recibir mensaje de lis");
 		pthread_mutex_unlock(&journalingMutexSelect);
 		return -1;
+	}
+
+	if(mensaje->header.error!=0){
+		pthread_mutex_unlock(&journalingMutexSelect);
+		int error = mensaje->header.error;
+		destruirMensaje(mensaje);
+		return error;
 	}
 
 	*largo_buffer = mensaje->header.longitud;
@@ -159,19 +166,14 @@ int proceso_create(char* tabla,char* tipo_cons, int num_part, int compact_time){
 	enviarMensaje(mem,create,largo_content,content,socket_lis,logger,lis);
 	t_mensaje* mensaje = recibirMensaje(socket_lis, logger);
 
+	free(content);
+
 	if(mensaje == NULL) {
 		loggear(logger,LOG_LEVEL_ERROR,"No se pudo recibir mensaje de lis");
 		pthread_mutex_unlock(&journalingMutexDescribe);
 		_exit_with_error("ERROR - Se desconecto LISSANDRA",NULL);
 	}
 
-	free(content);
-
-	if(mensaje == NULL) {
-		loggear(logger,LOG_LEVEL_ERROR,"No se pudo recibir mensaje de lis");
-		pthread_mutex_unlock(&journalingMutexCreate);
-		return -1;
-	}
 	creado = mensaje->header.error;
 	destruirMensaje(mensaje);
 
@@ -209,7 +211,8 @@ int proceso_describe(char* tabla, char** buffer, int* largo_buffer){
 	enviarMensaje(mem,describe,largo_content,content,socket_lis,logger,lis);
 	free(content);
 	int longAcum = 0;
-	while(cantidad-->0)
+	desc = 0;
+	while(cantidad-->0 && desc == 0)
 	{
 		t_mensaje* mensaje = recibirMensaje(socket_lis, logger);
 		if(mensaje == NULL) {
@@ -261,19 +264,14 @@ int proceso_drop(char* tabla){
 	enviarMensaje(mem,drop,largo_content,content,socket_lis,logger,lis);
 	t_mensaje* mensaje = recibirMensaje(socket_lis, logger);
 
+	free(content);
+
 	if(mensaje == NULL) {
 		loggear(logger,LOG_LEVEL_ERROR,"No se pudo recibir mensaje de lis");
 		pthread_mutex_unlock(&journalingMutexDescribe);
 		_exit_with_error("ERROR - Se desconecto LISSANDRA",NULL);
 	}
 
-	free(content);
-
-	if(mensaje == NULL) {
-		loggear(logger,LOG_LEVEL_ERROR,"No se pudo recibir mensaje de lis");
-		pthread_mutex_unlock(&journalingMutexDrop);
-		return -1;
-	}
 	dropRes = mensaje->header.error;
 	destruirMensaje(mensaje);
 
