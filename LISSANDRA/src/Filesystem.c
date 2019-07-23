@@ -436,23 +436,30 @@ t_registro* BuscarKey(t_select *selectMsg) {
 			registroInit->key, registroInit->value, registroInit->timestamp);
 
 	//libero listas
-//	for (int i = 0; list_size(listaMemtable) > i; i++) {
-//		free(list_remove(listaMemtable, 0));
-//	}
+/*	if (listaMemtable != NULL) {
+		for (int i = 0; list_size(listaMemtable) > i; i++) {
+			free(list_remove(listaMemtable, 0));
+		}
 
-	list_destroy(listaMemtable);
+		list_destroy(listaMemtable);
+	}
 
-//	for (int i = 0; list_size(listaTemp) > i; i++) {
-//		free(list_remove(listaTemp, 0));
-//	}
+	if (!list_is_empty(listaTemp)) {
+		for (int i = 0; list_size(listaTemp) > i; i++) {
+			free(list_remove(listaTemp, 0));
+		}
 
-	list_destroy(listaTemp);
+		list_destroy(listaTemp);
+	}
 
-//	for (int i = 0; list_size(listaBusqueda) > i; i++) {
-//		free(list_remove(listaBusqueda, 0));
-//	}
+	if (!list_is_empty(listaBusqueda)) {
+		for (int i = 0; list_size(listaBusqueda) > i; i++) {
+			free(list_remove(listaBusqueda, 0));
+		}
 
-	list_destroy(listaBusqueda);
+		list_destroy(listaBusqueda);
+	}
+*/
 
 	free(rutaParticion);
 	free(selectMsg);
@@ -501,14 +508,15 @@ t_list *BuscarKeyTemporales(int key, char *tabla) {
 
 			char *pathFile = string_from_format("%s/%s", pathTemps,
 					entry->d_name);
+			log_info(logger, "Buscando key %d en %s", key, pathFile);
 			t_config *config_file = cargarConfiguracion(pathFile, logger);
 			int size = config_get_int_value(config_file, "SIZE");
 			int cantBloques = CalcularBloques(size);
-			char **bloques = malloc(sizeof(int) * cantBloques);
-			bloques = config_get_array_value(config_file, "BLOCKS");
+			char **bloques = config_get_array_value(config_file, "BLOCKS");
+			config_destroy(config_file);
 
 			for (int i = 0; cantBloques > i; i++) {
-				list_add(tempBlocksCollection, (int *)atoi(bloques[i]));
+				list_add(tempBlocksCollection, (int*)atoi(bloques[i]));
 				free(bloques[i]);
 			}
 
@@ -563,7 +571,6 @@ t_list *BuscarKeyTemporales(int key, char *tabla) {
 	}
 
 	free(pathTemps);
-	list_clean(tempBlocksCollection);
 	return listaTmp;
 }
 
@@ -838,6 +845,7 @@ void LevantarHilosCompactacionFS() {
 
 				int compactationTime = config_get_int_value(config_file,
 						"COMPACTATION_TIME");
+				free(metadataFile);
 				config_destroy(config_file);
 				//printf("Tiempo de compactacion tabla %s: %d\n", entry->d_name, compactationTime);
 				int idHilo = crearHiloCompactacion(compactationTime, entry->d_name);

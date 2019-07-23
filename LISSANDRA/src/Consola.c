@@ -13,15 +13,15 @@
 void *crear_consola() {
 
 	char *line;
-
 	int estado;
 
 	while (1) {
+
 		line = readline("Ingrese un comando> ");
-		if (line) {
+		if (!string_is_empty(line)) {
 			add_history(line);
+			estado = procesar_comando(line);
 		}
-		estado = procesar_comando(line);
 		if (estado != 0) {
 			return (void*) EXIT_FAILURE;
 		}
@@ -78,7 +78,7 @@ int procesar_comando(char *line) {
 			if (regSelect->key == -1)
 				printf("No se encuentra la key en FS.\n");
 
-//			free(regSelect);
+			//free(regSelect);
 
 			break;
 

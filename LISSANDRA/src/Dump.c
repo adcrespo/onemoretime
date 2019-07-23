@@ -82,7 +82,7 @@ void DumpearTabla(t_list *lista, char *nombre)
 		char *linea = string_new();
 		char *key = string_new();
 		char *value = string_new();
-		strcpy(value, registro->value);
+		string_append(&value, registro->value);
 		string_append(&key, (string_itoa(registro->key)));
 		//char *timestamp = string_new();
 		char *timestamp = malloc(20);
