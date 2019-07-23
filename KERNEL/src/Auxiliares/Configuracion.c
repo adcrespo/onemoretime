@@ -50,28 +50,28 @@ void cargar_configuracion_kernel(char * path_config) {
 	if (config_has_property(config, "MULTIPROCESAMIENTO")) {
 		kernel_conf.multiprocesamiento = config_get_int_value(config,
 				"MULTIPROCESAMIENTO");
-		loguear_carga_propiedad("MULTIPROCESAMIENTO",
+		loguear_carga_propiedad("MULTIPROC",
 				string_itoa(kernel_conf.multiprocesamiento));
 	} else {
-		loguear_error_carga_propiedad("MULTIPROCESAMIENTO");
+		loguear_error_carga_propiedad("MULTIPROC");
 	}
 
 	if (config_has_property(config, "METADATA_REFRESH")) {
 		kernel_conf.metadata_refresh = config_get_int_value(config,
 				"METADATA_REFRESH");
-		loguear_carga_propiedad("METADATA_REFRESH",
+		loguear_carga_propiedad("MET_REFRESH",
 				string_itoa(kernel_conf.metadata_refresh));
 	} else {
-		loguear_error_carga_propiedad("METADATA_REFRESH");
+		loguear_error_carga_propiedad("MET_REFRESH");
 	}
 
 	if (config_has_property(config, "SLEEP_EJECUCION")) {
 		kernel_conf.sleep_ejecucion = config_get_int_value(config,
 				"SLEEP_EJECUCION");
-		loguear_carga_propiedad("SLEEP_EJECUCION",
+		loguear_carga_propiedad("SLEEP_EJEC",
 				string_itoa(kernel_conf.sleep_ejecucion));
 	} else {
-		loguear_error_carga_propiedad("SLEEP_EJECUCION");
+		loguear_error_carga_propiedad("SLEEP_EJEC");
 	}
 
 }

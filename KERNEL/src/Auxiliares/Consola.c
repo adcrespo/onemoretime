@@ -23,6 +23,7 @@ void *crear_consola() {
 		}
 
 		if (estado != 0) {
+			free(line);
 			return (void*)EXIT_FAILURE;
 		}
 	}
@@ -38,29 +39,33 @@ int procesar_comando(char *line) {
 
 	if (request->request == -1) {
 
-		log_error(logger, "CONSOLA|Se ingresó un comando desconocido: %s.", line);
-		printf("Se ingresó un comando desconocido: %s.\n", line);
+		log_error(logger, "CONSOLA| Comando desconocido: %s.", line);
+		printf("Comando desconocido: %s.\n", line);
 
 	} else if (request->es_valido == -1) {
 
-		log_error(logger, "CONSOLA|No se ingresaron los parámetros necesarios: %s.\n", line);
-		printf("No se ingresaron los parámetros necesarios: %s.\n", line);
+		log_error(logger, "CONSOLA| Parámetros incompletos: %s.\n", line);
+		printf("Parámetros incompletos: %s.\n", line);
 
 	} else {
 
 		switch (request->request) {
 
 			case _salir:
-				puts("Muchas gracias por utilizar el proceso KERNEL. Vuelva pronto!");
+
+				free(linea_auxiliar);
+				free(request);
 				return -1;
 
 			case _select:
-				// Generar nuevo proceso.
 				crear_proceso(linea_auxiliar, request);
 
 				printf("Validando existencia de Tabla.\n");
 				printf("Seleccionando Memoria según Criterio.\n");
 				printf("Enviando SELECT a una Memoria.\n");
+
+//				free(linea_auxiliar);
+//				free(request);
 				break;
 
 			case _insert:
@@ -70,34 +75,47 @@ int procesar_comando(char *line) {
 				printf("Validando existencia de Tabla.\n");
 				printf("Seleccionando Memoria según Criterio.\n");
 				printf("Enviando INSERT a una Memoria.\n");
+
+//				free(linea_auxiliar);
+//				free(request);
 				break;
 
 			case _create:
 				// Generar nuevo proceso.
 				crear_proceso(linea_auxiliar, request);
 
+//				free(linea_auxiliar);
+//				free(request);
 				break;
 
 			case _describe:
 				printf("Enviando DESCRIBE a una Memoria \n"); /* CAMBIAR SOCKET DE ABAJO */
 				// elegir memoria
 				//enviarMensaje(kernel, describe, sizeof(request), &request, 10/* socket memoria*/, logger, mem);
+
+//				free(linea_auxiliar);
+//				free(request);
 				break;
 
 			case _drop:
-
 				// Generar nuevo proceso.
 				crear_proceso(linea_auxiliar, request);
 
 				printf("Validando existencia de Tabla.\n");
 				printf("Seleccionando Memoria según Criterio.\n");
 				printf("Enviando DROP a una Memoria.\n");
+
+//				free(linea_auxiliar);
+//				free(request);
 				break;
 
 			case _journal:
 				printf("CONSOLA: Se ingresó comando JOURNAL \n");
 				enviar_journal_memorias();
 				printf("Journal enviado a las memorias asociadas.\n");
+
+//				free(linea_auxiliar);
+//				free(request);
 				break;
 
 			case _add:
@@ -143,16 +161,18 @@ int procesar_comando(char *line) {
 					printf("Criterio no reconocido.\n");
 				}
 
-
+//				free(linea_auxiliar);
+//				free(request);
 				break;
 
 			case _run:;
-//				printf("CONSOLA: Se ingresó comando RUN \n");
-//				printf("Parámetro: %s \n", request->parametro1);
 
 				char* contenido = abrir_archivo_LQL(request);
 				crear_proceso(contenido, request);
 
+				free(contenido);
+//				free(linea_auxiliar);
+//				free(request);
 				break;
 
 			case _metrics:
@@ -161,6 +181,9 @@ int procesar_comando(char *line) {
 				log_info(logger, "Lista READY: %d elementos.", list_size(lista_ready));
 				log_info(logger, "Lista EXEC: %d elementos.", list_size(lista_exec));
 				log_info(logger, "Lista EXIT: %d elementos.", list_size(lista_exit));
+
+//				free(linea_auxiliar);
+//				free(request);
 				break;
 
 			default:;
@@ -170,6 +193,8 @@ int procesar_comando(char *line) {
 
 	}
 
+	free(linea_auxiliar);
+	free(request);
 	return 0;
 }
 

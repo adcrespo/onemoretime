@@ -24,6 +24,10 @@ void *hiloGossiping() {
 
 	while (1) {
 		processGossipingStruct(logger, LISTA_CONN, kernelGoss);
+		if (hay_memorias_disponibles()) {
+			log_info(logger, "GOSSIP| Memorias conectadas!");
+		}
+
 		sleep(tiempo / 1000);
 	}
 }
@@ -87,9 +91,9 @@ void crear_hilo_consola() {
 	int hilo_consola = pthread_create(&thread_consola, NULL, crear_consola,
 			NULL);
 	if (hilo_consola == -1) {
-		log_info(logger, "THREAD|No se pudo generar el hilo para la consola.");
+		log_info(logger, "THREAD| Error al generar hilo consola.");
 	}
-	log_info(logger, "THREAD|Se generó el hilo para la consola.");
+	log_info(logger, "THREAD| Hilo consola OK.");
 }
 
 int crear_hilo_inotify() {
@@ -103,9 +107,9 @@ int crear_hilo_inotify() {
 
 	if (hilo_inotify == -1) {
 		log_error(logger,
-				"THREAD|No se pudo generar el hilo para el I-NOTIFY.");
+				"THREAD| Error al generar hilo I-NOTIFY.");
 	}
-	log_info(logger, "THREAD|Se generó el hilo para el I-NOTIFY.");
+	log_info(logger, "THREAD| Hilo I-NOTIFY OK.");
 
 	return 1;
 }
@@ -116,9 +120,9 @@ void crear_hilo_gossiping() {
 			NULL);
 	if (hilo_gossiping == -1) {
 		log_error(logger,
-				"THREAD|No se pudo generar el hilo para el gossiping.");
+				"THREAD| Error al generar hilo Gossiping.");
 	}
-	log_info(logger, "THREAD|Se generó el hilo para el gossiping.");
+	log_info(logger, "THREAD| Hilo Gossiping OK.");
 }
 
 void crear_hilo_refresh() {
@@ -126,9 +130,9 @@ void crear_hilo_refresh() {
 	int hiloDump = pthread_create(&thread_refresh, NULL, inicializar_refresh,
 	NULL);
 	if (hiloDump == -1) {
-		log_error(logger, "THREAD|No se pudo generar el hilo para refresh");
+		log_error(logger, "THREAD| Error al generar hilo Refresh.");
 	}
-	log_info(logger, "THREAD|Se generó el hilo para refresh");
+	log_info(logger, "THREAD| Hilo Refresh OK.");
 }
 
 void crear_hilo_planificador() {
@@ -137,7 +141,7 @@ void crear_hilo_planificador() {
 			planificar, NULL);
 	if (hilo_planificador == -1) {
 		log_error(logger,
-				"THREAD|No se pudo generar el hilo para el planificador.");
+				"THREAD| Error al generar hilo Planificador.");
 	}
-	log_info(logger, "THREAD|Se generó el hilo para el planificador.");
+	log_info(logger, "THREAD| Hilo Planificador OK.");
 }

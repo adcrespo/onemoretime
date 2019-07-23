@@ -301,6 +301,7 @@ t_request* parsear(char* linea, t_log* logger) {
 
 	}
 
+	free(parametro_aux);
 	return request;
 
 }

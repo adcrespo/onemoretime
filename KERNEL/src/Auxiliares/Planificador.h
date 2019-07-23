@@ -10,6 +10,7 @@
 
 
 #include "../KERNEL.h"
+#include "Metadata.h"
 #include <semaphore.h>
 
 // Estructura planificable

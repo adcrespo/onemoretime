@@ -41,7 +41,7 @@ int main() {
 
 	pthread_join(thread_consola, NULL);
 
-	puts("Fin proceso Kernel"); /* prints Proceso Kernel */
+	puts("Muchas gracias por utilizar el proceso KERNEL. Vuelva pronto!");
 	return EXIT_SUCCESS;
 }
 

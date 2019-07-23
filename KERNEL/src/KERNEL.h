@@ -46,14 +46,6 @@ char** lista_ips;
 char** lista_puertos;
 
 
-/* Structs */
-typedef struct {
-	char nombreTabla[50];
-	char tipoConsistencia[4];
-	int particiones;
-	int compactationTime;
-} t_metadata;
-
 /* Declaración de Procesos*/
 //void cargar_configuracion_kernel();
 void inicializar();

@@ -14,14 +14,12 @@ void* planificar() {
 
 		int valor= 0;
 		int valor_2= 0;
+
 		sem_wait(&sem_ready);
 		sem_wait(&sem_multiprog);
 
 		sem_getvalue(&sem_ready, &valor);
 		sem_getvalue(&sem_multiprog, &valor_2);
-
-		log_info(logger, "Sem Ready Align: %d", sem_ready.__align);
-		log_info(logger, "Sem Ready Size: %s", sem_ready.__size);
 
 		log_info(logger, "Sem Ready: %d", valor);
 		log_info(logger, "Sem Multiprog: %d", valor_2);
@@ -30,9 +28,9 @@ void* planificar() {
 		imprimir_listas();
 
 //		t_pcb* pcb = sacar_proceso_rr(lista_ready);
-//		log_info(logger, "PLANIFICADOR| Proceso N°: %d.", pcb->id_proceso);
+//		log_info(logger, "PLANIFIC| Proceso N°: %d.", pcb->id_proceso);
 //
-//		log_info(logger, "PLANIFICADOR| Proceso %d pasa a EXEC", pcb->id_proceso);
+//		log_info(logger, "PLANIFIC| Proceso %d pasa a EXEC", pcb->id_proceso);
 //		agregar_proceso(pcb, lista_exec, &sem_exec);
 //
 ////		sem_wait(&sem_multiprog);
@@ -51,7 +49,6 @@ int asignar_id_proceso() {
 	return cont_id_procesos;
 }
 
-//t_pcb* crear_proceso(char* line,t_request* request) {
 void crear_proceso(char* line,t_request* request) {
 
 	/* 1. Creación de PCB */
@@ -59,12 +56,12 @@ void crear_proceso(char* line,t_request* request) {
 	int id_proceso = asignar_id_proceso();
 
 	/* 2. Agregar a NEW */
-	log_info(logger, "PLANIFICADOR|Proceso %d generado", id_proceso);
+	log_info(logger, "PLANIFIC| Proceso %d generado", id_proceso);
 	agregar_proceso(proceso, lista_new, &sem_new);
-	log_info(logger, "PLANIFICADOR|Proceso %d agregado a NEW", id_proceso);
+	log_info(logger, "PLANIFIC| Proceso %d agregado a NEW", id_proceso);
 
 	/* 3. Carga de PCB */
-	log_info(logger, "PLANIFICADOR|Generando estructura de planificación.");
+	log_info(logger, "PLANIFIC| Generando PCB.");
 	proceso->script = string_new();
 	proceso->ruta_archivo = string_new();
 
@@ -78,7 +75,7 @@ void crear_proceso(char* line,t_request* request) {
 	proceso->cantidad_request = cantidad_request(line);
 
 	/* 4. Pasar PCB de NEW a READY */
-	log_info(logger, "PLANIFICADOR|Pasando proceso %d de NEW a READY.", id_proceso);
+	log_info(logger, "PLANIFIC|Pasando proceso %d de NEW a READY.", id_proceso);
 	proceso = sacar_proceso(id_proceso, lista_new, &sem_new);
 	agregar_proceso(proceso, lista_ready, &sem_ready);
 
@@ -105,7 +102,7 @@ t_pcb* sacar_proceso(int id, t_list* lista, sem_t* sem) {
 t_pcb* sacar_proceso_rr(t_list* lista) {
 
 //	sem_wait(sem);
-	log_info(logger, "PLANIFICADOR| Buscando PCB por ROUND ROBIN");
+	log_info(logger, "PLANIFIC| Buscando PCB por ROUND ROBIN");
 	return (t_pcb *) list_remove(lista_ready, 0);
 }
 
@@ -171,7 +168,7 @@ void procesar_pcb(t_pcb* pcb) {
 
 	int quantum = kernel_conf.quantum;
 	int requests_restantes = pcb->cantidad_request - pcb->program_counter;
-	log_info(logger, "PLANIFICADOR| Request restantes: %d", requests_restantes);
+	log_info(logger, "PLANIFIC| Request restantes: %d", requests_restantes);
 
 	int quantum_restante = (pcb->program_counter % quantum) == 0 ? quantum: quantum - (pcb->program_counter % quantum);
 
@@ -179,10 +176,10 @@ void procesar_pcb(t_pcb* pcb) {
 		quantum_restante = requests_restantes;
 	}
 
-	log_info(logger, "PLANIFICADOR| Quantum disponible: %d", quantum_restante);
+	log_info(logger, "PLANIFIC| Quantum disponible: %d", quantum_restante);
 
 	for (int i=0; quantum_restante > i; i++ ) {
-		log_info(logger, "PLANIFICADOR| --- Consumiendo Quantum ---");
+		log_info(logger, "PLANIFIC| --- Consumiendo Quantum ---");
 		retardo_ejecucion();
 
 		// Parsear request y procesarlo
@@ -190,12 +187,12 @@ void procesar_pcb(t_pcb* pcb) {
 
 		int resultado = ejecutar_request(linea[pcb->program_counter], pcb->id_proceso);
 
-		log_info(logger, "PLANIFICADOR| Resultado del request: %d", resultado);
+		log_info(logger, "PLANIFIC| Resultado del request: %d", resultado);
 
 		pcb->program_counter++;
 		quantum_restante--;
-		log_info(logger, "PLANIFICADOR| Nuevo Program Counter: %d", pcb->program_counter);
-		log_info(logger, "PLANIFICADOR| Quantum restante: %d", quantum_restante);
+		log_info(logger, "PLANIFIC| Nuevo Program Counter: %d", pcb->program_counter);
+		log_info(logger, "PLANIFIC| Quantum restante: %d", quantum_restante);
 
 	}
 
@@ -206,36 +203,46 @@ void procesar_pcb(t_pcb* pcb) {
 	if (pcb->program_counter == pcb->cantidad_request) {
 
 		agregar_proceso(pcb, lista_exit, &sem_exit);
-		log_info(logger, "PLANIFICADOR| Proceso %d pasa a EXIT", pcb->id_proceso);
+		log_info(logger, "PLANIFIC| Proceso %d pasa a EXIT", pcb->id_proceso);
 	} else {
 		agregar_proceso(pcb, lista_ready, &sem_ready);
-		log_info(logger, "PLANIFICADOR| Proceso %d vuelve a READY", pcb->id_proceso);
+		log_info(logger, "PLANIFIC| Proceso %d vuelve a READY", pcb->id_proceso);
 	}
 
 }
 
 int ejecutar_request(char* linea, int id_proceso) {
 
-//	log_info(logger, "PLANIFICADOR| Request a ejecutar:");
-	log_info(logger, "PLANIFICADOR| Request a ejecutar: %s", linea);
+//	log_info(logger, "PLANIFIC| Request a ejecutar:");
+	log_info(logger, "PLANIFIC| Request a ejecutar: %s", linea);
 	t_request* request = parsear(linea, logger);
 	int resultado;
 
 	switch (request->request) {
 
-		case _select:
+		case _select:;
 			// SELECT [NOMBRE_TABLA] [KEY]
 			// SELECT TABLA1 3
 
-			log_info(logger, "PLANIFICADOR|Preparando SELECT");
+			int existe = validar_tabla(request->parametro1);
+
+			log_info(logger, "Existe: %d", existe);
+			if (existe == 0) {
+				log_info(logger, "PLANIFIC| La tabla no existe.");
+			} else {
+				log_info(logger, "PLANIFIC| La tabla existe.");
+			}
+
+
+			log_info(logger, "PLANIFIC| Preparando SELECT");
 			t_select* req_select = malloc(sizeof(t_create));
 
 			req_select->id_proceso = id_proceso;
 			strcpy(req_select->nombreTabla, request->parametro1);
 			req_select->key = atoi(request->parametro2);
 
-			log_info(logger, "PLANIFICADOR| SELECT OK. %s, %d", req_select->nombreTabla, req_select->key);
-			log_info(logger, "PLANIFICADOR| Enviando SELECT a MEMORIA");
+			log_info(logger, "PLANIFIC| SELECT OK. %s, %d", req_select->nombreTabla, req_select->key);
+			log_info(logger, "PLANIFIC| Enviando SELECT a MEMORIA");
 
 			resultado = request->es_valido; // Cambiar por lo que devuelve la memoria.
 			free(req_select);
@@ -245,7 +252,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 			// INSERT [NOMBRE_TABLA] [KEY] “[VALUE]”
 			// INSERT TABLA1 3 “Mi nombre es Lissandra”
 
-			log_info(logger, "PLANIFICADOR|Preparando INSERT");
+			log_info(logger, "PLANIFIC|Preparando INSERT");
 			t_insert* req_insert = malloc(sizeof(t_insert));
 
 			req_insert->id_proceso = id_proceso;
@@ -254,8 +261,8 @@ int ejecutar_request(char* linea, int id_proceso) {
 			req_insert->key = atoi(request->parametro3);
 			strcpy(req_insert->value, request->parametro4);
 
-			log_info(logger, "PLANIFICADOR| INSERT OK. %s, %d, %d, %s", req_insert->nombreTabla, req_insert->timestamp, req_insert->key, req_insert->value);
-			log_info(logger, "PLANIFICADOR| Enviando INSERT a MEMORIA");
+			log_info(logger, "PLANIFIC| INSERT OK. %s, %d, %d, %s", req_insert->nombreTabla, req_insert->timestamp, req_insert->key, req_insert->value);
+			log_info(logger, "PLANIFIC| Enviando INSERT a MEMORIA");
 
 			resultado = request->es_valido; // Cambiar por lo que devuelve la memoria.
 			free(req_insert);
@@ -265,7 +272,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 			// CREATE [TABLA] [TIPO_CONSISTENCIA] [NUMERO_PARTICIONES] [COMPACTION_TIME]
 			// CREATE TABLA1 SC 4 60000
 
-			log_info(logger, "PLANIFICADOR|Preparando CREATE");
+			log_info(logger, "PLANIFIC|Preparando CREATE");
 
 			t_create* req_create = malloc(sizeof(t_create));
 
@@ -275,8 +282,8 @@ int ejecutar_request(char* linea, int id_proceso) {
 			req_create->num_part = atoi(request->parametro3);
 			req_create->comp_time = atoi(request->parametro4);
 
-			log_info(logger, "PLANIFICADOR| CREATE OK. %s, %s, %d, %d", req_create->nombreTabla, req_create->tipo_cons, req_create->num_part, req_create->comp_time);
-			log_info(logger, "PLANIFICADOR| Enviando CREATE a MEMORIA");
+			log_info(logger, "PLANIFIC| CREATE OK. %s, %s, %d, %d", req_create->nombreTabla, req_create->tipo_cons, req_create->num_part, req_create->comp_time);
+			log_info(logger, "PLANIFIC| Enviando CREATE a MEMORIA");
 
 			t_tipoSeeds* memoria = obtener_memoria_sc(); // ----- cambiar para hacerlo dinamico para los criterios
 			int cliente = conectar_a_memoria(memoria);
@@ -288,7 +295,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 
 			t_mensaje* resultado_req = recibirMensaje(cliente, logger);
 			resultado = resultado_req->header.error;
-			log_info(logger, "PLANIFICADOR| Resultado de CREATE: %d", resultado);
+			log_info(logger, "PLANIFIC| Resultado de CREATE: %d", resultado);
 
 //			close(cliente);
 //			free(req_create);
@@ -298,18 +305,18 @@ int ejecutar_request(char* linea, int id_proceso) {
 			// DESCRIBE
 			// DESCRIBE TABLA1
 
-			log_info(logger, "PLANIFICADOR|Preparando DESCRIBE");
+			log_info(logger, "PLANIFIC|Preparando DESCRIBE");
 
 			t_describe* req_describe = malloc(sizeof(t_describe));
 			req_describe->id_proceso = id_proceso;
 			strcpy(req_describe->nombreTabla, "");
 			if(request->parametro1 != NULL) {
-				log_info(logger, "PLANIFICADOR|Parámetro 1: %s", request->parametro1);
+				log_info(logger, "PLANIFIC|Parámetro 1: %s", request->parametro1);
 				strcpy(req_describe->nombreTabla, request->parametro1);
 			}
 
-			log_info(logger, "PLANIFICADOR| DESCRIBE OK. %s", req_describe->nombreTabla);
-			log_info(logger, "PLANIFICADOR| Enviando DESCRIBE a MEMORIA");
+			log_info(logger, "PLANIFIC| DESCRIBE OK. %s", req_describe->nombreTabla);
+			log_info(logger, "PLANIFIC| Enviando DESCRIBE a MEMORIA");
 
 			resultado = request->es_valido; // Cambiar por lo que devuelve la memoria.
 			free(req_describe);
@@ -319,14 +326,14 @@ int ejecutar_request(char* linea, int id_proceso) {
 			// DROP [NOMBRE_TABLA]
 			// DROP TABLA1
 
-			log_info(logger, "PLANIFICADOR|Preparando DROP");
+			log_info(logger, "PLANIFIC|Preparando DROP");
 			t_drop* req_drop = malloc(sizeof(t_drop));
 
 			req_drop->id_proceso = id_proceso;
 			strcpy(req_drop->nombreTabla, request->parametro1);
 
-			log_info(logger, "PLANIFICADOR| DROP OK. %s", req_drop->nombreTabla);
-			log_info(logger, "PLANIFICADOR| Enviando DROP a MEMORIA");
+			log_info(logger, "PLANIFIC| DROP OK. %s", req_drop->nombreTabla);
+			log_info(logger, "PLANIFIC| Enviando DROP a MEMORIA");
 
 			resultado = request->es_valido; // Cambiar por lo que devuelve la memoria.
 			free(req_drop);
@@ -334,7 +341,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 
 		default:
 			// No entra por acá porque se valida antes el enum != -1
-			log_info(logger, "PLANIFICADOR|No se reconoce operación: %s", request->request);
+			log_info(logger, "PLANIFIC|No se reconoce operación: %s", request->request);
 			break;
 	}
 
@@ -344,15 +351,15 @@ int ejecutar_request(char* linea, int id_proceso) {
 
 void* aplicar_algoritmo_rr() { // @suppress("No return")
 	t_pcb* pcb = sacar_proceso_rr(lista_ready);
-	log_info(logger, "PLANIFICADOR| Proceso N°: %d.", pcb->id_proceso);
+	log_info(logger, "PLANIFIC| Proceso N°: %d.", pcb->id_proceso);
 
-	log_info(logger, "PLANIFICADOR| Proceso %d pasa a EXEC", pcb->id_proceso);
+	log_info(logger, "PLANIFIC| Proceso %d pasa a EXEC", pcb->id_proceso);
 	agregar_proceso(pcb, lista_exec, &sem_exec);
 
 //		sem_wait(&sem_multiprog);
 	procesar_pcb(pcb);
 
-	log_info(logger, "Finaliza hilo planificación para proceso N° %d", pcb->id_proceso);
+	log_info(logger, "PLANIFIC| Fin hilo planificación proceso N° %d", pcb->id_proceso);
 	return NULL;
 }
 
