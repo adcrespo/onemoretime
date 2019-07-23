@@ -152,7 +152,7 @@ t_tipoSeeds* obtener_memoria_random() {
 t_tipoSeeds* obtener_memoria_sc(){
 	bool findSC(void* element) {
 			t_tipoSeeds *memoria = element;
-			return memoria->numeroMemoria == memoria_sc;
+			return memoria->numeroMemoria == memoria_sc->numeroMemoria;
 		}
 	return list_find(LISTA_CONN, &findSC);
 }

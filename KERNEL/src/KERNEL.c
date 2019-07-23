@@ -48,7 +48,8 @@ int main() {
 void inicializar() {
 
 	cont_id_procesos = 0;
-	memoria_sc = -1;
+//	memoria_sc = -1;
+//	memoria_sc = malloc(sizeof(t_tipoSeeds));
 
 	inicializar_listas();
 	inicializar_semaforos();

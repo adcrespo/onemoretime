@@ -38,7 +38,8 @@ pthread_t thread_planificacion;
 /* Definición de tipos */
 sem_t sem_new, sem_ready, sem_exec, sem_exit, sem_multiprog;
 
-int memoria_sc;
+//int memoria_sc;
+t_tipoSeeds* memoria_sc;
 t_list *lista_criterio_shc;
 t_list *lista_criterio_ev;
 t_list *lista_metadata;
