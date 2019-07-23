@@ -453,5 +453,5 @@ int crearHiloCompactacion(int retardo, char* path_tabla)
 		loggear(logger,LOG_LEVEL_INFO,"ERROR_HILO_COMPACTACION: %d", hilo_compactacion);
 	log_info(logger, "Se generó el hilo para la COMPACTACION de tabla:%s.", path_tabla);
 
-	return 1;
+	return compactacion;
 }

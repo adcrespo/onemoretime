@@ -63,4 +63,5 @@ void Inicializar()
 {
 	memtable = list_create();
 	tablasGlobal = list_create();
+	listaHilos = list_create();
 }

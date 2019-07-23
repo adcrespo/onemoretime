@@ -20,6 +20,12 @@ typedef struct {
 	char path_tabla[50];
 }t_datos_compactacion;
 
+typedef struct {
+	pthread_t hilo;
+	char path_tabla[50];
+}t_datos_hilo_compactacion;
+
+t_list* listaHilos;
 pthread_t compactacion;
 int hilo_compactacion;
 
