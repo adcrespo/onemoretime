@@ -13,6 +13,8 @@
 
 pthread_mutex_t lock_logger;
 
+char* procesos_str[] = { "LIS", "MEM", "KERNEL", NULL };
+
 t_log* configurar_logger(char* nombreLog, char* nombreProceso) {
 	t_log* logger = log_create(nombreLog, nombreProceso, false, LOG_LEVEL_INFO);
 	log_info(logger, "*************** NUEVO LOG ***************");
@@ -307,20 +309,20 @@ int enviarMensaje(int tipoProcesoEmisor, int tipoMensaje, int len, void* content
 	if (len > 0 && content != NULL)
 		if (buffer == NULL) {
 			loggear(logger, LOG_LEVEL_ERROR,
-					"No se pudo serializar mensaje (proceso emisor %d).", tipoProcesoEmisor);
+					"No se pudo serializar mensaje (proceso emisor %s).", get_nombre_proceso(tipoProcesoEmisor));
 			return -1;
 		}
 
 	if (send(socketReceptor, buffer, sizeof(t_header) + len, 0) <= 0) {
 		free(buffer);
 		loggear(logger, LOG_LEVEL_ERROR,
-				"No se pudo enviar mensaje (proceso emisor %d - proceso receptor %d).",
-				tipoProcesoEmisor, tipoProcesoReceptor);
+				"No se pudo enviar mensaje (proceso emisor %s - proceso receptor %s).",
+				get_nombre_proceso(tipoProcesoEmisor), get_nombre_proceso(tipoProcesoReceptor));
 		return 0;
 	}
 	/* Cambiar esto porque no está bien */
-	loggear(logger, LOG_LEVEL_INFO, "Se envió mensaje (proceso emisor %d - proceso receptor %d).",
-			tipoProcesoEmisor, tipoProcesoReceptor);
+	loggear(logger, LOG_LEVEL_INFO, "Se envió mensaje (proceso emisor %s - proceso receptor %s).",
+			get_nombre_proceso(tipoProcesoEmisor), get_nombre_proceso(tipoProcesoReceptor));
 
 	free(buffer); // Sirver para t_mensaje
 	return 1;
@@ -334,20 +336,20 @@ int enviarMensajeConError(int tipoProcesoEmisor, int tipoMensaje, int len, void*
 	if (len > 0 && content != NULL)
 		if (buffer == NULL) {
 			loggear(logger, LOG_LEVEL_ERROR,
-					"No se pudo serializar mensaje (proceso emisor %d).", tipoProcesoEmisor);
+					"No se pudo serializar mensaje (proceso emisor %s).", get_nombre_proceso(tipoProcesoEmisor));
 			return -1;
 		}
 
 	if (send(socketReceptor, buffer, sizeof(t_header) + len, 0) <= 0) {
 		free(buffer);
 		loggear(logger, LOG_LEVEL_ERROR,
-				"No se pudo enviar mensaje (proceso emisor %d - proceso receptor %d).",
-				tipoProcesoEmisor, tipoProcesoReceptor);
+				"No se pudo enviar mensaje (proceso emisor %s - proceso receptor %s).",
+				get_nombre_proceso(tipoProcesoEmisor), get_nombre_proceso(tipoProcesoReceptor));
 		return 0;
 	}
 	/* Cambiar esto porque no está bien */
-	loggear(logger, LOG_LEVEL_INFO, "Se envió mensaje (proceso emisor %d - proceso receptor %d).",
-			tipoProcesoEmisor, tipoProcesoReceptor);
+	loggear(logger, LOG_LEVEL_INFO, "Se envió mensaje (proceso emisor %s - proceso receptor %s).",
+			get_nombre_proceso(tipoProcesoEmisor), get_nombre_proceso(tipoProcesoReceptor));
 
 	free(buffer); // Sirver para t_mensaje
 	return 1;
@@ -483,4 +485,10 @@ char** strlineassplit(const char* s, const char* del) {
 		*ptrs = NULL;
 	}
 	return data;
+}
+
+char* get_nombre_proceso(int enum_proceso) {
+
+	return procesos_str[enum_proceso];
+
 }
