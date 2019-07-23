@@ -18,7 +18,6 @@ void *crear_consola() {
 		line = readline("Ingrese un comando > ");
 
 		if (!string_is_empty(line)) {
-			printf("Se procesa algo\n");
 			add_history(line);
 			estado = procesar_comando(line);
 		}

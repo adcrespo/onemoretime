@@ -58,5 +58,6 @@ typedef struct {
 //void cargar_configuracion_kernel();
 void inicializar();
 void inicializar_semaforos();
+void inicializar_listas();
 
 #endif /* KERNEL_H_ */

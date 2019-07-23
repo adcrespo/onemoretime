@@ -145,5 +145,6 @@ t_mensaje* deserializar(void* buffer);
 
 unsigned long long obtenerTimeStamp();
 char** strlineassplit(const char* s, const char* del);
+char* get_nombre_proceso(int enum_proceso);
 
 #endif /* SHARED_H_ */

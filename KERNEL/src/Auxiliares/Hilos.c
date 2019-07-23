@@ -8,50 +8,9 @@
 #include "Hilos.h"
 #include "Metadata.h"
 
-void crear_hilo_consola() {
-
-	int hilo_consola = pthread_create(&thread_consola, NULL, crear_consola, NULL);
-	if (hilo_consola == -1) {
-		log_error(logger, "THREAD|No se pudo generar el hilo para la consola.");
-	}
-	log_info(logger, "THREAD|Se generó el hilo para la consola.");
-}
-
-void init_gossiping() {
-
-	log_info(logger, "GOSSIPING|Iniciando lista seeds.");
-	crearListaSeedsStruct(kernelGoss, kernel_conf.ip, kernel_conf.puerto, 1000, kernel_conf.ip_memoria, kernel_conf.puerto_memoria, logger, LISTA_CONN);
-}
-
-void *hiloGossiping()
-{
-	int tiempo = 15000;
-	sleep (tiempo/1000);
-
-	while (1)
-	{
-		loggear(logger,LOG_LEVEL_INFO,"GOSSIPING|Inicio Gossiping");
-		processGossipingStruct(logger,LISTA_CONN, kernelGoss);
-		loggear(logger,LOG_LEVEL_INFO,"GOSSIPING|Fin Gossiping");
-
-		sleep (tiempo/1000);
-	}
-}
-
-void crear_hilo_gossiping() {
-
-	int hilo_gossiping = pthread_create(&thread_gossiping, NULL, hiloGossiping, NULL);
-	if (hilo_gossiping == -1) {
-		log_error(logger, "THREAD|No se pudo generar el hilo para el gossiping.");
-	}
-	log_info(logger, "THREAD|Se generó el hilo para el gossiping.");
-}
-
+// Funciones
 void *crearInotify() {
 	int inotifyFd = inotifyInit("../config/KERNEL.config");
-
-	/*if (inotifyFd == -1)
-		_exit_with_error("inotify_init", NULL);*/
 
 	while (1) {/* Read events forever */
 		if (inotifyEvent(inotifyFd))
@@ -59,37 +18,21 @@ void *crearInotify() {
 	}
 }
 
-int crear_hilo_inotify() {
-	sigset_t set;
-//	int s;
-	int hilo_inotify;
+void *hiloGossiping() {
+	int tiempo = 15000;
+	sleep(tiempo / 1000);
 
-	sigemptyset(&set);
-	sigaddset(&set, SIGINT);
-//	int s = pthread_sigmask(SIG_BLOCK, &set, NULL);
-
-	/*if (s != 0)
-		_exit_with_error("No se pudo bloquear SIGINT con prthread_sigmask",
-		NULL);*/
-
-	hilo_inotify = pthread_create(&inotify, NULL, crearInotify, (void *) &set);
-
-	if (hilo_inotify == -1) {
-		log_error(logger, "THREAD|No se pudo generar el hilo para el I-NOTIFY.");
+	while (1) {
+		processGossipingStruct(logger, LISTA_CONN, kernelGoss);
+		sleep(tiempo / 1000);
 	}
-	log_info(logger, "THREAD|Se generó el hilo para el I-NOTIFY.");
-
-	return 1;
 }
 
-void crear_hilo_refresh() {
+void init_gossiping() {
 
-	int hiloDump = pthread_create(&thread_refresh, NULL, inicializar_refresh,
-			NULL);
-	if (hiloDump == -1) {
-		log_error(logger, "THREAD|No se pudo generar el hilo para refresh");
-	}
-	log_info(logger, "THREAD|Se generó el hilo para refresh");
+	crearListaSeedsStruct(kernelGoss, kernel_conf.ip, kernel_conf.puerto, 1000,
+			kernel_conf.ip_memoria, kernel_conf.puerto_memoria, logger,
+			LISTA_CONN);
 }
 
 void *inicializar_refresh() {
@@ -107,24 +50,14 @@ void *inicializar_refresh() {
 
 }
 
-void crear_hilo_planificador() {
-
-	int hilo_planificador = pthread_create(&thread_planificacion, NULL, planificar, NULL);
-	if (hilo_planificador == -1) {
-		log_error(logger, "THREAD|No se pudo generar el hilo para el planificador.");
-	}
-	log_info(logger, "THREAD|Se generó el hilo para el planificador.");
-}
-
-
 int hay_memorias_disponibles() {
 
 	int memoria_conectada = 0;
 
-	for(int i = 0; i < LISTA_CONN->elements_count; i++) {
+	for (int i = 0; i < LISTA_CONN->elements_count; i++) {
 		t_tipoSeeds* mem = list_get(LISTA_CONN, i);
 
-		if(mem->estado == 1) {
+		if (mem->estado == 1) {
 			memoria_conectada = 1;
 			break;
 		}
@@ -137,20 +70,74 @@ t_tipoSeeds* get_memoria_conectada() {
 
 	int i;
 
-	for(i = 0; i < LISTA_CONN->elements_count; i++) {
+	for (i = 0; i < LISTA_CONN->elements_count; i++) {
 		t_tipoSeeds* mem = list_get(LISTA_CONN, i);
 
-//		log_info(logger, "REFRESH| IP: %s", mem->ip);
-//		log_info(logger, "REFRESH| PUERTO: %s", mem->puerto);
-//		log_info(logger, "REFRESH| ESTADO: %d", mem->estado);
-
-		if(mem->estado == 1) {
+		if (mem->estado == 1) {
 			break;
 		}
 	}
 
-	return list_get(LISTA_CONN,i);
+	return list_get(LISTA_CONN, i);
 }
 
+// Creación de Hilos
+void crear_hilo_consola() {
 
+	int hilo_consola = pthread_create(&thread_consola, NULL, crear_consola,
+			NULL);
+	if (hilo_consola == -1) {
+		log_info(logger, "THREAD|No se pudo generar el hilo para la consola.");
+	}
+	log_info(logger, "THREAD|Se generó el hilo para la consola.");
+}
 
+int crear_hilo_inotify() {
+	sigset_t set;
+	int hilo_inotify;
+
+	sigemptyset(&set);
+	sigaddset(&set, SIGINT);
+
+	hilo_inotify = pthread_create(&inotify, NULL, crearInotify, (void *) &set);
+
+	if (hilo_inotify == -1) {
+		log_error(logger,
+				"THREAD|No se pudo generar el hilo para el I-NOTIFY.");
+	}
+	log_info(logger, "THREAD|Se generó el hilo para el I-NOTIFY.");
+
+	return 1;
+}
+
+void crear_hilo_gossiping() {
+
+	int hilo_gossiping = pthread_create(&thread_gossiping, NULL, hiloGossiping,
+			NULL);
+	if (hilo_gossiping == -1) {
+		log_error(logger,
+				"THREAD|No se pudo generar el hilo para el gossiping.");
+	}
+	log_info(logger, "THREAD|Se generó el hilo para el gossiping.");
+}
+
+void crear_hilo_refresh() {
+
+	int hiloDump = pthread_create(&thread_refresh, NULL, inicializar_refresh,
+	NULL);
+	if (hiloDump == -1) {
+		log_error(logger, "THREAD|No se pudo generar el hilo para refresh");
+	}
+	log_info(logger, "THREAD|Se generó el hilo para refresh");
+}
+
+void crear_hilo_planificador() {
+
+	int hilo_planificador = pthread_create(&thread_planificacion, NULL,
+			planificar, NULL);
+	if (hilo_planificador == -1) {
+		log_error(logger,
+				"THREAD|No se pudo generar el hilo para el planificador.");
+	}
+	log_info(logger, "THREAD|Se generó el hilo para el planificador.");
+}
