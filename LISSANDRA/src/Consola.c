@@ -13,6 +13,7 @@
 void *crear_consola() {
 
 	char *line;
+	rl_attempted_completion_function = character_name_completion;
 	int estado;
 
 	while (1) {
@@ -224,5 +225,34 @@ int procesar_comando(char *line) {
 	free(line);
 	free(request);
 	return 0;
+}
+
+char **character_name_completion(const char *text, int start, int end) {
+	rl_attempted_completion_over = 1;
+	return rl_completion_matches(text, character_name_generator);
+}
+
+char *character_name_generator(const char *text, int state) {
+	static int list_index, len;
+	char *name;
+
+	char *character_names[] = { "SELECT"
+			, "INSERT"
+			, "CREATE"
+			, "DESCRIBE"
+			, "DROP"
+			, NULL };
+
+	if (!state) {
+		list_index = 0;
+		len = strlen(text);
+	}
+
+	while ((name = character_names[list_index++])) {
+		if (strncmp(name, text, len) == 0) {
+			return strdup(name);
+		}
+	}
+	return NULL;
 }
 
