@@ -85,7 +85,7 @@ int process_journaling(){
 	pthread_mutex_unlock(&journalingMutexCreate);
 	pthread_mutex_unlock(&journalingMutexDescribe);
 	pthread_mutex_unlock(&journalingMutexDrop);
-	return 1;
+	return 0;
 }
 
 void *crearJournaling() {

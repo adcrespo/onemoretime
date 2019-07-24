@@ -105,7 +105,7 @@ int proceso_select(char* tabla, int clave, char** buffer, int* largo_buffer) {
 	}
 
 	pthread_mutex_unlock(&journalingMutexSelect);
-	return 1;
+	return 0;
 }
 
 
@@ -124,7 +124,7 @@ int proceso_insert(char* tabla, int clave, char* value, unsigned long long tstam
 			loggear(logger,LOG_LEVEL_ERROR,"Error en escribir_bytes: %d", escrito);
 		free(buffer);
 		pthread_mutex_unlock(&journalingMutexInsert);
-		return escrito;
+		return -1;
 	}
 
 	int paginaNueva = solicitarPagina(tabla, timestamp);
@@ -132,7 +132,7 @@ int proceso_insert(char* tabla, int clave, char* value, unsigned long long tstam
 		free(buffer);
 		loggear(logger,LOG_LEVEL_ERROR,"Error en escribir_bytes: %d", paginaNueva);
 		pthread_mutex_unlock(&journalingMutexInsert);
-		return paginaNueva;
+		return -1;
 	}
 
 	escrito = escribir_bytes_spa(tabla,0,paginaNueva*frame_spa_size,frame_spa_size,buffer,1);
@@ -140,12 +140,12 @@ int proceso_insert(char* tabla, int clave, char* value, unsigned long long tstam
 		free(buffer);
 		loggear(logger,LOG_LEVEL_ERROR,"Error en escribir_bytes: %d", escrito);
 		pthread_mutex_unlock(&journalingMutexInsert);
-		return escrito;
+		return -1;
 	}
 
 	free(buffer);
 	pthread_mutex_unlock(&journalingMutexInsert);
-	return escrito;
+	return 0;
 }
 
 
@@ -211,8 +211,7 @@ int proceso_describe(char* tabla, char** buffer, int* largo_buffer){
 	enviarMensaje(mem,describe,largo_content,content,socket_lis,logger,lis);
 	free(content);
 	int longAcum = 0;
-	desc = 0;
-	while(cantidad-->0 && desc == 0)
+	while(cantidad-->0)
 	{
 		t_mensaje* mensaje = recibirMensaje(socket_lis, logger);
 		if(mensaje == NULL) {
@@ -221,6 +220,12 @@ int proceso_describe(char* tabla, char** buffer, int* largo_buffer){
 			_exit_with_error("ERROR - Se desconecto LISSANDRA",NULL);
 		}
 		desc = mensaje->header.error;
+		if(desc==0) {
+			destruirMensaje(mensaje);
+			loggear(logger,LOG_LEVEL_ERROR,"Se recibio un error");
+			pthread_mutex_unlock(&journalingMutexDescribe);
+			return -1;
+		}
 
 		longAcum += mensaje->header.longitud;
 		/**buffer = realloc(*buffer,longAcum+1);

@@ -32,7 +32,7 @@ t_tipoComando buscar_enum(char *sval) {
 	if (sval == NULL)
 		return -2;
 	for (i = 0; comandos_str[i] != NULL; ++i, ++result)
-		if (0 == strcmp(sval, comandos_str[i]))
+		if (string_equals_ignore_case(sval, comandos_str[i]))
 			return result;
 	return -1;
 }
@@ -41,7 +41,8 @@ char *character_name_generator(const char *text, int state) {
 	static int list_index, len;
 	char *name;
 
-	char *character_names[] = { "select", "insert", "create", "describe", "drop", "journal", "dump", "salir", NULL };
+	char *character_names[] = { "select", "insert", "create", "describe", "drop", "journal", "dump", "salir",
+								"SELECT", "INSERT", "CREATE", "DESCRIBE", "DROP", "JOURNAL", "DUMP", "SALIR", NULL };
 
 	if (!state) {
 		list_index = 0;
@@ -100,7 +101,7 @@ void *crearConsola() {
 			char *buffer_select=NULL;
 			int largo_buffer = 0;
 			int resultSelect = proceso_select(comando[1],atoi(comando[2]),&buffer_select, &largo_buffer);
-			if(resultSelect>0){
+			if(resultSelect==0){
 				t_registro* reg = descomponer_registro(buffer_select);
 				printf("[OK] [timestamp:%llu][key:%d] %s\n",reg->timestamp, reg->key, reg->value);
 				destruir_registro(reg);
@@ -133,7 +134,7 @@ void *crearConsola() {
 
 			printf("insert...\n");
 			int escrito = proceso_insert(comando[1],atoll(comando[2]), registroInsertar, 0);
-			if(escrito >= 0)
+			if(escrito == 0)
 				printf("[OK] Se pudo insertar el registro \n");
 			else
 				printf("[ERR] No se pudo insertar el registro \n");
@@ -163,7 +164,7 @@ void *crearConsola() {
 			}
 			printf("create...\n");
 			int creado = proceso_create(comando[1],comando[2], atoi(comando[3]), atoi(comando[4]));
-			if(creado >= 0)
+			if(creado == 0)
 				printf("[OK] Se pudo crear la tabla \n");
 			else
 				printf("[ERR] No se pudo crear la tabla \n");
@@ -173,7 +174,7 @@ void *crearConsola() {
 			char* buffer_describe=string_new();
 			int largo_buffer_describe;
 			int describe = proceso_describe(comando[1]!=NULL?comando[1]:"",&buffer_describe, &largo_buffer_describe);
-			if(describe >= 0){
+			if(describe == 0){
 				printf("[OK] Se pudo realizar el describe\n");
 				printf("%s",buffer_describe);
 			}
@@ -188,7 +189,7 @@ void *crearConsola() {
 			}
 			printf("drop...\n");
 			int drop = proceso_drop(comando[1]);
-			if(drop >= 0)
+			if(drop == 0)
 				printf("[OK] Se pudo realizar el drop\n");
 			else
 				printf("[ERR] No se pudo realizar el drop\n");
@@ -196,7 +197,7 @@ void *crearConsola() {
 		case journal_:;
 			printf("journal...\n");
 			int journal = proceso_journal();
-			if(journal >= 0)
+			if(journal == 0)
 				printf("[OK] Se pudo realizar el journal\n");
 			else
 				printf("[ERR] No se pudo realizar el journal\n");

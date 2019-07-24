@@ -124,12 +124,6 @@ void procesar_KER(t_mensaje* msg, int socketKER, fd_set* set_master) {
 
 			int select_result = proceso_select(msgselect->nombreTabla,msgselect->key,&buffer,&largo_buffer);
 
-			if(select_result>0){
-				t_registro* reg = descomponer_registro(buffer);
-				printf("[KERNEL] [OK] [timestamp:%llu][key:%d] %s\n",reg->timestamp, reg->key, reg->value);
-				destruir_registro(reg);
-			}
-
 			if(enviarMensajeConError(mem, selectMsg, largo_buffer, buffer, socketKER,
 					logger, kernel, select_result)<=0){
 				close(socketKER);
