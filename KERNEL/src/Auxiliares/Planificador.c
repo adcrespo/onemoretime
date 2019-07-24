@@ -123,25 +123,6 @@ int cantidad_request(char* buffer) {
 }
 
 
-t_tipoSeeds* get_memoria_por_criterio(char *criterio) {
-	t_tipoSeeds *memory;
-	int tipo_criterio = criterio_to_enum(criterio);
-	switch (tipo_criterio) {
-	case SC:
-		//devolver memoria_sc
-		memory = obtener_memoria_sc();
-		break;
-	case SHC:
-		break;
-	case EV:
-		//memoria random
-		memory = obtener_memoria_random();
-		break;
-
-	}
-	return memory;
-}
-
 t_tipoSeeds* obtener_memoria_random() {
 
 	t_tipoSeeds *memory = get_memoria_conectada();;
@@ -149,13 +130,13 @@ t_tipoSeeds* obtener_memoria_random() {
 	return memory;
 }
 
-t_tipoSeeds* obtener_memoria_sc(){
-	bool findSC(void* element) {
-			t_tipoSeeds *memoria = element;
-			return memoria->numeroMemoria == memoria_sc->numeroMemoria;
-		}
-	return list_find(LISTA_CONN, &findSC);
-}
+//t_tipoSeeds* obtener_memoria_sc(){
+//	bool findSC(void* element) {
+//			t_tipoSeeds *memoria = element;
+//			return memoria->numeroMemoria == memoria_sc->numeroMemoria;
+//		}
+//	return list_find(LISTA_CONN, &findSC);
+//}
 
 void retardo_ejecucion() {
 
@@ -224,24 +205,17 @@ int ejecutar_request(char* linea, int id_proceso) {
 			// SELECT [NOMBRE_TABLA] [KEY]
 			// SELECT TABLA1 3
 
-//			int existe = validar_tabla(request->parametro1);
-//
-//			if (existe == 0) {
-//				log_info(logger, "PLANIFIC| La tabla no existe.");
-//			} else {
-//				log_info(logger, "PLANIFIC| La tabla existe.");
-//			}
-
+			// Valido existencia de tabla
 			t_metadata* tabla = buscar_tabla(request->parametro1);
 
 			if(tabla == NULL) {
 				log_info(logger, "PLANIFIC| La tabla no existe.");
-//				break;
 				return -1;
 			}
 
 			log_info(logger, "Buscando memoria del criterio %s", tabla->tipoConsistencia);
 
+			memoria = get_memoria_por_criterio(tabla->tipoConsistencia);
 			// FALTA BUSCAR MEMORIA POR CRITERIO Y CONECTARSE
 
 

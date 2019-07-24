@@ -39,7 +39,6 @@ t_pcb* sacar_proceso_rr(t_list* lista);
 void crear_proceso(char* line,t_request* request);
 int cantidad_request(char* buffer);
 void imprimir_pcb(t_pcb* pcb);
-t_tipoSeeds* get_memoria_por_criterio(char *criterio);
 t_tipoSeeds* obtener_memoria_random();
 t_tipoSeeds* obtener_memoria_sc();
 void retardo_ejecucion();

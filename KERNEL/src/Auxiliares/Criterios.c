@@ -98,6 +98,28 @@ int agregar_memoria_a_criterio(int nro_memoria, char* criterio) {
 	return resultado;
 }
 
+t_tipoSeeds* get_memoria_por_criterio(char *criterio) {
+	t_tipoSeeds *memory;
+	int tipo_criterio = criterio_to_enum(criterio);
+	switch (tipo_criterio) {
+		case SC:
+			memory = memoria_sc;
+			break;
+
+		case SHC:
+			// TODO
+			break;
+
+		case EV:
+			// TODO
+			//memoria random
+			memory = obtener_memoria_random();
+			break;
+
+	}
+	return memory;
+}
+
 int existe_memoria(t_tipoSeeds* memoria, t_list* lista_criterio) {
 
 	int existe_memoria(t_tipoSeeds* mem) {
