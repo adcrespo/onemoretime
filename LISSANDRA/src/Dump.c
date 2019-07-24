@@ -34,7 +34,7 @@ void RealizarDumpeo()
 	//for para recorrer memtable
 	for(int i = 0; i < longitudMemtable; i++)
 	{
-		t_tabla *listaTabla;//= malloc(sizeof(t_tabla));
+		t_tabla *listaTabla;
 		listaTabla = list_get(memtable, i);
 
 		if(listaTabla != NULL)
@@ -43,7 +43,7 @@ void RealizarDumpeo()
 			char *nombre = string_new();
 			string_append(&nombre, listaTabla->nombre_tabla);
 			DumpearTabla(listaTabla->lista, nombre);
-			AumentarContadorTmp(nombre);
+//			AumentarContadorTmp(nombre);
 		}
 
 	}
@@ -55,68 +55,53 @@ void RealizarDumpeo()
 
 void DumpearTabla(t_list *lista, char *nombre)
 {
-	if(GetEstadoTabla(nombre)==1)
+	if (GetEstadoTabla(nombre) == 1)
 		return;
 	loggear(logger, LOG_LEVEL_INFO, "Dumpeando tabla: %s", nombre);
 	int numeroDump = GetContadorTmp(nombre);
 	int longitudTabla = list_size(lista);
-	loggear(logger, LOG_LEVEL_INFO,"Longitud tabla %s es %d", nombre, longitudTabla);
-	char *temporal = string_from_format("%s%s/%d.tmp", rutaTablas, nombre, numeroDump);
-	loggear(logger, LOG_LEVEL_INFO,"Creando archivo %s", temporal);
+	loggear(logger, LOG_LEVEL_INFO, "Longitud tabla %s es %d", nombre,
+			longitudTabla);
+	char *temporal = string_from_format("%s%s/%d.tmp", rutaTablas, nombre,
+			numeroDump);
+	loggear(logger, LOG_LEVEL_INFO, "Creando archivo %s", temporal);
 	FILE *file = fopen(temporal, "w+");
 	free(temporal);
 
 	int bloqueActual = AgregarBloque();
-	char *rutaActual = string_from_format("%s%d.bin", rutaBloques, bloqueActual);
+	char *rutaActual = string_from_format("%s%d.bin", rutaBloques,
+			bloqueActual);
 	int sizeTotal = 0;
 	int disponibleActual = tamanio_bloques;
 	t_list *bloques = list_create();
-	list_add(bloques, (int *)bloqueActual);
+	list_add(bloques, (int *) bloqueActual);
 	//for para recorrer cada tabla dentro de memtable
-	for(int j = 0; j < longitudTabla; j++)
-	{
+	for (int j = 0; j < longitudTabla; j++) {
 
-		//int len = sizeof(t_registro);
-		t_registro *registro;// = malloc(sizeof(t_registro));
+		t_registro *registro;
 		registro = list_get(lista, j);
-		char *linea = string_new();
-		char *key = string_new();
-		char *value = string_new();
-		string_append(&value, registro->value);
-		string_append(&key, (string_itoa(registro->key)));
-		//char *timestamp = string_new();
-		char *timestamp = malloc(20);
-		sprintf(timestamp, "%llu", registro->timestamp);
-		string_append(&linea, timestamp);
-		string_append(&linea, ";");
-		string_append(&linea, key);
-		string_append(&linea, ";");
-		string_append(&linea, value);
-		string_append(&linea, "\n");
-		free(key);
-		free(timestamp);
-		free(value);
+		char *linea = descomponer_registro(registro);
 		int lenLinea = strlen(linea);
 		log_info(logger, "strlen de linea %s es %d", linea, lenLinea);
 
-		if(lenLinea < disponibleActual)
-		{
+		if (lenLinea < disponibleActual) {
 			disponibleActual -= lenLinea;
 			GuardarEnBloque(linea, rutaActual);
 			sizeTotal += lenLinea;
-			loggear(logger, LOG_LEVEL_INFO, "El disponible es: %d", disponibleActual);
-		} else
-		{
+			loggear(logger, LOG_LEVEL_INFO, "El disponible es: %d",
+					disponibleActual);
+		} else {
 			bloqueActual = AgregarBloque();
 			disponibleActual = tamanio_bloques;
 			//bloqueActual ++;
 			disponibleActual -= lenLinea;
-			rutaActual = string_from_format("%s%d.bin", rutaBloques, bloqueActual);
+			rutaActual = string_from_format("%s%d.bin", rutaBloques,
+					bloqueActual);
 			GuardarEnBloque(linea, rutaActual);
-			list_add(bloques, bloqueActual);
+			list_add(bloques, (int*) bloqueActual);
 			sizeTotal += lenLinea;
-			loggear(logger, LOG_LEVEL_INFO, "El disponible es: %d", disponibleActual);
-
+			loggear(logger, LOG_LEVEL_INFO, "El disponible es: %d",
+					disponibleActual);
 
 		}
 
@@ -128,27 +113,22 @@ void DumpearTabla(t_list *lista, char *nombre)
 	fputs(sizeAEscribir, file);
 	fputs("BLOCKS=[",file);
 	int longitudBloques = list_size(bloques);
-	for(int i = 0; i < longitudBloques; i++)
-	{
-		int idBloque = (int)list_get(bloques, i);
-		if(i < (longitudBloques - 1))
-		{
+	for (int i = 0; i < longitudBloques; i++) {
+		int idBloque = (int) list_get(bloques, i);
+		if (i < (longitudBloques - 1)) {
 			fprintf(file, "%d", idBloque);
 			fputs(",", file);
-		} else
-		{
+		} else {
 			fprintf(file, "%d", idBloque);
 		}
-
 	}
 
-	fputs("]\n",file);
+	fputs("]\n", file);
 	free(sizeAEscribir);
-	list_clean(bloques);
-//	free(bloques);
+
+	if(bloques != NULL) list_destroy(bloques);
+	free(nombre);
 	free(rutaActual);
-	list_clean(lista);
-//	free(lista);
 	fclose(file);
 
 }
@@ -161,7 +141,7 @@ void LimpiarMemtable() {
 		int sizeTabla = list_size(tabla->lista);
 		//recorro tabla dentro de memtable
 		for (int j = 0; j < sizeTabla; j++) {
-			t_registro *registro = list_get(memtable, i);
+			t_registro *registro = list_get(tabla->lista, i);
 			free(registro);
 		}
 		free(tabla);

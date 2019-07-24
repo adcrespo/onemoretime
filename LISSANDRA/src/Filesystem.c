@@ -232,22 +232,14 @@ void AlocarTabla(char *tabla, t_registro *registro) {
 
 }
 
-int InsertarTabla(t_request *request) {
-	t_registro *registro = malloc(sizeof(t_registro));
+int InsertarTabla(t_insert *insert) {
 
-	registro->key = atoi(request->parametro2);
-	memcpy(registro->value, request->parametro3,
-			strlen(request->parametro3) + 1);
-	registro->timestamp = atoll(request->parametro4);
-//	printf("Registro key %d\n", registro->key);
-//	printf("Registro value %s\n", registro->value);
-//	printf("Registro timestamp %llu\n", registro->timestamp);
 
 	char *nombre_tabla = string_new();
-	string_append(&nombre_tabla, request->parametro1);
+	string_append(&nombre_tabla, insert->nombreTabla);
 	//valido value enviado
-	if((strlen(registro->value)) > (lfs_conf.tamano_value)){
-		free(registro);
+	if((strlen(insert->value)) > (lfs_conf.tamano_value)){
+		free(insert);
 		free(nombre_tabla);
 		return 1;
 	}
@@ -256,7 +248,7 @@ int InsertarTabla(t_request *request) {
 	if (!ExisteTabla(nombre_tabla)) {
 		loggear(logger, LOG_LEVEL_WARNING, "%s no existe en el file system",
 				nombre_tabla);
-		free(registro);
+		free(insert);
 		free(nombre_tabla);
 		return 1;
 	}
@@ -264,13 +256,18 @@ int InsertarTabla(t_request *request) {
 	//Valido tabla bloqueada
 	int bloqueado = GetEstadoTabla(nombre_tabla);
 	if(bloqueado){
-		free(registro);
+		free(insert);
 		return -1;
 	}
 
 	//Verifico si no tiene datos a dumpear
 	t_tabla *tabla;
 	tabla = BuscarTablaMemtable(nombre_tabla);
+
+	t_registro *registro = malloc(sizeof(t_registro));
+	registro->key = insert->key;
+	strcpy(registro->value, insert->value);
+	registro->timestamp = insert->timestamp;
 
 	if (tabla == NULL) {
 		//Aloco en memtable como nueva tabla
@@ -1135,4 +1132,36 @@ void RemoveGlobalList(char *tabla){
 	}
 
 	list_remove(tablasGlobal, pos);
+}
+
+char* descomponer_registro(t_registro *registro) {
+	char *linea = string_new();
+	char *key = string_new();
+	char *value = string_new();
+	string_append(&value, registro->value);
+	string_append(&key, (string_itoa(registro->key)));
+	char *timestamp = malloc(20);
+	sprintf(timestamp, "%llu", registro->timestamp);
+	string_append(&linea, timestamp);
+	string_append(&linea, ";");
+	string_append(&linea, key);
+	string_append(&linea, ";");
+	string_append(&linea, value);
+	string_append(&linea, "\n");
+	free(key);
+	free(timestamp);
+	free(value);
+	return linea;
+}
+
+char* descomponer_metadata(t_metadata *metadata, char *nombre) {
+	char *buffer = string_new();
+	string_append(&buffer, nombre);
+	string_append(&buffer, ";");
+	string_append(&buffer, metadata->tipoConsistencia);
+	string_append(&buffer, ";");
+	string_append(&buffer, string_itoa(metadata->particiones));
+	string_append(&buffer, ";");
+	string_append(&buffer, string_itoa(metadata->compactationTime));
+	return buffer;
 }

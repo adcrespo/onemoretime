@@ -102,26 +102,13 @@ void procesar(int n_descriptor, fd_set* set_master) {
 
 			loggear(logger, LOG_LEVEL_INFO, "Value :%s", msginsert->value);
 
-			t_request *request = malloc(sizeof(t_request));
-			request->parametro1 = malloc(strlen(msginsert->nombreTabla) + 1);
-			request->parametro2 = malloc(
-					strlen(string_itoa(msginsert->key)) + 1);
-			request->parametro3 = malloc(strlen(msginsert->value) + 1);
-			request->parametro4 = malloc(20);
-
-			strcpy(request->parametro1, msginsert->nombreTabla);
-			strcpy(request->parametro2, string_itoa(msginsert->key));
-			strcpy(request->parametro3, msginsert->value);
-			sprintf(request->parametro4, "%llu", msginsert->timestamp);
-
-			int resultadoInsert = InsertarTabla(request);
+			int resultadoInsert = InsertarTabla(msginsert);
 
 			loggear(logger, LOG_LEVEL_WARNING, "Resultado create :%d",
 					resultadoInsert);
 			aplicar_retardo();
 			enviarMensajeConError(lis, insert, 0, NULL, n_descriptor, logger,
 					mem, resultadoInsert);
-			free(request);
 			free(msginsert);
 			break;
 
@@ -191,51 +178,31 @@ void procesar(int n_descriptor, fd_set* set_master) {
 						"Buscando metadata para todas las tablas");
 				//recorrer tablasGlobal y enviar metadata por tabla
 				int cantTablas = list_size(tablasGlobal);
-				log_info(logger, "countTables: %d",cantTablas);
+				log_info(logger, "countTables: %d", cantTablas);
 				for (int i = 0; i < cantTablas; i++) {
 					t_tcb *tabla = list_get(tablasGlobal, i);
-					t_metadata *metadataGlobal;
-					metadataGlobal = ObtenerMetadataTabla(tabla->nombre_tabla);
+					t_metadata *metadata;
+					metadata = ObtenerMetadataTabla(tabla->nombre_tabla);
 
-					char *describeTablaGlobal = string_new();
-					string_append(&describeTablaGlobal, tabla->nombre_tabla);
-					string_append(&describeTablaGlobal, ";");
-					string_append(&describeTablaGlobal, metadataGlobal->tipoConsistencia);
-					string_append(&describeTablaGlobal, ";");
-					string_append(&describeTablaGlobal,
-							string_itoa(metadataGlobal->particiones));
-					string_append(&describeTablaGlobal, ";");
-					string_append(&describeTablaGlobal,
-							string_itoa(metadataGlobal->compactationTime));
-					loggear(logger, LOG_LEVEL_INFO, "Enviando describe: %s",
-							describeTablaGlobal);
+					char *describeGlobal = descomponer_metadata(metadata,
+							tabla->nombre_tabla);
+					log_info(logger, "Enviando describe: %s", describeGlobal);
 					aplicar_retardo();
 					enviarMensajeConError(lis, describe,
-							(strlen(describeTablaGlobal) + 1), describeTablaGlobal,
+							(strlen(describeGlobal) + 1), describeGlobal,
 							n_descriptor, logger, mem, 0);
-					free(describeTablaGlobal);
-					free(metadataGlobal);
+					free(describeGlobal);
+					free(metadata);
 				}
-				loggear(logger, LOG_LEVEL_INFO, "Fin mensaje describe");
-			} else if(ExisteTabla(describeMensaje->nombreTabla)){
+				log_debug(logger, "Fin mensaje describe");
+			} else if (ExisteTabla(describeMensaje->nombreTabla)) {
 
-				loggear(logger, LOG_LEVEL_INFO,
-						"Buscando metadata para tabla %s",
+				log_info(logger, "Buscando metadata para tabla %s",
 						describeMensaje->nombreTabla);
 				t_metadata *metadata;
 				metadata = ObtenerMetadataTabla(describeMensaje->nombreTabla);
-				char *describeTabla = string_new();
-				string_append(&describeTabla, describeMensaje->nombreTabla);
-				string_append(&describeTabla, ";");
-				string_append(&describeTabla, metadata->tipoConsistencia);
-				string_append(&describeTabla, ";");
-				string_append(&describeTabla,
-						string_itoa(metadata->particiones));
-				string_append(&describeTabla, ";");
-				string_append(&describeTabla,
-						string_itoa(metadata->compactationTime));
-				loggear(logger, LOG_LEVEL_INFO, "Enviando describe: %s",
-						describeTabla);
+				char *describeTabla = descomponer_metadata(metadata, describeMensaje->nombreTabla);
+				log_info(logger, "Enviando describe: %s", describeTabla);
 				aplicar_retardo();
 				enviarMensajeConError(lis, describe,
 						(strlen(describeTabla) + 1), describeTabla,

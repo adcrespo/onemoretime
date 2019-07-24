@@ -10,7 +10,29 @@
 
 #include "LFS.h"
 
+//structs
+typedef struct {
+	char tipoConsistencia[10];
+	int particiones;
+	int compactationTime;
+} t_metadata;
 
+
+
+//variables globales
+t_config *config_metadata;
+t_bitarray *bitmap;
+
+int tamanio_bloques;
+int cantidad_bloques;
+char *rutaMetadata;
+char *rutaBitmap;
+char *rutaTablas;
+char *rutaBloques;
+char *bmap;
+
+
+//funciones filesystem
 void *CrearFileSystem();
 void CargarMetadata();
 void CargarBitmap();
@@ -19,7 +41,7 @@ int ExisteTabla(const char*tabla);
 int CalcularParticion(int clave, int particiones);
 void CrearDirectorioTabla(char *tabla);
 void CrearMetadataTabla(char *tabla, char *consistencia, int particiones, int tiempoCompactacion);
-int InsertarTabla(t_request *request);
+int InsertarTabla(t_insert *insert);
 void CrearBloque(int numero, int bytes);
 int ContarElementosArray(char **cadena);
 t_registro* BuscarKeyParticion(int key, char *bloque, t_registro *registro);
@@ -45,20 +67,9 @@ void IniciarBloques();
 void CrearDirectorio(char *directory);
 void aplicar_retardo();
 void RemoveGlobalList(char *tabla);
-
-t_config *config_metadata;
-t_bitarray *bitmap;
-
-
-
-int tamanio_bloques;
-int cantidad_bloques;
-char *rutaMetadata;
-char *rutaBitmap;
-char *rutaTablas;
-char *rutaBloques;
-char *bmap;
-
+char* descomponer_registro(t_registro *registro);
+char* descomponer_metadata(t_metadata *metadata, char *nombre);
+t_metadata* ObtenerMetadataTabla(char *tabla);
 
 
 #endif /* FILESYSTEM_H_ */
