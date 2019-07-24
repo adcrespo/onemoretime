@@ -215,7 +215,8 @@ int ejecutar_request(char* linea, int id_proceso) {
 //	log_info(logger, "PLANIFIC| Request a ejecutar:");
 	log_info(logger, "PLANIFIC| Request a ejecutar: %s", linea);
 	t_request* request = parsear(linea, logger);
-	int resultado;
+	int resultado, cliente;
+	t_tipoSeeds* memoria;
 
 	switch (request->request) {
 
@@ -295,8 +296,8 @@ int ejecutar_request(char* linea, int id_proceso) {
 			log_info(logger, "PLANIFIC| CREATE OK. %s, %s, %d, %d", req_create->nombreTabla, req_create->tipo_cons, req_create->num_part, req_create->comp_time);
 			log_info(logger, "PLANIFIC| Enviando CREATE a MEMORIA");
 
-			t_tipoSeeds* memoria = obtener_memoria_sc(); // ----- cambiar para hacerlo dinamico para los criterios
-			int cliente = conectar_a_memoria(memoria);
+			memoria = obtener_memoria_random(); // cambiar para hacerlo dinamico para los criterios
+			cliente = conectar_a_memoria(memoria);
 
 //			int resultado_mensaje = enviarMensaje(kernel, create, sizeof(t_create), req_create, cliente, logger, mem);
 			int resultado_mensaje = enviarMensajeConError(kernel, create, sizeof(t_create), req_create, cliente, logger, mem, 0);
@@ -320,9 +321,27 @@ int ejecutar_request(char* linea, int id_proceso) {
 			t_describe* req_describe = malloc(sizeof(t_describe));
 			req_describe->id_proceso = id_proceso;
 			strcpy(req_describe->nombreTabla, "");
-			if(request->parametro1 != NULL) {
-				log_info(logger, "PLANIFIC|Parámetro 1: %s", request->parametro1);
+
+			memoria = obtener_memoria_random(); // ----- cambiar para hacerlo dinamico para los criterios
+			cliente = conectar_a_memoria(memoria);
+
+			if (string_is_empty(request->parametro1)) {
+				log_info(logger, "PLANIFIC| Describe GLOBAL.");
+				describe_global(cliente);
+			} else {
+				log_info(logger, "PLANIFIC| Describe %s.", request->parametro1);
+				log_info(logger, "PLANIFIC| Parámetro 1: %s", request->parametro1);
 				strcpy(req_describe->nombreTabla, request->parametro1);
+				enviarMensaje(kernel, describe, sizeof(t_describe), req_describe, cliente, logger, mem);
+				t_mensaje* msg_describe = recibirMensaje(cliente, logger);
+				char* buffer_describe= string_new();
+				string_append(&buffer_describe, msg_describe->content);
+
+				log_info(logger, "METADATA| Metadata: %s", buffer_describe);
+
+				guardar_metadata(buffer_describe);
+				destruirMensaje(msg_describe);
+				free(buffer_describe);
 			}
 
 			log_info(logger, "PLANIFIC| DESCRIBE OK. %s", req_describe->nombreTabla);

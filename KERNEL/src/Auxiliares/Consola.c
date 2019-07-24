@@ -79,7 +79,10 @@ int procesar_comando(char *line) {
 				break;
 
 			case _describe:
+
 				printf("Enviando DESCRIBE a una Memoria \n"); /* CAMBIAR SOCKET DE ABAJO */
+
+
 				// elegir memoria
 				//enviarMensaje(kernel, describe, sizeof(request), &request, 10/* socket memoria*/, logger, mem);
 
