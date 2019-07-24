@@ -42,11 +42,6 @@ typedef struct {
      t_list *lista;
 }__attribute__((packed)) t_tabla;
 
-typedef struct {
-	char tipoConsistencia[10];
-	int particiones;
-	int compactationTime;
-} t_metadata;
 
 
 typedef struct {
@@ -60,7 +55,7 @@ typedef struct {
 void Inicializar();
 t_tabla* ObtenerTabla(char *nombre);
 void AlocarTabla(char *tabla, t_registro *registro);
-t_metadata* ObtenerMetadataTabla(char *tabla);
+
 
 
 

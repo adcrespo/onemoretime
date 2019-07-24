@@ -14,60 +14,49 @@ void *crear_consola() {
 
 	char *line;
 	rl_attempted_completion_function = character_name_completion;
-	int estado;
 
 	while (1) {
-
+		int i;
 		line = readline("Ingrese un comando> ");
-		if (!string_is_empty(line)) {
+		if (line) {
 			add_history(line);
-			estado = procesar_comando(line);
 		}
-		if (estado != 0) {
-			return (void*) EXIT_FAILURE;
+
+		char** comando = string_split(line, " ");
+		free(line);
+
+		t_tipoComando comando_e = buscar_enum_lfs(comando[0]);
+
+		if (comando_e == -2) {
+			for (i = 0; comando[i] != NULL; i++)
+				free(comando[i]);
+			if (comando)
+				free(comando);
+			continue;
 		}
-	}
-}
 
-int procesar_comando(char *line) {
-
-	log_info(logger, "CONSOLA: %s.", line);
-
-	t_request* request = parsear(line, logger);
-
-	if (request->request == -1) {
-
-		log_error(logger, "CONSOLA: Se ingresó un comando desconocido: %s.",
-				line);
-		printf("Se ingresó un comando desconocido: %s.\n", line);
-
-	} else {
-
-		switch (request->request) {
+		switch (comando_e) {
 
 		case _select:
 			printf("CONSOLA: Se ingresó comando SELECT \n");
-			if (string_is_empty(request->parametro1)
-					|| string_is_empty(request->parametro2)){
+			if (comando[1] == NULL || comando[2] == NULL) {
 				printf("Falta ingresar datos para utilizar select\n");
 				break;
 			}
 
-			int exists = ExisteTabla(request->parametro1);
-			if(!exists){
-				printf("La tabla %s no existe.\n",
-						request->parametro1);
+			int exists = ExisteTabla(comando[1]);
+			if (!exists) {
+				printf("La tabla %s no existe.\n", comando[1]);
 				break;
 			}
-			int bloqueado = GetEstadoTabla(request->parametro1);
+			int bloqueado = GetEstadoTabla(comando[1]);
 			if (bloqueado) {
-				printf("La tabla %s se encuentra bloqueada.\n",
-						request->parametro1);
+				printf("La tabla %s se encuentra bloqueada.\n", comando[1]);
 				break;
 			}
 			t_select *selectMsg = malloc(sizeof(t_select));
-			strcpy(selectMsg->nombreTabla, request->parametro1);
-			selectMsg->key = atoi(request->parametro2);
+			strcpy(selectMsg->nombreTabla, comando[1]);
+			selectMsg->key = atoi(comando[2]);
 			t_registro *regSelect = BuscarKey(selectMsg);
 
 			if (regSelect->key != -1) {
@@ -86,45 +75,46 @@ int procesar_comando(char *line) {
 		case _insert:
 
 			printf("CONSOLA: Se ingresó comando INSERT \n");
-			if (string_is_empty(request->parametro1)
-					|| string_is_empty(request->parametro2)
-					|| string_is_empty(request->parametro3)) {
+			if (comando[1] == NULL || comando[2] == NULL || comando[3] == NULL) {
 				printf("Faltan ingresar datos para utilizar el comando\n");
 				break;
 			}
 			//valido tamaño del value
-			if ((strlen(request->parametro3)) > lfs_conf.tamano_value) {
-				printf("El tamaño del value con %d bytes supera lo permitido de %d bytes\n",
-						(strlen(request->parametro3)),lfs_conf.tamano_value);
+			if ((strlen(comando[3])) > lfs_conf.tamano_value) {
+				printf(
+						"El tamaño del value con %d bytes supera lo permitido de %d bytes\n",
+						(strlen(comando[3])), lfs_conf.tamano_value);
 				break;
 			}
 
-			int existsI = ExisteTabla(request->parametro1);
-			if(!existsI){
-				printf("La tabla %s no existe.\n",
-						request->parametro1);
+			int existsI = ExisteTabla(comando[1]);
+			if (!existsI) {
+				printf("La tabla %s no existe.\n", comando[1]);
 				break;
 			}
-			if (string_is_empty(request->parametro4)) {
+			if (comando[4] == NULL) {
 				unsigned long long timestamp = obtenerTimeStamp();
-				request->parametro4 = malloc(20);
-				sprintf(request->parametro4, "%llu", timestamp);
-				//request->parametro4 = string_itoa();
+				comando[4] = malloc(20);
+				sprintf(comando[4], "%llu", timestamp);
 			}
 
-			printf("Tabla: %s\n", request->parametro1);
-			printf("Key: %s\n", request->parametro2);
-			printf("Value: %s\n", request->parametro3);
-			printf("Timestamp: %s\n", request->parametro4);
-			int resultInsert = InsertarTabla(request);
+			printf("Tabla: %s\n", comando[1]);
+			printf("Key: %s\n", comando[2]);
+			printf("Value: %s\n", comando[3]);
+			printf("Timestamp: %s\n", comando[4]);
+			t_insert *insert = malloc(sizeof(t_insert));
+			strcpy(insert->nombreTabla, comando[1]);
+			insert->key = atoi(comando[2]);
+			strcpy(insert->value, comando[3]);
+			insert->timestamp = atoll(comando[4]);
+
+			int resultInsert = InsertarTabla(insert);
 			if (resultInsert == -1) {
-				printf("La tabla %s se encuentra bloqueada.\n",
-						request->parametro1);
+				printf("La tabla %s se encuentra bloqueada.\n", comando[1]);
 				break;
 			}
 			if (resultInsert) {
-				printf("La tabla %s no se encuentra creada.\n",
-						request->parametro1);
+				printf("La tabla %s no se encuentra creada.\n", comando[1]);
 			} else {
 				printf("Registro insertado correctamente.\n");
 			}
@@ -135,17 +125,15 @@ int procesar_comando(char *line) {
 
 			printf("CONSOLA: Se ingresó comando CREATE \n");
 
-			if (string_is_empty(request->parametro1)
-					|| string_is_empty(request->parametro2)
-					|| string_is_empty(request->parametro3)
-					|| string_is_empty(request->parametro4)) {
+			if (comando[1] == NULL || comando[2] == NULL || comando[3] == NULL
+					|| comando[4] == NULL) {
 				printf("Faltan ingresar datos para la creación de la tabla\n");
 			} else {
 				t_create *msgCreate = malloc(sizeof(t_create));
-				strcpy(msgCreate->nombreTabla, request->parametro1);
-				strcpy(msgCreate->tipo_cons, request->parametro2);
-				msgCreate->num_part = atoi(request->parametro3);
-				msgCreate->comp_time = atoi(request->parametro4);
+				strcpy(msgCreate->nombreTabla, comando[1]);
+				strcpy(msgCreate->tipo_cons, comando[2]);
+				msgCreate->num_part = atoi(comando[3]);
+				msgCreate->comp_time = atoi(comando[4]);
 
 				printf("Tabla: %s\n", msgCreate->nombreTabla);
 				printf("Tipo consistencia: %s\n", msgCreate->tipo_cons);
@@ -164,19 +152,19 @@ int procesar_comando(char *line) {
 
 		case _describe:
 			printf("CONSOLA: Se ingresó comando DESCRIBE \n");
-			if (string_is_empty(request->parametro1)) {
+			if (comando[1] == NULL) {
 				printf("Obteniendo metadata de todas las tablas.\n");
 				ObtenerMetadataCompleto();
 			} else {
-				int resultExists = ExisteTabla(request->parametro1);
+				int resultExists = ExisteTabla(comando[1]);
 				char *tableName = string_new();
-				string_append(&tableName, request->parametro1);
+				string_append(&tableName, comando[1]);
 
 				switch (resultExists) {
 				case 1:
-					printf("Metadata de tabla %s\n", request->parametro1);
+					printf("Metadata de tabla %s\n", tableName);
 					t_metadata *metadata;
-					metadata = ObtenerMetadataTabla(request->parametro1);
+					metadata = ObtenerMetadataTabla(tableName);
 					int particiones = metadata->particiones;
 					int tiempoCompactacion = metadata->compactationTime;
 					char *consistencia = string_new();
@@ -185,7 +173,8 @@ int procesar_comando(char *line) {
 //					printf("PARTITIONS=%d\n", particiones);
 //					printf("COMPACTATION_TIME=%d\n", tiempoCompactacion);
 					printf("Consistency\tPartitions\tCompactionTime\n");
-					printf("%s\t\t%d\t\t%d\n", consistencia, particiones, tiempoCompactacion);
+					printf("%s\t\t%d\t\t%d\n", consistencia, particiones,
+							tiempoCompactacion);
 					free(consistencia);
 					free(metadata);
 
@@ -199,31 +188,32 @@ int procesar_comando(char *line) {
 		case _drop:
 			printf("CONSOLA: Se ingresó comando DROP \n");
 
-			if (string_is_empty(request->parametro1)) {
+			if (comando[1] == NULL) {
 				printf("Se debe ingresar la tabla a dropear\n");
 				break;
 			}
 
-			int resultado = DropearTabla(request->parametro1);
+			int resultado = DropearTabla(comando[1]);
 			if (!resultado)
-				printf("Tabla %s eliminada.\n", request->parametro1);
+				printf("Tabla %s eliminada.\n", comando[1]);
 			if (resultado == 1)
 				printf("La tabla ingresada no existe.\n");
 			if (resultado == -1)
-				printf("La tabla %s se encuentra bloqueada.\n",
-						request->parametro1);
-
+				printf("La tabla %s se encuentra bloqueada.\n", comando[1]);
 
 			break;
-		case _salir:
+		case salir_:;
+				printf("Cerrando consola...\n");
 			exit_gracefully(EXIT_SUCCESS);
 			break;
 		default:
 			;
+			printf("No se reconoce el comando %s .\n", comando[0]);
 		}
+		int elementos =  sizeof(comando) / sizeof(comando[0]);
+
+		liberar_comando(comando, elementos);
 	}
-	free(line);
-	free(request);
 	return 0;
 }
 
@@ -236,12 +226,8 @@ char *character_name_generator(const char *text, int state) {
 	static int list_index, len;
 	char *name;
 
-	char *character_names[] = { "SELECT"
-			, "INSERT"
-			, "CREATE"
-			, "DESCRIBE"
-			, "DROP"
-			, NULL };
+	char *character_names[] = { "SELECT", "INSERT", "CREATE", "DESCRIBE",
+			"DROP", NULL };
 
 	if (!state) {
 		list_index = 0;
@@ -256,3 +242,22 @@ char *character_name_generator(const char *text, int state) {
 	return NULL;
 }
 
+t_tipoComando buscar_enum_lfs(char *sval) {
+	t_tipoComando result = select_;
+	int i = 0;
+	char* comandos_str[] = { "SELECT", "INSERT", "CREATE", "DESCRIBE", "DROP", "SALIR",
+			NULL };
+	if (sval == NULL)
+		return -2;
+	for (i = 0; comandos_str[i] != NULL; ++i, ++result)
+		if (0 == strcmp(sval, comandos_str[i]))
+			return result;
+	return -1;
+}
+
+void liberar_comando(char ** comando, int elementos){
+	for(int i = 0; i<elementos; i++){
+		free(comando[i]);
+	}
+	free(comando);
+}
