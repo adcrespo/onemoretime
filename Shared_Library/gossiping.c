@@ -77,11 +77,11 @@ int loggearLista(t_list *LISTA_CONN,t_log *logger)
 	{
 		seed = list_get(LISTA_CONN, i);
 
-		loggear(logger,LOG_LEVEL_INFO,"------------------------------");
-		loggear(logger,LOG_LEVEL_INFO,"LISTA_IP_SEEDS_NUMERO[%d]: %d",i, seed->numeroMemoria);
-		loggear(logger,LOG_LEVEL_INFO,"LISTA_IP_SEEDS_IP[%d]: %s",i, seed->ip);
-		loggear(logger,LOG_LEVEL_INFO,"LISTA_IP_SEEDS_PUERTO[%d]: %s",i, seed->puerto);
-		loggear(logger,LOG_LEVEL_INFO,"LISTA_IP_SEEDS_ESTADO[%d]: %d",i, seed->estado);
+//		loggear(logger,LOG_LEVEL_INFO,"------------------------------");
+//		loggear(logger,LOG_LEVEL_INFO,"LISTA_IP_SEEDS_NUMERO[%d]: %d",i, seed->numeroMemoria);
+//		loggear(logger,LOG_LEVEL_INFO,"LISTA_IP_SEEDS_IP[%d]: %s",i, seed->ip);
+//		loggear(logger,LOG_LEVEL_INFO,"LISTA_IP_SEEDS_PUERTO[%d]: %s",i, seed->puerto);
+//		loggear(logger,LOG_LEVEL_INFO,"LISTA_IP_SEEDS_ESTADO[%d]: %d",i, seed->estado);
 
 		i++;
 	}

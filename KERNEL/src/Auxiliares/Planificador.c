@@ -191,6 +191,15 @@ int procesar_pcb(t_pcb* pcb) {
 
 }
 
+t_registro* descomponer_registro(char *buffer)
+{
+	t_registro* registro = malloc(sizeof(t_registro));
+	memcpy(&registro->timestamp,buffer,sizeof(unsigned long long));
+	memcpy(&registro->key,buffer+sizeof(unsigned long long),sizeof(int));
+	memcpy(&registro->value[0],buffer+sizeof(unsigned long long)+sizeof(int),VALUE);
+	return registro;
+}
+
 int ejecutar_request(char* linea, int id_proceso) {
 
 //	log_info(logger, "PLANIFIC| Request a ejecutar:");
@@ -213,22 +222,41 @@ int ejecutar_request(char* linea, int id_proceso) {
 				return -1;
 			}
 
-			log_info(logger, "Buscando memoria del criterio %s", tabla->tipoConsistencia);
-
-			memoria = get_memoria_por_criterio(tabla->tipoConsistencia);
-			// FALTA BUSCAR MEMORIA POR CRITERIO Y CONECTARSE
-
-
-			log_info(logger, "PLANIFIC| Preparando SELECT");
-			t_select* req_select = malloc(sizeof(t_create));
+			log_info(logger, "PLANIFIC|Preparando SELECT");
+			t_select* req_select = malloc(sizeof(t_select));
 
 			req_select->id_proceso = id_proceso;
 			strcpy(req_select->nombreTabla, request->parametro1);
 			req_select->key = atoi(request->parametro2);
 
+
 			log_info(logger, "PLANIFIC| SELECT OK. %s, %d", req_select->nombreTabla, req_select->key);
 			log_info(logger, "PLANIFIC| Enviando SELECT a MEMORIA");
 
+			log_info(logger, "Buscando memoria del criterio %s", tabla->tipoConsistencia);
+
+			//memoria = get_memoria_por_criterio(tabla->tipoConsistencia);
+			memoria = obtener_memoria_random();
+			// FALTA BUSCAR MEMORIA POR CRITERIO Y CONECTARSE
+			cliente = conectar_a_memoria(memoria);
+
+			int resultado_mensaje_select = enviarMensajeConError(kernel, selectMsg, sizeof(t_select), req_select, cliente, logger, mem, 0);
+			log_info(logger, "Resultado de enviar mensaje: %d", resultado_mensaje_select);
+
+			log_info(logger, "PLANIFIC| RECIBIENDO SELECT");
+			t_mensaje* resultado_req_select = recibirMensaje(cliente, logger);
+
+			int largo_buffer = resultado_req_select->header.longitud;
+			char *buffer = malloc(largo_buffer);
+			memcpy(buffer, resultado_req_select->content, resultado_req_select->header.longitud);
+
+			t_registro* reg = descomponer_registro(buffer);
+
+			log_info(logger, "PLANIFIC| SELECT OK. KEY:%d, VALOR:%s TIMESTAMP:%llu", reg->key, reg->value,reg->timestamp);
+			log_info(logger, "PLANIFIC| Enviando SELECT a MEMORIA");
+
+			destruirMensaje(resultado_req_select);
+			free(reg);
 			resultado = request->es_valido; // Cambiar por lo que devuelve la memoria.
 			free(req_select);
 			break;
@@ -242,12 +270,23 @@ int ejecutar_request(char* linea, int id_proceso) {
 
 			req_insert->id_proceso = id_proceso;
 			strcpy(req_insert->nombreTabla, request->parametro1);
-			req_insert->timestamp = atoi(request->parametro2);
-			req_insert->key = atoi(request->parametro3);
-			strcpy(req_insert->value, request->parametro4);
+			req_insert->timestamp = obtenerTimeStamp();
+			req_insert->key = atoi(request->parametro2);
+			strcpy(req_insert->value, request->parametro3);
 
-			log_info(logger, "PLANIFIC| INSERT OK. %s, %d, %d, %s", req_insert->nombreTabla, req_insert->timestamp, req_insert->key, req_insert->value);
+			log_info(logger, "PLANIFIC| INSERT OK. %s, %llu, %d, %s", req_insert->nombreTabla, req_insert->timestamp, req_insert->key, req_insert->value);
 			log_info(logger, "PLANIFIC| Enviando INSERT a MEMORIA");
+
+			memoria = obtener_memoria_random(); // cambiar para hacerlo dinamico para los criterios
+			cliente = conectar_a_memoria(memoria);
+
+			int resultado_mensaje_insert = enviarMensajeConError(kernel, insert, sizeof(t_insert), req_insert, cliente, logger, mem, 0);
+			log_info(logger, "Resultado de enviar mensaje: %d", resultado_mensaje_insert);
+
+			t_mensaje* resultado_req_insert = recibirMensaje(cliente, logger);
+			resultado = resultado_req_insert->header.error;
+			log_info(logger, "PLANIFIC| Resultado de INSERT: %d", resultado);
+			destruirMensaje(resultado_req_insert);
 
 			resultado = request->es_valido; // Cambiar por lo que devuelve la memoria.
 			free(req_insert);
@@ -275,13 +314,15 @@ int ejecutar_request(char* linea, int id_proceso) {
 
 //			int resultado_mensaje = enviarMensaje(kernel, create, sizeof(t_create), req_create, cliente, logger, mem);
 			int resultado_mensaje = enviarMensajeConError(kernel, create, sizeof(t_create), req_create, cliente, logger, mem, 0);
-
 			log_info(logger, "Resultado de enviar mensaje: %d", resultado_mensaje);
 
-			t_mensaje* resultado_req = recibirMensaje(cliente, logger);
-			resultado = resultado_req->header.error;
+			t_mensaje* resultado_req_create = recibirMensaje(cliente, logger);
+			resultado = resultado_req_create->header.error;
 			log_info(logger, "PLANIFIC| Resultado de CREATE: %d", resultado);
 
+			resultado = request->es_valido; // Cambiar por lo que devuelve la memoria.
+
+			destruirMensaje(resultado_req_create);
 //			close(cliente);
 //			free(req_create);
 			break;
@@ -313,7 +354,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 
 				log_info(logger, "METADATA| Metadata: %s", buffer_describe);
 
-				guardar_metadata(buffer_describe);
+				//guardar_metadata(buffer_describe);
 				destruirMensaje(msg_describe);
 				free(buffer_describe);
 			}
@@ -338,8 +379,19 @@ int ejecutar_request(char* linea, int id_proceso) {
 			log_info(logger, "PLANIFIC| DROP OK. %s", req_drop->nombreTabla);
 			log_info(logger, "PLANIFIC| Enviando DROP a MEMORIA");
 
+			memoria = obtener_memoria_random(); // cambiar para hacerlo dinamico para los criterios
+			cliente = conectar_a_memoria(memoria);
+
+			int resultado_mensaje_drop = enviarMensajeConError(kernel, drop, sizeof(t_drop), req_drop, cliente, logger, mem, 0);
+			log_info(logger, "Resultado de enviar mensaje: %d", resultado_mensaje_drop);
+
+			t_mensaje* resultado_req_drop = recibirMensaje(cliente, logger);
+			resultado = resultado_req_drop->header.error;
+			log_info(logger, "PLANIFIC| Resultado de DROP: %d", resultado);
+
 			resultado = request->es_valido; // Cambiar por lo que devuelve la memoria.
 			free(req_drop);
+			destruirMensaje(resultado_req_drop);
 			break;
 
 		default:

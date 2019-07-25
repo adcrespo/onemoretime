@@ -105,7 +105,7 @@ int proceso_select(char* tabla, int clave, char** buffer, int* largo_buffer) {
 	}
 
 	pthread_mutex_unlock(&journalingMutexSelect);
-	return 0;
+	return 1;
 }
 
 
@@ -124,7 +124,7 @@ int proceso_insert(char* tabla, int clave, char* value, unsigned long long tstam
 			loggear(logger,LOG_LEVEL_ERROR,"Error en escribir_bytes: %d", escrito);
 		free(buffer);
 		pthread_mutex_unlock(&journalingMutexInsert);
-		return -1;
+		return escrito;
 	}
 
 	int paginaNueva = solicitarPagina(tabla, timestamp);
@@ -132,7 +132,7 @@ int proceso_insert(char* tabla, int clave, char* value, unsigned long long tstam
 		free(buffer);
 		loggear(logger,LOG_LEVEL_ERROR,"Error en escribir_bytes: %d", paginaNueva);
 		pthread_mutex_unlock(&journalingMutexInsert);
-		return -1;
+		return paginaNueva;
 	}
 
 	escrito = escribir_bytes_spa(tabla,0,paginaNueva*frame_spa_size,frame_spa_size,buffer,1);
@@ -140,12 +140,12 @@ int proceso_insert(char* tabla, int clave, char* value, unsigned long long tstam
 		free(buffer);
 		loggear(logger,LOG_LEVEL_ERROR,"Error en escribir_bytes: %d", escrito);
 		pthread_mutex_unlock(&journalingMutexInsert);
-		return -1;
+		return escrito;
 	}
 
 	free(buffer);
 	pthread_mutex_unlock(&journalingMutexInsert);
-	return 0;
+	return escrito;
 }
 
 
@@ -206,12 +206,33 @@ int proceso_describe(char* tabla, char** buffer, int* largo_buffer){
 		cantidad=mensajeCantidad->header.error;
 		destruirMensaje(mensajeCantidad);
 		loggear(logger,LOG_LEVEL_DEBUG,"La cantidad es: %d",cantidad);
+
+		largo_content = MAX_PATH;
+		content = malloc(largo_content);
+		memset(content, 0x00, largo_content);
+		content[MAX_PATH-1] = 0x00;
+		enviarMensaje(mem,describe,largo_content,content,socket_lis,logger,lis);
+		loggear(logger,LOG_LEVEL_INFO, "MENSAJE ENVIADO LFS - DESCRIBE GLOBAL");
 	}
+	else
+	{
+		//PROCESO_DESCRIBE - DE UNA TABLA
+		largo_content = MAX_PATH;
+		content = malloc(largo_content);
+		memset(content, 0x00, largo_content);
+		memcpy(content,tabla,strlen(tabla)<MAX_PATH?strlen(tabla):MAX_PATH);
+		content[MAX_PATH-1] = 0x00;
+		enviarMensaje(mem,describe,largo_content,content,socket_lis,logger,lis);
+		loggear(logger,LOG_LEVEL_INFO, "MENSAJE ENVIADO LFS - DESCRIBE POR TABLA: %s",tabla);
+
+	}
+	loggear(logger,LOG_LEVEL_INFO, "CANTIDAD DE TABLAS DESCRIBE: %d",cantidad);
 
 	enviarMensaje(mem,describe,largo_content,content,socket_lis,logger,lis);
 	free(content);
 	int longAcum = 0;
-	while(cantidad-->0)
+	desc = 0;
+	while(cantidad-->0 && desc == 0)
 	{
 		t_mensaje* mensaje = recibirMensaje(socket_lis, logger);
 		if(mensaje == NULL) {
@@ -220,12 +241,6 @@ int proceso_describe(char* tabla, char** buffer, int* largo_buffer){
 			_exit_with_error("ERROR - Se desconecto LISSANDRA",NULL);
 		}
 		desc = mensaje->header.error;
-		if(desc==0) {
-			destruirMensaje(mensaje);
-			loggear(logger,LOG_LEVEL_ERROR,"Se recibio un error");
-			pthread_mutex_unlock(&journalingMutexDescribe);
-			return -1;
-		}
 
 		longAcum += mensaje->header.longitud;
 		/**buffer = realloc(*buffer,longAcum+1);

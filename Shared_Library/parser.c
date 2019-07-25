@@ -186,8 +186,8 @@ t_request* parsear(char* linea, t_log* logger) {
 					// DESCRIBE [NOMBRE_TABLA]
 					// DESCRIBE
 					// DESCRIBE TABLA1
-					parametro_aux = strtok(NULL, "");
-
+					parametro_aux = strtok(NULL, " ");
+					log_info(logger, "PARSER|REQUEST: %d", request->request);
 					if(parametro_aux != NULL) {
 						string_append(&request->parametro1, parametro_aux);
 						log_info(logger, "PARSER|Parámetro 1: %s", request->parametro1);

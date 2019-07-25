@@ -36,7 +36,7 @@ int procesar_comando(char *line) {
 	char* linea_auxiliar = string_new();
 	string_append(&linea_auxiliar, line);
 	t_request* request = parsear(line, logger);
-
+	log_error(logger, "CONSOLA| REQUEST: %d.", request->request);
 	if (request->request == -1) {
 
 		log_error(logger, "CONSOLA| Comando desconocido: %s.", line);
@@ -82,7 +82,7 @@ int procesar_comando(char *line) {
 
 				printf("Enviando DESCRIBE a una Memoria \n"); /* CAMBIAR SOCKET DE ABAJO */
 
-
+				crear_proceso(linea_auxiliar, request);
 				// elegir memoria
 				//enviarMensaje(kernel, describe, sizeof(request), &request, 10/* socket memoria*/, logger, mem);
 

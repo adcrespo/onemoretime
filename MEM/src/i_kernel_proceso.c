@@ -44,16 +44,30 @@ int proceso_describe_global(char* tabla,int socketKER, fd_set* set_master){
 			FD_CLR(socketKER, set_master);
 		}
 		loggear(logger,LOG_LEVEL_INFO, " MSJ ENVIADO KERNEL");
+
+		//PROCESO_DESCRIBE - GLOBAL
+		largo_content = MAX_PATH;
+		content = malloc(largo_content);
+		memset(content, 0x00, largo_content);
+		content[MAX_PATH-1] = 0x00;
+		enviarMensaje(mem,describe,largo_content,content,socket_lis,logger,lis);
+		loggear(logger,LOG_LEVEL_INFO, "MENSAJE ENVIADO LFS - DESCRIBE GLOBAL");
+	}
+	else
+	{
+		//PROCESO_DESCRIBE - DE UNA TABLA
+		largo_content = MAX_PATH;
+		content = malloc(largo_content);
+		memset(content, 0x00, largo_content);
+		memcpy(content,tabla,strlen(tabla)<MAX_PATH?strlen(tabla):MAX_PATH);
+		content[MAX_PATH-1] = 0x00;
+		enviarMensaje(mem,describe,largo_content,content,socket_lis,logger,lis);
+		loggear(logger,LOG_LEVEL_INFO, "MENSAJE ENVIADO LFS - DESCRIBE POR TABLA: %s",tabla);
+
 	}
 	loggear(logger,LOG_LEVEL_INFO, "CANTIDAD DE TABLAS DESCRIBE: %d",cantidad);
 
-	//PROCESO_DESCRIBE
-	largo_content = MAX_PATH;
-	content = malloc(largo_content);
-	memset(content, 0x00, largo_content);
-	content[MAX_PATH-1] = 0x00;
-	enviarMensaje(mem,describe,largo_content,content,socket_lis,logger,lis);
-	loggear(logger,LOG_LEVEL_INFO, "MENSAJE ENVIADO LFS");
+
 
 	while(cantidad-->0)
 	{
@@ -220,7 +234,7 @@ void procesar_KER(t_mensaje* msg, int socketKER, fd_set* set_master) {
 			loggear(logger, LOG_LEVEL_INFO, "Malloc ok, msg header long :%d",msg->header.longitud);
 			memset(msgDrop, 0x00, sizeof(t_drop));
 			memcpy(msgDrop, msg->content, msg->header.longitud);
-			loggear(logger, LOG_LEVEL_INFO, "******MSJ_CREATE******* ");
+			loggear(logger, LOG_LEVEL_INFO, "******MSJ_DROP******* ");
 			loggear(logger, LOG_LEVEL_INFO, "ID_PROCESO_MSJ :%d",msgDrop->id_proceso);
 			loggear(logger, LOG_LEVEL_INFO, "NOMBRE_TABLA_MSJ :%s",msgDrop->nombreTabla);
 
@@ -236,6 +250,8 @@ void procesar_KER(t_mensaje* msg, int socketKER, fd_set* set_master) {
 			break;
 
 		case journal:;
+
+			loggear(logger, LOG_LEVEL_INFO, "******MSJ_JOURNAL******* ");
 
 			int journal_result = proceso_journal();
 
