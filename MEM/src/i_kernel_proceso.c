@@ -157,7 +157,7 @@ void procesar_KER(t_mensaje* msg, int socketKER, fd_set* set_master) {
 			loggear(logger, LOG_LEVEL_INFO, "******MSJ_INSERT******* ");
 			loggear(logger, LOG_LEVEL_INFO, "ID_PROCESO_MSJ :%d",msgInsert->id_proceso);
 			loggear(logger, LOG_LEVEL_INFO, "NOMBRE_TABLA_MSJ :%s",msgInsert->nombreTabla);
-			loggear(logger, LOG_LEVEL_INFO, "TIME_STAMP_MSJ :%l",msgInsert->timestamp);
+			loggear(logger, LOG_LEVEL_INFO, "TIME_STAMP_MSJ :%llu",msgInsert->timestamp);
 			loggear(logger, LOG_LEVEL_INFO, "VALUE_MSJ :%s",msgInsert->value);
 			loggear(logger, LOG_LEVEL_INFO, "KEY_MSJ :%d",msgInsert->key);
 
