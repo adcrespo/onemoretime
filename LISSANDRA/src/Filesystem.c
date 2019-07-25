@@ -436,22 +436,11 @@ t_registro* BuscarKey(t_select *selectMsg) {
 
 	//libero listas
 
-	int size_memtable;
+/*	int size_memtable;
 	int size_temp;
-
-	if (listaBusqueda != NULL) {
-		for (int i = 0; size_busqueda > i; i++) {
-			log_info(logger, "Remove busqueda %d", i);
-			free(list_remove(listaBusqueda, 0));
-		}
-		size_busqueda = list_size(listaBusqueda);
-		log_info(logger, "Size busqueda %d", size_busqueda);
-
-		list_destroy(listaBusqueda);
-	}
-
 	if (listaTemp != NULL) {
 		size_temp = list_size(listaTemp);
+		log_info(logger, "list size temp %d", size_temp);
 		for (int j = 0; size_temp > j; j++) {
 			log_info(logger, "Remove temp %d", j);
 			free(list_remove(listaTemp, 0));
@@ -472,6 +461,17 @@ t_registro* BuscarKey(t_select *selectMsg) {
 		list_destroy(listaTemp);
 	}
 
+	if (listaBusqueda != NULL) {
+		for (int i = 0; size_busqueda > i; i++) {
+			log_info(logger, "Remove busqueda %d", i);
+			free(list_remove(listaBusqueda, 0));
+		}
+		size_busqueda = list_size(listaBusqueda);
+		log_info(logger, "Size busqueda %d", size_busqueda);
+
+		list_destroy(listaBusqueda);
+	}
+*/
 	free(rutaParticion);
 	free(selectMsg);
 
@@ -552,7 +552,10 @@ t_list *BuscarKeyTemporales(int key, char *tabla) {
 		while (!feof(file))
 
 		{
-			fgets(linea, 100, file);
+
+//			fgets(linea, 100, file);
+			char *rd = fgets(linea,100, file);
+			if(rd!=NULL){
 			elementos = string_split(linea, ";");
 			int cantElementos = ContarElementosArray(elementos);
 
@@ -573,7 +576,7 @@ t_list *BuscarKeyTemporales(int key, char *tabla) {
 				free(elementos[i]);
 			}
 			free(elementos);
-
+			}
 		}
 
 		free(pathBlock);
@@ -614,7 +617,9 @@ t_registro* BuscarKeyParticion(int key, char *bloque, t_registro *registro) {
 	while (!feof(file))
 
 	{
-		fgets(linea, 100, file);
+//		fgets(linea, 100, file);
+		char * rd = fgets(linea,100,file);
+		if(rd!=NULL){
 		elementos = string_split(linea, ";");
 		int cantElementos = ContarElementosArray(elementos);
 
@@ -639,6 +644,8 @@ t_registro* BuscarKeyParticion(int key, char *bloque, t_registro *registro) {
 			free(elementos[i]);
 		}
 		free(elementos);
+		}
+
 
 	}
 
