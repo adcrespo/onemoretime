@@ -397,8 +397,8 @@ int process_compactacion(char* path_tabla)
 	log_info(logger, "Tiempo consumido %d", tiempo);
 
 	//Liberar
-
-	for (int z = 0;list_size(listaTmp)> z; z++){
+	int countListTmp = list_size(listaTmp);
+	for (int z = 0;countListTmp> z; z++){
 		free(list_remove(listaTmp,0));
 		log_info(logger, "Liberando registro tmp %d", z);
 	}
@@ -407,8 +407,8 @@ int process_compactacion(char* path_tabla)
 	while (!string_is_empty(listasBin[j])) {
 		t_list* listaBinRegistro = list_remove(listaBin,0);
 		log_info(logger, "Liberando registro - Count %d", list_size(listaBinRegistro));
-		int countList = list_size(listaBinRegistro);
-		for (int z = 0;countList > z; z++){
+		int countListBinRegistro = list_size(listaBinRegistro);
+		for (int z = 0;countListBinRegistro > z; z++){
 			free(list_remove(listaBinRegistro,0));
 			log_info(logger, "Liberando registro bin %d", z);
 		}

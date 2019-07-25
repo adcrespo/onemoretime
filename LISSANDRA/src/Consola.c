@@ -68,7 +68,7 @@ void *crear_consola() {
 			if (regSelect->key == -1)
 				printf("No se encuentra la key en FS.\n");
 
-			//free(regSelect);
+			free(regSelect);
 
 			break;
 

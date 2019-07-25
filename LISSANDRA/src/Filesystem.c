@@ -434,9 +434,29 @@ t_registro* BuscarKey(t_select *selectMsg) {
 	log_info(logger, "Devolviendo registro key %d value %s timestamp %llu",
 			registroInit->key, registroInit->value, registroInit->timestamp);
 
+	t_registro *registroOut = malloc(sizeof(t_registro));
+	memcpy(registroOut,registroInit,sizeof(t_registro));
+
 	//libero listas
 
-/*	int size_memtable;
+	size_busqueda=list_size(listaBusqueda);
+	log_info(logger, "Size lista busqueda %d", size_busqueda);
+	if (listaBusqueda != NULL) {
+		for (int i = 0; size_busqueda > i; i++) {
+			log_info(logger, "Remove busqueda %d", i);
+			free(list_remove(listaBusqueda, 0));
+		}
+		size_busqueda = list_size(listaBusqueda);
+		log_info(logger, "Size busqueda %d", size_busqueda);
+
+		list_destroy(listaBusqueda);
+	}
+	if (listaTemp != NULL)
+		list_destroy(listaTemp);
+	if (listaMemtable != NULL)
+		list_destroy(listaMemtable);
+
+	/*int size_memtable;
 	int size_temp;
 	if (listaTemp != NULL) {
 		size_temp = list_size(listaTemp);
@@ -458,24 +478,13 @@ t_registro* BuscarKey(t_select *selectMsg) {
 		}
 		size_memtable = list_size(listaMemtable);
 		log_info(logger, "Size memtable %d", size_memtable);
-		list_destroy(listaTemp);
-	}
+		list_destroy(listaMemtable);
+	}*/
 
-	if (listaBusqueda != NULL) {
-		for (int i = 0; size_busqueda > i; i++) {
-			log_info(logger, "Remove busqueda %d", i);
-			free(list_remove(listaBusqueda, 0));
-		}
-		size_busqueda = list_size(listaBusqueda);
-		log_info(logger, "Size busqueda %d", size_busqueda);
-
-		list_destroy(listaBusqueda);
-	}
-*/
 	free(rutaParticion);
 	free(selectMsg);
 
-	return registroInit;
+	return registroOut;
 }
 
 t_list *BuscarKeyMemtable(int key, char *nombre) {
