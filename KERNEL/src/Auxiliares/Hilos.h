@@ -26,5 +26,6 @@ int crear_hilo_inotify();
 void crear_hilo_gossiping();
 void crear_hilo_refresh();
 void crear_hilo_planificador();
+void crear_hilo_metricas();
 
 #endif /* AUXILIARES_HILOS_H_ */

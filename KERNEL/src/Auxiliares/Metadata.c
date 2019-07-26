@@ -23,6 +23,7 @@ void actualizar_metadata() {
 	// Solicitud
 	describe_global(cliente);
 	log_info(logger, "REFRESH| Finalizado.");
+	close(cliente);
 }
 
 void guardar_metadata(char *buffer) {
@@ -63,7 +64,7 @@ void limpiar_metadata() {
 
 void describe_global(int cliente) {
 	int cantidad = 0;
-	log_info(logger, "METADATA| Inicio de DESCRIBE");
+	log_info(logger, "DESCRIBE| Inicio de DESCRIBE");
 	enviarMensaje(kernel, describe_global_, 0, NULL, cliente, logger, mem);
 	t_mensaje* mensajeCantidad = recibirMensaje(cliente, logger);
 	cantidad = mensajeCantidad->header.error;
@@ -80,12 +81,12 @@ void describe_global(int cliente) {
 					"No se pudo recibir mensaje de mem");
 			return;
 		}
-		log_info(logger, "METADATA| Mensaje recibido: %d", cantidad);
+		log_info(logger, "DESCRIBE| Mensaje recibido: %d", cantidad);
 		char* buffer_describe= string_new();
 		longAcum += mensaje->header.longitud;
 		string_append(&buffer_describe, mensaje->content);
 
-		log_info(logger, "METADATA| Metadata: %s", buffer_describe);
+		log_info(logger, "DESCRIBE| Metadata: %s", buffer_describe);
 
 		guardar_metadata(buffer_describe);
 		destruirMensaje(mensaje);

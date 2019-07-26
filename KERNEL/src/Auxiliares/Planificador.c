@@ -207,6 +207,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 	t_request* request = parsear(linea, logger);
 	int resultado, cliente;
 	t_tipoSeeds* memoria;
+	t_metadata* tabla;
 
 	switch (request->request) {
 
@@ -214,7 +215,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 			// SELECT [NOMBRE_TABLA] [KEY]
 			// INSERT TABLA1 3
 
-			t_metadata* tabla = buscar_tabla(request->parametro1);
+			tabla = buscar_tabla(request->parametro1);
 
 			if(tabla == NULL) {
 				log_info(logger, "PLANIFIC| La tabla no existe.");
@@ -262,6 +263,13 @@ int ejecutar_request(char* linea, int id_proceso) {
 		case _insert:
 			// INSERT [NOMBRE_TABLA] [KEY] “[VALUE]”
 			// INSERT TABLA1 3 “Mi nombre es Lissandra”
+
+			tabla = buscar_tabla(request->parametro1);
+
+			if(tabla == NULL) {
+				log_info(logger, "PLANIFIC| La tabla no existe.");
+				return -1;
+			}
 
 			log_info(logger, "PLANIFIC|Preparando INSERT");
 			t_insert* req_insert = malloc(sizeof(t_insert));
@@ -373,6 +381,13 @@ int ejecutar_request(char* linea, int id_proceso) {
 		case _drop:
 			// DROP [NOMBRE_TABLA]
 			// DROP TABLA1
+
+			tabla = buscar_tabla(request->parametro1);
+
+			if(tabla == NULL) {
+				log_info(logger, "PLANIFIC| La tabla no existe.");
+				return -1;
+			}
 
 			log_info(logger, "PLANIFIC|Preparando DROP");
 			t_drop* req_drop = malloc(sizeof(t_drop));

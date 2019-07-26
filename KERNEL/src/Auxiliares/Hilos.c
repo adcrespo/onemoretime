@@ -7,6 +7,7 @@
 
 #include "Hilos.h"
 #include "Metadata.h"
+#include "Metricas.h"
 
 // Funciones
 void *crearInotify() {
@@ -144,4 +145,15 @@ void crear_hilo_planificador() {
 				"THREAD| Error al generar hilo Planificador.");
 	}
 	log_info(logger, "THREAD| Hilo Planificador OK.");
+}
+
+void crear_hilo_metricas() {
+
+	int hilo_metricas = pthread_create(&thread_metricas, NULL,
+			metricas, NULL);
+	if (hilo_metricas == -1) {
+		log_error(logger,
+				"THREAD| Error al generar hilo Metricas.");
+	}
+	log_info(logger, "THREAD| Hilo Metricas OK.");
 }
