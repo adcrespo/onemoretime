@@ -775,8 +775,8 @@ int DropearTabla(char *nombre) {
 				int size = config_get_int_value(config_file, "SIZE");
 				int cantBloques;
 				cantBloques = (size != 0) ? CalcularBloques(size) : 1;
-				char **bloques = malloc(sizeof(int) * cantBloques);
-				bloques = config_get_array_value(config_file, "BLOCKS");
+				//char **bloques = malloc(sizeof(int) * cantBloques);
+				char **bloques = config_get_array_value(config_file, "BLOCKS");
 
 				LiberarBloques(bloques, cantBloques);
 				remove(pathFile);
@@ -793,11 +793,11 @@ int DropearTabla(char *nombre) {
 
 	for(int i = 0; i<listaHilos->elements_count;i++){
 		t_datos_hilo_compactacion *compact = list_get(listaHilos,i);
-		log_info(logger,"Eliminando hilo %s(%d) vs %s",compact->path_tabla,compact->hilo,nombre);
 		if(string_equals_ignore_case(compact->path_tabla,nombre)){
+			log_info(logger,"Eliminando hilo %s(%d) vs %s",compact->path_tabla,compact->hilo,nombre);
 			pthread_cancel(compact->hilo);
 			free(list_remove(listaHilos,i));
-			break;
+//			break;
 		}
 	}
 
