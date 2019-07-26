@@ -137,14 +137,13 @@ void LimpiarMemtable() {
 	int sizeMemTable = list_size(memtable);
 	//recorro memtable
 	for (int i = 0; i < sizeMemTable; i++) {
-		t_tabla *tabla = list_get(memtable, i);
+		t_tabla *tabla = list_get(memtable, 0);
 		int sizeTabla = list_size(tabla->lista);
 		//recorro tabla dentro de memtable
 		for (int j = 0; j < sizeTabla; j++) {
-			t_registro *registro = list_get(tabla->lista, i);
-			free(registro);
+			free(list_remove(tabla->lista, 0));
 		}
-		free(tabla);
+		free(list_remove(memtable, 0));
 	}
 	list_clean(memtable);
 	loggear(logger, LOG_LEVEL_INFO, "Memtable vacia");

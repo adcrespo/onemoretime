@@ -227,7 +227,7 @@ char *character_name_generator(const char *text, int state) {
 	char *name;
 
 	char *character_names[] = { "SELECT", "INSERT", "CREATE", "DESCRIBE",
-			"DROP", NULL };
+			"DROP", "SALIR", NULL };
 
 	if (!state) {
 		list_index = 0;

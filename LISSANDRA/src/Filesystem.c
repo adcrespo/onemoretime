@@ -372,6 +372,7 @@ t_registro* BuscarKey(t_select *selectMsg) {
 			j++;
 		}
 	}
+	free(rutaParticion);
 	config_destroy(configFile);
 
 	//Escaneo memtable
@@ -381,7 +382,15 @@ t_registro* BuscarKey(t_select *selectMsg) {
 		log_debug(logger, "No se encontraron registros en memtable");
 	} else {
 		log_debug(logger, "Registros encontrados en memtable");
-		list_add_all(listaBusqueda, listaMemtable);
+		int sizeMemtable = list_size(listaMemtable);
+		for(int i=0; i<sizeMemtable;i++){
+			t_registro *reg = list_get(listaMemtable,0);
+			t_registro *regCopiar = malloc(sizeof(t_registro));
+			memcpy(regCopiar,reg,sizeof(t_registro));
+			list_add(listaBusqueda,regCopiar);
+			free(list_remove(listaMemtable,0));
+		}
+		list_destroy(listaMemtable);
 	}
 
 	//Escaneo temporales
@@ -391,24 +400,18 @@ t_registro* BuscarKey(t_select *selectMsg) {
 		log_debug(logger, "No se encontraron registro en .tmp");
 	} else {
 		log_debug(logger, "Registros encontrados en .tmp");
-		list_add_all(listaBusqueda, listaTemp);
+		int sizeTemp = list_size(listaTemp);
+		for(int i=0; i<sizeTemp;i++){
+			t_registro *reg = list_get(listaTemp,0);
+			t_registro *regCopiar = malloc(sizeof(t_registro));
+			memcpy(regCopiar,reg,sizeof(t_registro));
+			list_add(listaBusqueda,regCopiar);
+			free(list_remove(listaTemp,0));
+		}
+		list_destroy(listaTemp);
 	}
 
-	int count = list_size(listaTemp);
-
-	for (int i = 0; i < count; i++) {
-		t_registro *registro;
-		log_info(logger, "Obteniendo registro %d", i);
-		registro = list_get(listaTemp, i);
-		log_info(logger, "***Registro %d de Temp***", i);
-		log_info(logger, "Timestamp %llu", registro->timestamp);
-		log_info(logger, "Key %d", registro->key);
-		log_info(logger, "Value: %s", registro->value);
-	}
-
-	//Busco registro con mayor timestamp
 	size_busqueda = list_size(listaBusqueda);
-
 
 	//si la lista esta vacia devuelvo registro con key -1
 	if(list_is_empty(listaBusqueda)) {
@@ -416,14 +419,17 @@ t_registro* BuscarKey(t_select *selectMsg) {
 			return registroInit;
 		}
 
+	free(registroInit);
+
+	//Busco registro con mayor timestamp
 	registroInit = list_get(listaBusqueda, 0);
 	t_registro *registroAux;
 
 	if (1 < size_busqueda) {
 		for (int i = 0; i < size_busqueda ; i++) {
 			registroAux = list_get(listaBusqueda, i);
-			log_info(logger, "Elemento %d tiene value %s y timestamp %llu", i,
-					registroAux->value, registroAux->timestamp);
+//			log_info(logger, "Elemento %d tiene value %s y timestamp %llu", i,
+//					registroAux->value, registroAux->timestamp);
 
 			if (registroInit->timestamp < registroAux->timestamp)
 				registroInit = registroAux;
@@ -437,51 +443,20 @@ t_registro* BuscarKey(t_select *selectMsg) {
 	t_registro *registroOut = malloc(sizeof(t_registro));
 	memcpy(registroOut,registroInit,sizeof(t_registro));
 
-	//libero listas
-
-	size_busqueda=list_size(listaBusqueda);
+	//libero lista busqueda
 	log_info(logger, "Size lista busqueda %d", size_busqueda);
 	if (listaBusqueda != NULL) {
+		size_busqueda=list_size(listaBusqueda);
 		for (int i = 0; size_busqueda > i; i++) {
-			log_info(logger, "Remove busqueda %d", i);
+//			log_info(logger, "Remove busqueda %d", i);
 			free(list_remove(listaBusqueda, 0));
 		}
 		size_busqueda = list_size(listaBusqueda);
-		log_info(logger, "Size busqueda %d", size_busqueda);
+//		log_info(logger, "Size busqueda %d", size_busqueda);
 
 		list_destroy(listaBusqueda);
 	}
-	if (listaTemp != NULL)
-		list_destroy(listaTemp);
-	if (listaMemtable != NULL)
-		list_destroy(listaMemtable);
 
-	/*int size_memtable;
-	int size_temp;
-	if (listaTemp != NULL) {
-		size_temp = list_size(listaTemp);
-		log_info(logger, "list size temp %d", size_temp);
-		for (int j = 0; size_temp > j; j++) {
-			log_info(logger, "Remove temp %d", j);
-			free(list_remove(listaTemp, 0));
-		}
-		size_temp = list_size(listaTemp);
-		log_info(logger, "Size temp %d", size_temp);
-		list_destroy(listaTemp);
-	}
-
-	if (listaMemtable != NULL) {
-		size_memtable = list_size(listaMemtable);
-		for (int k = 0; size_memtable > k; k++) {
-			log_info(logger, "Remove memtable %d", k);
-			free(list_remove(listaMemtable, 0));
-		}
-		size_memtable = list_size(listaMemtable);
-		log_info(logger, "Size memtable %d", size_memtable);
-		list_destroy(listaMemtable);
-	}*/
-
-	free(rutaParticion);
 	free(selectMsg);
 
 	return registroOut;
@@ -504,7 +479,16 @@ t_list *BuscarKeyMemtable(int key, char *nombre) {
 		return (registro->key == key);
 	}
 
-	return list_filter(tabla->lista, (void*) findKey);
+	t_list *listaFiltrado = list_filter(tabla->lista, (void*) findKey);
+	t_list *listaEncontrados = list_create();
+	for(int i=0; list_size(listaFiltrado)>i;i++){
+		t_registro *regEncontrado = list_get(listaFiltrado,i);
+		t_registro *reg = malloc(sizeof(t_registro));
+		memcpy(reg,regEncontrado,sizeof(t_registro));
+		list_add(listaEncontrados,reg);
+	}
+
+	return listaEncontrados;
 
 }
 
@@ -576,6 +560,7 @@ t_list *BuscarKeyTemporales(int key, char *tabla) {
 				string_append(&value, elementos[2]);
 				value[strcspn(value, "\n")] = 0;
 				strcpy(registro->value, value);
+				free(value);
 				list_add(listaTmp, registro);
 				log_info(logger, "Elemento guardado con value %s",
 						registro->value);
@@ -590,6 +575,12 @@ t_list *BuscarKeyTemporales(int key, char *tabla) {
 
 		free(pathBlock);
 	}
+
+	int sizeTemp = list_size(tempBlocksCollection);
+	for(int i=0; i<sizeTemp;i++){
+		list_remove(tempBlocksCollection,0);
+	}
+	list_destroy(tempBlocksCollection);
 
 	free(pathTemps);
 	return listaTmp;
@@ -784,8 +775,8 @@ int DropearTabla(char *nombre) {
 				int size = config_get_int_value(config_file, "SIZE");
 				int cantBloques;
 				cantBloques = (size != 0) ? CalcularBloques(size) : 1;
-				char **bloques = malloc(sizeof(int) * cantBloques);
-				bloques = config_get_array_value(config_file, "BLOCKS");
+				//char **bloques = malloc(sizeof(int) * cantBloques);
+				char **bloques = config_get_array_value(config_file, "BLOCKS");
 
 				LiberarBloques(bloques, cantBloques);
 				remove(pathFile);
@@ -802,11 +793,11 @@ int DropearTabla(char *nombre) {
 
 	for(int i = 0; i<listaHilos->elements_count;i++){
 		t_datos_hilo_compactacion *compact = list_get(listaHilos,i);
-		log_info(logger,"Eliminando hilo %s(%d) vs %s",compact->path_tabla,compact->hilo,nombre);
 		if(string_equals_ignore_case(compact->path_tabla,nombre)){
+			log_info(logger,"Eliminando hilo %s(%d) vs %s",compact->path_tabla,compact->hilo,nombre);
 			pthread_cancel(compact->hilo);
 			free(list_remove(listaHilos,i));
-			break;
+//			break;
 		}
 	}
 
@@ -1155,7 +1146,8 @@ char* descomponer_registro(t_registro *registro) {
 	char *key = string_new();
 	char *value = string_new();
 	string_append(&value, registro->value);
-	string_append(&key, (string_itoa(registro->key)));
+	char *keyOut = string_itoa(registro->key);
+	string_append(&key, keyOut);
 	char *timestamp = malloc(20);
 	sprintf(timestamp, "%llu", registro->timestamp);
 	string_append(&linea, timestamp);
@@ -1164,6 +1156,7 @@ char* descomponer_registro(t_registro *registro) {
 	string_append(&linea, ";");
 	string_append(&linea, value);
 	string_append(&linea, "\n");
+	free(keyOut);
 	free(key);
 	free(timestamp);
 	free(value);
