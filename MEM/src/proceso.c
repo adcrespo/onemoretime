@@ -186,11 +186,7 @@ int proceso_describe(char* tabla, char** buffer, int* largo_buffer){
 	pthread_mutex_lock(&journalingMutexDescribe);
 	int desc = -1;
 	int largo_content = MAX_PATH;
-	char *content = malloc(largo_content);
-
-	memset(content, 0x00, largo_content);
-	memcpy(content,tabla,strlen(tabla)<MAX_PATH?strlen(tabla):MAX_PATH);
-	content[MAX_PATH-1] = 0x00;
+	char *content;
 
 	sleep(MEM_CONF.RETARDO_FS/1000);
 	int cantidad = 1;
@@ -224,11 +220,9 @@ int proceso_describe(char* tabla, char** buffer, int* largo_buffer){
 		content[MAX_PATH-1] = 0x00;
 		enviarMensaje(mem,describe,largo_content,content,socket_lis,logger,lis);
 		loggear(logger,LOG_LEVEL_INFO, "MENSAJE ENVIADO LFS - DESCRIBE POR TABLA: %s",tabla);
-
 	}
 	loggear(logger,LOG_LEVEL_INFO, "CANTIDAD DE TABLAS DESCRIBE: %d",cantidad);
 
-	enviarMensaje(mem,describe,largo_content,content,socket_lis,logger,lis);
 	free(content);
 	int longAcum = 0;
 	desc = 0;
