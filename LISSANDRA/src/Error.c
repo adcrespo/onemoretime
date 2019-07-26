@@ -24,10 +24,21 @@ void exit_gracefully(int return_nr) {
 
 
   loggear(logger, LOG_LEVEL_INFO, "********* FIN DEL PROCESO LISSANDRA *********");
-  list_clean(tablasGlobal);
-  destruir_logger(logger);
-  destroy_config(config);
+
+  if (!list_is_empty(tablasGlobal)) {
+		int sizeGlobal = list_size(tablasGlobal);
+		for (int i = 0; i < sizeGlobal; i++) {
+			free(list_remove(tablasGlobal, 0));
+		}
+		list_destroy(tablasGlobal);
+	}
   bitarray_destroy(bitmap);
+  destroy_config(config);
+  pthread_cancel(thread_inotify);
+  pthread_cancel(thread_dump);
+  pthread_cancel(thread_conexiones);
+  pthread_cancel(thread_consola);
+  destruir_logger(logger);
 
   exit(return_nr);
 }
