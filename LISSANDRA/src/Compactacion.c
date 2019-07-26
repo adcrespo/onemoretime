@@ -382,7 +382,8 @@ int process_compactacion(char* path_tabla)
 			}
 			free(rutaActual);
 		}
-		for (int z = 0;list_size(lbloques)> z; z++){
+		int sizelbloques = list_size(lbloques);
+		for (int z = 0; sizelbloques> z; z++){
 			list_remove(lbloques,0);
 		}
 		list_destroy(lbloques);
