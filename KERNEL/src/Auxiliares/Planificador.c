@@ -191,6 +191,15 @@ int procesar_pcb(t_pcb* pcb) {
 
 }
 
+t_registro* descomponer_registro(char *buffer)
+{
+	t_registro* registro = malloc(sizeof(t_registro));
+	memcpy(&registro->timestamp,buffer,sizeof(unsigned long long));
+	memcpy(&registro->key,buffer+sizeof(unsigned long long),sizeof(int));
+	memcpy(&registro->value[0],buffer+sizeof(unsigned long long)+sizeof(int),VALUE);
+	return registro;
+}
+
 int ejecutar_request(char* linea, int id_proceso) {
 
 //	log_info(logger, "PLANIFIC| Request a ejecutar:");
@@ -203,9 +212,8 @@ int ejecutar_request(char* linea, int id_proceso) {
 
 		case _select:;
 			// SELECT [NOMBRE_TABLA] [KEY]
-			// SELECT TABLA1 3
+			// INSERT TABLA1 3
 
-			// Valido existencia de tabla
 			t_metadata* tabla = buscar_tabla(request->parametro1);
 
 			if(tabla == NULL) {
@@ -213,24 +221,42 @@ int ejecutar_request(char* linea, int id_proceso) {
 				return -1;
 			}
 
-			log_info(logger, "Buscando memoria del criterio %s", tabla->tipoConsistencia);
-
-			memoria = get_memoria_por_criterio(tabla->tipoConsistencia);
-			// FALTA BUSCAR MEMORIA POR CRITERIO Y CONECTARSE
-
-
-			log_info(logger, "PLANIFIC| Preparando SELECT");
-			t_select* req_select = malloc(sizeof(t_create));
+			log_info(logger, "PLANIFIC|Preparando SELECT");
+			t_select* req_select = malloc(sizeof(t_select));
 
 			req_select->id_proceso = id_proceso;
 			strcpy(req_select->nombreTabla, request->parametro1);
 			req_select->key = atoi(request->parametro2);
 
-			log_info(logger, "PLANIFIC| SELECT OK. %s, %d", req_select->nombreTabla, req_select->key);
+			log_info(logger, "PLANIFIC| SELECT: %s, %d", req_select->nombreTabla, req_select->key);
+			log_info(logger, "Buscando memoria del criterio %s", tabla->tipoConsistencia);
+
+			//TODO: FALTA BUSCAR MEMORIA POR CRITERIO Y CONECTARSE
+			//memoria = get_memoria_por_criterio(tabla->tipoConsistencia);
+			memoria = obtener_memoria_random();
+			cliente = conectar_a_memoria(memoria);
+
 			log_info(logger, "PLANIFIC| Enviando SELECT a MEMORIA");
+			int resultado_mensaje_select = enviarMensajeConError(kernel, selectMsg, sizeof(t_select), req_select, cliente, logger, mem, 0);
+			log_info(logger, "Resultado de enviar mensaje SELECT: %d", resultado_mensaje_select);
+
+			log_info(logger, "PLANIFIC| RECIBIENDO SELECT");
+			t_mensaje* resultado_req_select = recibirMensaje(cliente, logger);
+
+			int largo_buffer = resultado_req_select->header.longitud;
+			char *buffer = malloc(largo_buffer);
+			memcpy(buffer, resultado_req_select->content, resultado_req_select->header.longitud);
+
+			t_registro* reg = descomponer_registro(buffer);
+
+			log_info(logger, "PLANIFIC| RESPUESTA SELECT: KEY:%d, VALOR:%s TIMESTAMP:%llu", reg->key, reg->value,reg->timestamp);
+
+			free(req_select);
+			destruirMensaje(resultado_req_select);
+			free(reg);
 
 			resultado = request->es_valido; // Cambiar por lo que devuelve la memoria.
-			free(req_select);
+
 			break;
 
 		case _insert:
@@ -242,15 +268,28 @@ int ejecutar_request(char* linea, int id_proceso) {
 
 			req_insert->id_proceso = id_proceso;
 			strcpy(req_insert->nombreTabla, request->parametro1);
-			req_insert->timestamp = atoi(request->parametro2);
-			req_insert->key = atoi(request->parametro3);
-			strcpy(req_insert->value, request->parametro4);
+			req_insert->timestamp = obtenerTimeStamp();
+			req_insert->key = atoi(request->parametro2);
+			strcpy(req_insert->value, request->parametro3);
 
-			log_info(logger, "PLANIFIC| INSERT OK. %s, %d, %d, %s", req_insert->nombreTabla, req_insert->timestamp, req_insert->key, req_insert->value);
+			log_info(logger, "PLANIFIC| INSERT: %s, %llu, %d, %s", req_insert->nombreTabla, req_insert->timestamp, req_insert->key, req_insert->value);
+
+			//TODO: FALTA BUSCAR MEMORIA POR CRITERIO Y CONECTARSE
+			memoria = obtener_memoria_random(); // cambiar para hacerlo dinamico para los criterios
+			cliente = conectar_a_memoria(memoria);
+
 			log_info(logger, "PLANIFIC| Enviando INSERT a MEMORIA");
+			int resultado_mensaje_insert = enviarMensajeConError(kernel, insert, sizeof(t_insert), req_insert, cliente, logger, mem, 0);
+			log_info(logger, "Resultado de enviar mensaje INSERT: %d", resultado_mensaje_insert);
+
+			t_mensaje* resultado_req_insert = recibirMensaje(cliente, logger);
+			resultado = resultado_req_insert->header.error;
+			log_info(logger, "PLANIFIC| Resultado de INSERT: %d", resultado);
+
+			free(req_insert);
+			destruirMensaje(resultado_req_insert);
 
 			resultado = request->es_valido; // Cambiar por lo que devuelve la memoria.
-			free(req_insert);
 			break;
 
 		case _create:;
@@ -267,23 +306,26 @@ int ejecutar_request(char* linea, int id_proceso) {
 			req_create->num_part = atoi(request->parametro3);
 			req_create->comp_time = atoi(request->parametro4);
 
-			log_info(logger, "PLANIFIC| CREATE OK. %s, %s, %d, %d", req_create->nombreTabla, req_create->tipo_cons, req_create->num_part, req_create->comp_time);
-			log_info(logger, "PLANIFIC| Enviando CREATE a MEMORIA");
+			log_info(logger, "PLANIFIC| CREATE: %s, %s, %d, %d", req_create->nombreTabla, req_create->tipo_cons, req_create->num_part, req_create->comp_time);
 
+			//TODO: FALTA BUSCAR MEMORIA POR CRITERIO Y CONECTARSE
 			memoria = obtener_memoria_random(); // cambiar para hacerlo dinamico para los criterios
 			cliente = conectar_a_memoria(memoria);
 
+			log_info(logger, "PLANIFIC| Enviando CREATE a MEMORIA");
 //			int resultado_mensaje = enviarMensaje(kernel, create, sizeof(t_create), req_create, cliente, logger, mem);
 			int resultado_mensaje = enviarMensajeConError(kernel, create, sizeof(t_create), req_create, cliente, logger, mem, 0);
-
 			log_info(logger, "Resultado de enviar mensaje: %d", resultado_mensaje);
 
-			t_mensaje* resultado_req = recibirMensaje(cliente, logger);
-			resultado = resultado_req->header.error;
+			t_mensaje* resultado_req_create = recibirMensaje(cliente, logger);
+			resultado = resultado_req_create->header.error;
 			log_info(logger, "PLANIFIC| Resultado de CREATE: %d", resultado);
 
-//			close(cliente);
-//			free(req_create);
+			free(req_create);
+			destruirMensaje(resultado_req_create);
+
+			resultado = request->es_valido; // Cambiar por lo que devuelve la memoria.
+
 			break;
 
 		case _describe:
@@ -303,26 +345,29 @@ int ejecutar_request(char* linea, int id_proceso) {
 				log_info(logger, "PLANIFIC| Describe GLOBAL.");
 				describe_global(cliente);
 			} else {
+				log_info(logger, "PLANIFIC| DESCRIBE: %s", req_describe->nombreTabla);
 				log_info(logger, "PLANIFIC| Describe %s.", request->parametro1);
 				log_info(logger, "PLANIFIC| Parámetro 1: %s", request->parametro1);
 				strcpy(req_describe->nombreTabla, request->parametro1);
+
+
+				log_info(logger, "PLANIFIC| Enviando DESCRIBE a MEMORIA");
 				enviarMensaje(kernel, describe, sizeof(t_describe), req_describe, cliente, logger, mem);
+
 				t_mensaje* msg_describe = recibirMensaje(cliente, logger);
 				char* buffer_describe= string_new();
 				string_append(&buffer_describe, msg_describe->content);
 
-				log_info(logger, "METADATA| Metadata: %s", buffer_describe);
+				log_info(logger, "RESULTADO METADATA TABLA %s| Metadata: %s",req_describe->nombreTabla, buffer_describe);
 
-				guardar_metadata(buffer_describe);
+				//guardar_metadata(buffer_describe);
 				destruirMensaje(msg_describe);
 				free(buffer_describe);
 			}
 
-			log_info(logger, "PLANIFIC| DESCRIBE OK. %s", req_describe->nombreTabla);
-			log_info(logger, "PLANIFIC| Enviando DESCRIBE a MEMORIA");
+			free(req_describe);
 
 			resultado = request->es_valido; // Cambiar por lo que devuelve la memoria.
-			free(req_describe);
 			break;
 
 		case _drop:
@@ -336,10 +381,23 @@ int ejecutar_request(char* linea, int id_proceso) {
 			strcpy(req_drop->nombreTabla, request->parametro1);
 
 			log_info(logger, "PLANIFIC| DROP OK. %s", req_drop->nombreTabla);
+
+			//TODO: FALTA BUSCAR MEMORIA POR CRITERIO Y CONECTARSE
+			memoria = obtener_memoria_random(); // cambiar para hacerlo dinamico para los criterios
+			cliente = conectar_a_memoria(memoria);
+
 			log_info(logger, "PLANIFIC| Enviando DROP a MEMORIA");
+			int resultado_mensaje_drop = enviarMensajeConError(kernel, drop, sizeof(t_drop), req_drop, cliente, logger, mem, 0);
+			log_info(logger, "Resultado de enviar mensaje: %d", resultado_mensaje_drop);
+
+			t_mensaje* resultado_req_drop = recibirMensaje(cliente, logger);
+			resultado = resultado_req_drop->header.error;
+			log_info(logger, "PLANIFIC| Resultado de DROP: %d", resultado);
+
+			free(req_drop);
+			destruirMensaje(resultado_req_drop);
 
 			resultado = request->es_valido; // Cambiar por lo que devuelve la memoria.
-			free(req_drop);
 			break;
 
 		default:
