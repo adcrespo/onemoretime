@@ -239,7 +239,7 @@ int InsertarTabla(t_insert *insert) {
 	string_append(&nombre_tabla, insert->nombreTabla);
 	//valido value enviado
 	if((strlen(insert->value)) > (lfs_conf.tamano_value)){
-		free(insert);
+		//free(insert);
 		free(nombre_tabla);
 		return 1;
 	}
@@ -248,7 +248,7 @@ int InsertarTabla(t_insert *insert) {
 	if (!ExisteTabla(nombre_tabla)) {
 		loggear(logger, LOG_LEVEL_WARNING, "%s no existe en el file system",
 				nombre_tabla);
-		free(insert);
+		//free(insert);
 		free(nombre_tabla);
 		return 1;
 	}
@@ -256,7 +256,8 @@ int InsertarTabla(t_insert *insert) {
 	//Valido tabla bloqueada
 	int bloqueado = GetEstadoTabla(nombre_tabla);
 	if(bloqueado){
-		free(insert);
+		//free(insert);
+		free(nombre_tabla);
 		return -1;
 	}
 

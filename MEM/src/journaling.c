@@ -33,7 +33,8 @@ int process_journaling(){
 		t_adm_tabla_segmentos_spa* adm_table = list_get(adm_spa_lista, i);
 		loggear(logger,LOG_LEVEL_INFO,"Analizando Tabla: %s", adm_table->path_tabla);
 		t_segmentos_spa* adm_table_seg = list_get(adm_table->seg_lista, 0);
-		for (j = list_size(adm_table_seg->pag_lista)-1; adm_table_seg!=NULL && j >= 0; j--) {
+		int sizePag = list_size(adm_table_seg->pag_lista)-1;
+		for (j = sizePag; adm_table_seg!=NULL && j >= 0; j--) {
 			t_paginas_spa* adm_table_pag = list_get(adm_table_seg->pag_lista,j);
 			loggear(logger,LOG_LEVEL_INFO,"Pagina: %d, Frame: %d, Modificado: %d, TS: %d",
 					j, adm_table_pag->frame, adm_table_pag->modificado, adm_table_pag->timestamp);

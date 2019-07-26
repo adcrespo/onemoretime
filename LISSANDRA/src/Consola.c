@@ -119,6 +119,8 @@ void *crear_consola() {
 				printf("Registro insertado correctamente.\n");
 			}
 
+			free(insert);
+
 			break;
 
 		case _create:

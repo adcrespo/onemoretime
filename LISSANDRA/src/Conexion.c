@@ -104,7 +104,7 @@ void procesar(int n_descriptor, fd_set* set_master) {
 
 			int resultadoInsert = InsertarTabla(msginsert);
 
-			loggear(logger, LOG_LEVEL_WARNING, "Resultado create :%d",
+			loggear(logger, LOG_LEVEL_WARNING, "Resultado insert :%d",
 					resultadoInsert);
 			aplicar_retardo();
 			enviarMensajeConError(lis, insert, 0, NULL, n_descriptor, logger,
