@@ -34,6 +34,7 @@ pthread_t thread_gossiping;
 pthread_t inotify;
 pthread_t thread_refresh;
 pthread_t thread_planificacion;
+pthread_t thread_metricas;
 
 /* Definición de tipos */
 sem_t sem_new, sem_ready, sem_exec, sem_exit, sem_multiprog;

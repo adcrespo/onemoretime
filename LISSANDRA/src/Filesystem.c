@@ -459,7 +459,7 @@ t_registro* BuscarKey(t_select *selectMsg) {
 		list_destroy(listaBusqueda);
 	}
 
-	free(selectMsg);
+	//free(selectMsg);
 
 	return registroOut;
 }

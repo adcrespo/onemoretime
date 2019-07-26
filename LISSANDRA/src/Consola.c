@@ -69,7 +69,7 @@ void *crear_consola() {
 				printf("No se encuentra la key en FS.\n");
 
 			free(regSelect);
-
+			free(selectMsg);
 			break;
 
 		case _insert:
