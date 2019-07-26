@@ -72,7 +72,7 @@ int process_journaling(){
 					pthread_mutex_unlock(&journalingMutexCreate);
 					pthread_mutex_unlock(&journalingMutexDescribe);
 					pthread_mutex_unlock(&journalingMutexDrop);
-					return -1;
+					return insert_error;
 				}
 				free_spa(adm_table->path_tabla,j);
 			}
