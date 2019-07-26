@@ -41,7 +41,7 @@ int proceso_select(char* tabla, int clave, char** buffer, int* largo_buffer) {
 		*buffer = leer_bytes_spa(tabla,0,paginaTabla*frame_spa_size,frame_spa_size);
 		if(*buffer[0]!=0x00){
 			pthread_mutex_unlock(&journalingMutexSelect);
-			return 1;
+			return 0;
 		}
 		pthread_mutex_unlock(&journalingMutexSelect);
 		return -1;
