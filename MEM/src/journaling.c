@@ -36,7 +36,7 @@ int process_journaling(){
 		int sizePag = list_size(adm_table_seg->pag_lista)-1;
 		for (j = sizePag; adm_table_seg!=NULL && j >= 0; j--) {
 			t_paginas_spa* adm_table_pag = list_get(adm_table_seg->pag_lista,j);
-			loggear(logger,LOG_LEVEL_INFO,"Pagina: %d, Frame: %d, Modificado: %d, TS: %d",
+			loggear(logger,LOG_LEVEL_INFO,"Pagina: %d, Frame: %d, Modificado: %d, TS: %llu",
 					j, adm_table_pag->frame, adm_table_pag->modificado, adm_table_pag->timestamp);
 			if(adm_table_pag->modificado==1) {
 				loggear(logger,LOG_LEVEL_INFO,"Enviando INSERT");

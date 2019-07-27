@@ -39,6 +39,9 @@ int proceso_select(char* tabla, int clave, char** buffer, int* largo_buffer) {
 	int paginaTabla = getPaginaForKey(tabla, clave);
 	if(paginaTabla>=0){
 		*buffer = leer_bytes_spa(tabla,0,paginaTabla*frame_spa_size,frame_spa_size);
+		t_registro *reg = descomponer_registro(*buffer);
+		*largo_buffer = sizeof(t_registro);
+		loggear(logger,LOG_LEVEL_ERROR,"El buffer de select es %s (pagina %d)",reg->value, paginaTabla);
 		if(*buffer[0]!=0x00){
 			pthread_mutex_unlock(&journalingMutexSelect);
 			return 0;
@@ -62,7 +65,7 @@ int proceso_select(char* tabla, int clave, char** buffer, int* largo_buffer) {
 
 	if(mensaje == NULL) {
 		loggear(logger,LOG_LEVEL_ERROR,"No se pudo recibir mensaje de lis");
-		pthread_mutex_unlock(&journalingMutexDescribe);
+		pthread_mutex_unlock(&journalingMutexSelect);
 		_exit_with_error("ERROR - Se desconecto LISSANDRA",NULL);
 	}
 
@@ -90,15 +93,15 @@ int proceso_select(char* tabla, int clave, char** buffer, int* largo_buffer) {
 
 	int paginaNueva = solicitarPagina(tabla, timestamp);
 	if(paginaNueva<0){
-		free(*buffer);
+		//free(*buffer);
 		loggear(logger,LOG_LEVEL_ERROR,"Error en solicitar pagina: %d", paginaNueva);
 		pthread_mutex_unlock(&journalingMutexSelect);
 		return -1;
 	}
 
-	int escrito = escribir_bytes_spa(tabla,paginaNueva,0,frame_spa_size,*buffer,0);
+	int escrito = escribir_bytes_spa(tabla,0,paginaNueva*frame_spa_size,frame_spa_size,*buffer,0);
 	if(escrito<0){
-		free(*buffer);
+		//free(*buffer);
 		loggear(logger,LOG_LEVEL_ERROR,"Error en escribir_bytes: %d", escrito);
 		pthread_mutex_unlock(&journalingMutexSelect);
 		return -1;
@@ -119,12 +122,16 @@ int proceso_insert(char* tabla, int clave, char* value, unsigned long long tstam
 	int paginaTabla = getPaginaForKey(tabla, clave);
 	if(paginaTabla>=0){
 		loggear(logger,LOG_LEVEL_INFO,"Encontre la pagina en memoria (%d)",paginaTabla);
-		escrito = escribir_bytes_spa(tabla,paginaTabla,0,frame_spa_size,buffer,1);
-		if(escrito<0)
+		escrito = escribir_bytes_spa(tabla,0,paginaTabla*frame_spa_size,frame_spa_size,buffer,1);
+		if(escrito<0){
 			loggear(logger,LOG_LEVEL_ERROR,"Error en escribir_bytes: %d", escrito);
+			free(buffer);
+			pthread_mutex_unlock(&journalingMutexInsert);
+			return -1;
+		}
 		free(buffer);
 		pthread_mutex_unlock(&journalingMutexInsert);
-		return -1;
+		return 0;
 	}
 
 	int paginaNueva = solicitarPagina(tabla, timestamp);
@@ -170,7 +177,7 @@ int proceso_create(char* tabla,char* tipo_cons, int num_part, int compact_time){
 
 	if(mensaje == NULL) {
 		loggear(logger,LOG_LEVEL_ERROR,"No se pudo recibir mensaje de lis");
-		pthread_mutex_unlock(&journalingMutexDescribe);
+		pthread_mutex_unlock(&journalingMutexCreate);
 		_exit_with_error("ERROR - Se desconecto LISSANDRA",NULL);
 	}
 
@@ -286,7 +293,7 @@ int proceso_drop(char* tabla){
 
 	if(mensaje == NULL) {
 		loggear(logger,LOG_LEVEL_ERROR,"No se pudo recibir mensaje de lis");
-		pthread_mutex_unlock(&journalingMutexDescribe);
+		pthread_mutex_unlock(&journalingMutexDrop);
 		_exit_with_error("ERROR - Se desconecto LISSANDRA",NULL);
 	}
 
