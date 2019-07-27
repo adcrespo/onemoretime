@@ -10,6 +10,7 @@
 
 #include "../KERNEL.h"
 
+//t_tipoSeeds* memoria_sc;
 typedef enum tipoCriterio {
 	SC,SHC,EV
 } t_tipoCriterio;

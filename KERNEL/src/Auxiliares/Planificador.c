@@ -106,11 +106,12 @@ t_pcb* sacar_proceso_rr(t_list* lista) {
 
 int cantidad_request(char* buffer) {
 
-	char ** arrays_linea = strlineassplit(buffer,"\n" );
+	char ** arrays_linea = string_split(buffer,"\n" );
 	int i = 0;
 	int cantidad_lineas = 0;
 
 	while(arrays_linea[i] != NULL){
+
 		cantidad_lineas++;
 		i++;
 	}
@@ -147,7 +148,7 @@ int procesar_pcb(t_pcb* pcb) {
 
 	int quantum_restante = calcular_quantum(pcb);
 
-	for (int i=0; quantum_restante > i; i++ ) {
+	for (int i=0; quantum_restante >= i; i++ ) {
 		log_info(logger, "PLANIFIC| --- Consumiendo Quantum ---");
 		retardo_ejecucion();
 
@@ -157,7 +158,7 @@ int procesar_pcb(t_pcb* pcb) {
 		int resultado = ejecutar_request(linea[pcb->program_counter], pcb->id_proceso);
 
 		// Si el request falla, se termina el proceso
-		if(resultado != 0) {
+		if(resultado < 0) {
 			sacar_proceso(pcb->id_proceso, lista_exec, &sem_exec);
 			sem_post(&sem_multiprog);
 			agregar_proceso(pcb, lista_exit, &sem_exit);
@@ -202,7 +203,7 @@ t_registro* descomponer_registro(char *buffer)
 
 int ejecutar_request(char* linea, int id_proceso) {
 
-//	log_info(logger, "PLANIFIC| Request a ejecutar:");
+	int t_inicio, t_fin;
 	log_info(logger, "PLANIFIC| Request a ejecutar: %s", linea);
 	t_request* request = parsear(linea, logger);
 	int resultado, cliente;
@@ -212,16 +213,20 @@ int ejecutar_request(char* linea, int id_proceso) {
 	switch (request->request) {
 
 		case _select:;
-			// SELECT [NOMBRE_TABLA] [KEY]
-			// INSERT TABLA1 3
 
+			t_inicio = obtenerTimeStamp();
+
+			// VALIDAR EXISTENCIA DE TABLA
 			tabla = buscar_tabla(request->parametro1);
 
 			if(tabla == NULL) {
 				log_info(logger, "PLANIFIC| La tabla no existe.");
+				t_fin = obtenerTimeStamp();
+				log_info(logger, "PLANIFIC| DURACION SELECT: %d segundos", t_fin - t_inicio);
 				return -1;
 			}
 
+			// PREPARANDO REQUEST
 			log_info(logger, "PLANIFIC|Preparando SELECT");
 			t_select* req_select = malloc(sizeof(t_select));
 
@@ -230,19 +235,21 @@ int ejecutar_request(char* linea, int id_proceso) {
 			req_select->key = atoi(request->parametro2);
 
 			log_info(logger, "PLANIFIC| SELECT: %s, %d", req_select->nombreTabla, req_select->key);
-			log_info(logger, "Buscando memoria del criterio %s", tabla->tipoConsistencia);
 
-			//TODO: FALTA BUSCAR MEMORIA POR CRITERIO Y CONECTARSE
-			//memoria = get_memoria_por_criterio(tabla->tipoConsistencia);
-			memoria = obtener_memoria_random();
+			// BUSCANDO MEMORIA
+			log_info(logger, "Buscando memoria del criterio %s", tabla->tipoConsistencia);
+			memoria = get_memoria_por_criterio(tabla->tipoConsistencia);
 			cliente = conectar_a_memoria(memoria);
 
+			// REQUEST
 			log_info(logger, "PLANIFIC| Enviando SELECT a MEMORIA");
 			int resultado_mensaje_select = enviarMensajeConError(kernel, selectMsg, sizeof(t_select), req_select, cliente, logger, mem, 0);
 			log_info(logger, "Resultado de enviar mensaje SELECT: %d", resultado_mensaje_select);
 
+			// RESPUESTA
 			log_info(logger, "PLANIFIC| RECIBIENDO SELECT");
 			t_mensaje* resultado_req_select = recibirMensaje(cliente, logger);
+
 
 			int largo_buffer = resultado_req_select->header.longitud;
 			char *buffer = malloc(largo_buffer);
@@ -252,17 +259,27 @@ int ejecutar_request(char* linea, int id_proceso) {
 
 			log_info(logger, "PLANIFIC| RESPUESTA SELECT: KEY:%d, VALOR:%s TIMESTAMP:%llu", reg->key, reg->value,reg->timestamp);
 
+			resultado = resultado_mensaje_select;
+
+			// METRICAS
+			t_fin = obtenerTimeStamp();
+			int duracion = (t_fin - t_inicio) / 1000;
+			log_info(logger, "PLANIFIC| DURACION SELECT: %d segundos", duracion);
+
+			// LIBERAR MEMORIA
 			free(req_select);
 			destruirMensaje(resultado_req_select);
 			free(reg);
 
-			resultado = request->es_valido; // Cambiar por lo que devuelve la memoria.
+//			resultado = request->es_valido; // Cambiar por lo que devuelve la memoria.
 
 			break;
 
 		case _insert:
 			// INSERT [NOMBRE_TABLA] [KEY] “[VALUE]”
 			// INSERT TABLA1 3 “Mi nombre es Lissandra”
+
+			log_info(logger, "VALIDACION| MEMORIA SC: %d", memoria_sc->numeroMemoria);
 
 			tabla = buscar_tabla(request->parametro1);
 
@@ -283,10 +300,15 @@ int ejecutar_request(char* linea, int id_proceso) {
 			log_info(logger, "PLANIFIC| INSERT: %s, %llu, %d, %s", req_insert->nombreTabla, req_insert->timestamp, req_insert->key, req_insert->value);
 
 			//TODO: FALTA BUSCAR MEMORIA POR CRITERIO Y CONECTARSE
-			memoria = obtener_memoria_random(); // cambiar para hacerlo dinamico para los criterios
+			memoria = get_memoria_por_criterio(tabla->tipoConsistencia);
+
+			log_info(logger, "VALIDACION| MEMORIA SC: %d", memoria_sc->numeroMemoria);
+//			memoria = obtener_memoria_random(); // cambiar para hacerlo dinamico para los criterios
 			cliente = conectar_a_memoria(memoria);
 
 			log_info(logger, "PLANIFIC| Enviando INSERT a MEMORIA");
+			log_info(logger, "PLANIFC - INSERT| Memoria SC tiene: %d", memoria_sc->numeroMemoria);
+			log_info(logger, "PLANIFC - INSERT| Memoria Asignada tiene: %d", memoria->numeroMemoria);
 			int resultado_mensaje_insert = enviarMensajeConError(kernel, insert, sizeof(t_insert), req_insert, cliente, logger, mem, 0);
 			log_info(logger, "Resultado de enviar mensaje INSERT: %d", resultado_mensaje_insert);
 
@@ -297,7 +319,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 			free(req_insert);
 			destruirMensaje(resultado_req_insert);
 
-			resultado = request->es_valido; // Cambiar por lo que devuelve la memoria.
+//			resultado = request->es_valido; // Cambiar por lo que devuelve la memoria.
 			break;
 
 		case _create:;
@@ -328,6 +350,14 @@ int ejecutar_request(char* linea, int id_proceso) {
 			t_mensaje* resultado_req_create = recibirMensaje(cliente, logger);
 			resultado = resultado_req_create->header.error;
 			log_info(logger, "PLANIFIC| Resultado de CREATE: %d", resultado);
+
+			if (resultado == 0) {
+//				char** buff = string_from_format("DESCRIBE %s", req_create->nombreTabla);
+//				log_info(logger, "PLANIFIC| Solicitando: %s", buff);
+				pthread_mutex_lock(&mutex_metadata);
+				describe_global(cliente);
+				pthread_mutex_unlock(&mutex_metadata);
+			}
 
 			free(req_create);
 			destruirMensaje(resultado_req_create);

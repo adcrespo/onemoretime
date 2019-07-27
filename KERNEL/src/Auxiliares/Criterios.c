@@ -36,7 +36,12 @@ t_tipoSeeds* obtener_memoria_lista(int numero){
 
 	log_info(logger, "Buscando memoria %d en LISTA_CONN", numero);
 //	return list_find(LISTA_CONN, &findMemory);
-	return list_find(LISTA_CONN, (void *)findMemory);
+	t_tipoSeeds* mem = list_find(LISTA_CONN, (void *)findMemory);
+
+	if (mem != NULL) {
+		log_info(logger, "MEMMMMMMM | Memoria devuelta por FIND %d", mem->numeroMemoria);
+	}
+	return mem;
 
 }
 
@@ -59,7 +64,8 @@ int agregar_memoria_a_criterio(int nro_memoria, char* criterio) {
 		case SC:
 
 			if(memoria_sc == NULL){
-				memoria_sc = memoria;
+				memoria_sc = malloc(sizeof(t_tipoSeeds));
+				memcpy(memoria_sc, memoria,sizeof(t_tipoSeeds));
 				log_info(logger, "CRITERIO| Memoria %d asignada a %s.", nro_memoria, criterio);
 				resultado = 1;
 			}else{
@@ -103,7 +109,9 @@ t_tipoSeeds* get_memoria_por_criterio(char *criterio) {
 	int tipo_criterio = criterio_to_enum(criterio);
 	switch (tipo_criterio) {
 		case SC:
+			log_info(logger, "Memoria SC Asignada tiene: %d", memoria_sc->numeroMemoria);
 			memory = memoria_sc;
+			log_info(logger, "Memoria SC Asignada tiene: %d", memory->numeroMemoria);
 			break;
 
 		case SHC:

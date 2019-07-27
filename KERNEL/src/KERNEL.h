@@ -18,6 +18,7 @@
 #include "Auxiliares/Logueo.h"
 #include "Auxiliares/Consola.h"
 //#include "Auxiliares/Planificador.h"
+#include "Auxiliares/Metricas.h"
 #include "Auxiliares/Configuracion.h"
 #include "Auxiliares/Conexion.h"
 #include "Auxiliares/Hilos.h"
@@ -34,6 +35,8 @@ pthread_t thread_gossiping;
 pthread_t inotify;
 pthread_t thread_refresh;
 pthread_t thread_planificacion;
+pthread_t thread_metricas;
+pthread_mutex_t mutex_metadata;
 
 /* Definición de tipos */
 sem_t sem_new, sem_ready, sem_exec, sem_exit, sem_multiprog;

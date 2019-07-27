@@ -58,29 +58,28 @@ int procesar_comando(char *line) {
 				return -1;
 
 			case _select:
+
 				crear_proceso(linea_auxiliar, request);
 
 				break;
 
 			case _insert:
-				// Generar nuevo proceso.
+
 				crear_proceso(linea_auxiliar, request);
 
-				printf("Validando existencia de Tabla.\n");
-				printf("Seleccionando Memoria según Criterio.\n");
-				printf("Enviando INSERT a una Memoria.\n");
+//				printf("Validando existencia de Tabla.\n");
+//				printf("Seleccionando Memoria según Criterio.\n");
+//				printf("Enviando INSERT a una Memoria.\n");
 
 				break;
 
 			case _create:
-				// Generar nuevo proceso.
+
 				crear_proceso(linea_auxiliar, request);
 
 				break;
 
 			case _describe:
-
-				printf("Enviando DESCRIBE a una Memoria \n"); /* CAMBIAR SOCKET DE ABAJO */
 
 				crear_proceso(linea_auxiliar, request);
 				// elegir memoria
@@ -89,7 +88,7 @@ int procesar_comando(char *line) {
 				break;
 
 			case _drop:
-				// Generar nuevo proceso.
+
 				crear_proceso(linea_auxiliar, request);
 
 				printf("Validando existencia de Tabla.\n");
@@ -99,15 +98,13 @@ int procesar_comando(char *line) {
 				break;
 
 			case _journal:
-				printf("CONSOLA: Se ingresó comando JOURNAL \n");
+
 				enviar_journal_memorias();
-				printf("Journal enviado a las memorias asociadas.\n");
 
 				break;
 
 			case _add:;
 
-				// Valido existencia de memoria
 				int numeroMemoria = atoi(request->parametro2);
 				int resultado = agregar_memoria_a_criterio(numeroMemoria, request->parametro4);
 				log_info(logger, "CONSOLA| Resultado: %d", resultado);

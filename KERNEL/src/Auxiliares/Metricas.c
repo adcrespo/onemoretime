@@ -11,6 +11,6 @@ void* metricas() {
 
 	while(1) {
 		sleep(30);
-		log_info(logger, "");
+		log_info(logger, "METRICS| ---------- Logueando métricas ---------- ");
 	}
 }

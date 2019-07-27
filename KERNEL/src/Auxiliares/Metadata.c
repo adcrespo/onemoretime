@@ -33,12 +33,14 @@ void guardar_metadata(char *buffer) {
 	log_info(logger, "REFRESH| Guardo Metadata");
 	char **elementos = string_split(buffer, ";");
 
+//	pthread_mutex_lock(&mutex_metadata);
 	t_metadata *metadata = malloc(sizeof(t_metadata));
 	strcpy(metadata->nombreTabla, elementos[0]);
 	strcpy(metadata->tipoConsistencia, elementos[1]);
 	metadata->particiones = atoi(elementos[2]);
 	metadata->compactationTime = atoi(elementos[3]);
 	list_add(lista_metadata, metadata);
+//	pthread_mutex_unlock(&mutex_metadata);
 
 	log_info(logger, "REFRESH| Cantidad de Metadatas: %d", lista_metadata->elements_count);
 
@@ -53,12 +55,14 @@ void guardar_metadata(char *buffer) {
 
 void limpiar_metadata() {
 	if (lista_metadata != NULL) {
+//		pthread_mutex_lock(&mutex_metadata);
 		int size_metadata = list_size(lista_metadata);
 		for (int i = 0; i < size_metadata; i++) {
 			t_metadata *metadata = list_get(lista_metadata, i);
 			free(metadata);
 		}
 		list_clean(lista_metadata);
+//		pthread_mutex_unlock(&mutex_metadata);
 	}
 }
 
@@ -99,7 +103,11 @@ int validar_tabla(char *nombre){
 			t_metadata *metadata = element;
 			return string_equals_ignore_case(nombre, metadata->nombreTabla);
 		}
-	return list_any_satisfy(lista_metadata, &findMd);
+	pthread_mutex_lock(&mutex_metadata);
+	int result = list_any_satisfy(lista_metadata, &findMd);
+	pthread_mutex_unlock(&mutex_metadata);
+
+	return result;
 }
 
 t_metadata* buscar_tabla(char *nombre) {
@@ -109,5 +117,10 @@ t_metadata* buscar_tabla(char *nombre) {
 	}
 
 	loggear(logger, LOG_LEVEL_INFO, "Buscando %s en Metadata", nombre);
-	return list_find(lista_metadata, (void*) esLaTabla);
+
+	pthread_mutex_lock(&mutex_metadata);
+	t_metadata* tabla = list_find(lista_metadata, (void*) esLaTabla);
+	pthread_mutex_unlock(&mutex_metadata);
+
+	return tabla;
 }

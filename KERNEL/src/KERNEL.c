@@ -39,6 +39,9 @@ int main() {
 	/* 8. Planificador */
 	crear_hilo_planificador();
 
+	/* 9. Metricas */
+	crear_hilo_metricas();
+
 	pthread_join(thread_consola, NULL);
 
 	puts("Muchas gracias por utilizar el proceso KERNEL. Vuelva pronto!");
@@ -63,6 +66,7 @@ void inicializar_semaforos() {
 	sem_init(&sem_exit, 0, 0);
 
 	sem_init(&sem_multiprog, 0, kernel_conf.multiprocesamiento);
+	pthread_mutex_init(&mutex_metadata, NULL);
 }
 
 void inicializar_listas() {

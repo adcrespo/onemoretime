@@ -10,6 +10,12 @@
 
 #include "../KERNEL.h"
 
+// Structs
+struct t_metric {
+	int duracion;
+	int contador;
+} t_metric;
+
 void* metricas();
 
 #endif /* AUXILIARES_METRICAS_H_ */
