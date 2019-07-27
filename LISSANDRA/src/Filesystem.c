@@ -369,6 +369,8 @@ t_registro* BuscarKey(t_select *selectMsg) {
 				log_info(logger, "Registro encontrado en particion");
 				list_add(listaBusqueda, registro);
 			}
+			else
+				free(registro);
 			free(blocksArray[j]);
 			j++;
 		}
