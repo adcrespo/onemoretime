@@ -137,9 +137,13 @@ void procesar_KER(t_mensaje* msg, int socketKER, fd_set* set_master) {
 			memcpy(&clave,&msg->content+MAX_PATH,sizeof(int));
 
 			int select_result = proceso_select(msgselect->nombreTabla,msgselect->key,&buffer,&largo_buffer);
+			loggear(logger, LOG_LEVEL_INFO, "MSJ SELECT ENVIANDO...");
 
-			if(enviarMensajeConError(mem, selectMsg, largo_buffer, buffer, socketKER,
-					logger, kernel, select_result)<=0){
+			int enviar = enviarMensajeConError(mem, selectMsg, largo_buffer, buffer, socketKER,
+					logger, kernel, select_result);
+			loggear(logger, LOG_LEVEL_INFO, "MSJ SELECT ENVIADO :%d",enviar);
+
+			if(enviar<=0){
 				close(socketKER);
 				FD_CLR(socketKER, set_master);;
 			}
@@ -162,7 +166,7 @@ void procesar_KER(t_mensaje* msg, int socketKER, fd_set* set_master) {
 			loggear(logger, LOG_LEVEL_INFO, "KEY_MSJ :%d",msgInsert->key);
 
 			int insert_result = proceso_insert(msgInsert->nombreTabla,msgInsert->key,msgInsert->value,msgInsert->timestamp);
-
+			loggear(logger, LOG_LEVEL_INFO, "RESULTADO MSJ INSERT :%d",insert_result);
 			if(enviarMensajeConError(mem, insert, 0, NULL, socketKER,
 					logger, kernel, insert_result)<=0){
 				close(socketKER);
