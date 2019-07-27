@@ -26,8 +26,7 @@ int procesar_comando(char *line);
 char **character_name_completion(const char *, int, int);
 char *character_name_generator(const char *, int);
 t_tipoComando buscar_enum_lfs(char *sval);
-void liberar_comando(char ** comando, int elementos);
-
+void liberar_comando(char ** comando);
 
 
 

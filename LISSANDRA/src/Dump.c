@@ -95,6 +95,7 @@ void DumpearTabla(t_list *lista, char *nombre)
 			disponibleActual = tamanio_bloques;
 			//bloqueActual ++;
 			disponibleActual -= lenLinea;
+			free(rutaActual);
 			rutaActual = string_from_format("%s%d.bin", rutaBloques,
 					bloqueActual);
 			GuardarEnBloque(linea, rutaActual);
@@ -143,6 +144,7 @@ void LimpiarMemtable() {
 		for (int j = 0; j < sizeTabla; j++) {
 			free(list_remove(tabla->lista, 0));
 		}
+		list_destroy(tabla->lista);
 		free(list_remove(memtable, 0));
 	}
 	list_clean(memtable);

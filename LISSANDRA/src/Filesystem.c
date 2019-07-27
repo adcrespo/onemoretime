@@ -239,7 +239,7 @@ int InsertarTabla(t_insert *insert) {
 	string_append(&nombre_tabla, insert->nombreTabla);
 	//valido value enviado
 	if((strlen(insert->value)) > (lfs_conf.tamano_value)){
-		free(insert);
+		//free(insert);
 		free(nombre_tabla);
 		return 1;
 	}
@@ -248,7 +248,7 @@ int InsertarTabla(t_insert *insert) {
 	if (!ExisteTabla(nombre_tabla)) {
 		loggear(logger, LOG_LEVEL_WARNING, "%s no existe en el file system",
 				nombre_tabla);
-		free(insert);
+		//free(insert);
 		free(nombre_tabla);
 		return 1;
 	}
@@ -256,7 +256,8 @@ int InsertarTabla(t_insert *insert) {
 	//Valido tabla bloqueada
 	int bloqueado = GetEstadoTabla(nombre_tabla);
 	if(bloqueado){
-		free(insert);
+		//free(insert);
+		free(nombre_tabla);
 		return -1;
 	}
 
@@ -319,11 +320,9 @@ void GuardarEnBloque(char *linea, char *path) {
 
 t_registro* BuscarKey(t_select *selectMsg) {
 
-	//declaro registro a retornar
-	t_registro *registroInit = malloc(sizeof(t_registro));
-
 	//Verifico existencia en el file system
 	if (!ExisteTabla(selectMsg->nombreTabla)) {
+		t_registro *registroInit = malloc(sizeof(t_registro));
 		loggear(logger, LOG_LEVEL_ERROR, "%s no existe en el file system",
 				selectMsg->nombreTabla);
 		registroInit->key = -1;
@@ -332,6 +331,7 @@ t_registro* BuscarKey(t_select *selectMsg) {
 
 	int bloqueado = GetEstadoTabla(selectMsg->nombreTabla);
 	if(bloqueado){
+		t_registro *registroInit = malloc(sizeof(t_registro));
 		registroInit->key = -1;
 		return registroInit;
 	}
@@ -356,30 +356,35 @@ t_registro* BuscarKey(t_select *selectMsg) {
 
 	int sizeArchivo = config_get_int_value(configFile, "SIZE");
 	if (sizeArchivo > 0) { //Escaneo la particion
-		int cantBloques = CalcularBloques(sizeArchivo);
-		char **blocksArray = malloc(sizeof(int) * cantBloques);
-		blocksArray = config_get_array_value(configFile, "BLOCKS");
+//		int cantBloques = CalcularBloques(sizeArchivo);
+		//char **blocksArray = malloc(sizeof(int) * cantBloques);
+		char **blocksArray = config_get_array_value(configFile, "BLOCKS");
 		int j = 0;
 		while (blocksArray[j] != NULL) {
 
 			t_registro *registro = BuscarKeyParticion(selectMsg->key,
-					blocksArray[j], registroInit);
+					blocksArray[j]);
 			//Si se encontro en particion agrego a la lista de busqueda
 			if (registro->timestamp != 0) {
 				log_info(logger, "Registro encontrado en particion");
 				list_add(listaBusqueda, registro);
 			}
+			else
+				free(registro);
+			free(blocksArray[j]);
 			j++;
 		}
+		free(blocksArray);
 	}
 	free(rutaParticion);
 	config_destroy(configFile);
 
 	//Escaneo memtable
-	t_list *listaMemtable = list_create();
-	listaMemtable = BuscarKeyMemtable(selectMsg->key, selectMsg->nombreTabla);
-	if (listaMemtable == NULL) {
+	//t_list *listaMemtable = list_create();
+	t_list *listaMemtable = BuscarKeyMemtable(selectMsg->key, selectMsg->nombreTabla);
+	if (list_is_empty(listaMemtable)) {
 		log_debug(logger, "No se encontraron registros en memtable");
+		list_destroy(listaMemtable);
 	} else {
 		log_debug(logger, "Registros encontrados en memtable");
 		int sizeMemtable = list_size(listaMemtable);
@@ -398,6 +403,7 @@ t_registro* BuscarKey(t_select *selectMsg) {
 	listaTemp = BuscarKeyTemporales(selectMsg->key, selectMsg->nombreTabla);
 	if (list_is_empty(listaTemp)) {
 		log_debug(logger, "No se encontraron registro en .tmp");
+		list_destroy(listaTemp);
 	} else {
 		log_debug(logger, "Registros encontrados en .tmp");
 		int sizeTemp = list_size(listaTemp);
@@ -415,14 +421,14 @@ t_registro* BuscarKey(t_select *selectMsg) {
 
 	//si la lista esta vacia devuelvo registro con key -1
 	if(list_is_empty(listaBusqueda)) {
+			t_registro *registroInit = malloc(sizeof(t_registro));
 			registroInit->key = -1;
 			return registroInit;
 		}
 
-	free(registroInit);
 
 	//Busco registro con mayor timestamp
-	registroInit = list_get(listaBusqueda, 0);
+	t_registro *registroInit = list_get(listaBusqueda, 0);
 	t_registro *registroAux;
 
 	if (1 < size_busqueda) {
@@ -457,7 +463,7 @@ t_registro* BuscarKey(t_select *selectMsg) {
 		list_destroy(listaBusqueda);
 	}
 
-	free(selectMsg);
+	//free(selectMsg);
 
 	return registroOut;
 }
@@ -472,7 +478,7 @@ t_list *BuscarKeyMemtable(int key, char *nombre) {
 	if (tabla == NULL) {
 		loggear(logger, LOG_LEVEL_WARNING,
 				"La tabla %s no posee datos en memtable", nombre);
-		return NULL;
+		return list_create();
 	}
 
 	int findKey(t_registro *registro) {
@@ -586,7 +592,8 @@ t_list *BuscarKeyTemporales(int key, char *tabla) {
 	return listaTmp;
 }
 
-t_registro* BuscarKeyParticion(int key, char *bloque, t_registro *registro) {
+t_registro* BuscarKeyParticion(int key, char *bloque) {
+	t_registro *registro = malloc(sizeof(t_registro));
 	loggear(logger, LOG_LEVEL_INFO, "Buscando key : %d en bloque: %s", key,
 			bloque);
 	char *pathBlock = string_from_format("%s%s.bin", rutaBloques, bloque);
@@ -620,33 +627,39 @@ t_registro* BuscarKeyParticion(int key, char *bloque, t_registro *registro) {
 //		fgets(linea, 100, file);
 		char * rd = fgets(linea,100,file);
 		if(rd!=NULL){
-		elementos = string_split(linea, ";");
-		int cantElementos = ContarElementosArray(elementos);
+			elementos = string_split(linea, ";");
+			int cantElementos = ContarElementosArray(elementos);
 
-		if (atoi(elementos[1]) == key) {
-			registro->timestamp = atoll(elementos[0]);
-			registro->key = atoi(elementos[1]);
-			char *value = string_new();
-			string_append(&value, elementos[2]);
-			value[strcspn(value, "\n")] = 0;
-			strcpy(registro->value, value);
+			if (atoi(elementos[1]) == key) {
+				registro->timestamp = atoll(elementos[0]);
+				registro->key = atoi(elementos[1]);
+				char *value = string_new();
+				string_append(&value, elementos[2]);
+				value[strcspn(value, "\n")] = 0;
+				strcpy(registro->value, value);
 
-			loggear(logger, LOG_LEVEL_INFO, "Timestamp:%llu",
-					registro->timestamp);
-			loggear(logger, LOG_LEVEL_INFO, "Key:%d", registro->key);
-			loggear(logger, LOG_LEVEL_INFO, "Value:%s", registro->value);
-//			return registro;
-		} else {
-			registro->timestamp = 0;
+				loggear(logger, LOG_LEVEL_INFO, "Timestamp:%llu",
+						registro->timestamp);
+				loggear(logger, LOG_LEVEL_INFO, "Key:%d", registro->key);
+				loggear(logger, LOG_LEVEL_INFO, "Value:%s", registro->value);
+
+				for (int i = 0; i < cantElementos; i++) {
+					free(elementos[i]);
+				}
+				free(value);
+				free(elementos);
+				free(pathBlock);
+				fclose(file);
+				return registro;
+			} else {
+				registro->timestamp = 0;
+			}
+
+			for (int i = 0; i < cantElementos; i++) {
+				free(elementos[i]);
+			}
+			free(elementos);
 		}
-
-		for (int i = 0; i < cantElementos; i++) {
-			free(elementos[i]);
-		}
-		free(elementos);
-		}
-
-
 	}
 
 	free(pathBlock);
@@ -797,7 +810,7 @@ int DropearTabla(char *nombre) {
 			log_info(logger,"Eliminando hilo %s(%d) vs %s",compact->path_tabla,compact->hilo,nombre);
 			pthread_cancel(compact->hilo);
 			free(list_remove(listaHilos,i));
-//			break;
+			break;
 		}
 	}
 
