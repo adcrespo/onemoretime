@@ -356,7 +356,7 @@ t_registro* BuscarKey(t_select *selectMsg) {
 
 	int sizeArchivo = config_get_int_value(configFile, "SIZE");
 	if (sizeArchivo > 0) { //Escaneo la particion
-		int cantBloques = CalcularBloques(sizeArchivo);
+//		int cantBloques = CalcularBloques(sizeArchivo);
 		//char **blocksArray = malloc(sizeof(int) * cantBloques);
 		char **blocksArray = config_get_array_value(configFile, "BLOCKS");
 		int j = 0;
@@ -403,6 +403,7 @@ t_registro* BuscarKey(t_select *selectMsg) {
 	listaTemp = BuscarKeyTemporales(selectMsg->key, selectMsg->nombreTabla);
 	if (list_is_empty(listaTemp)) {
 		log_debug(logger, "No se encontraron registro en .tmp");
+		list_destroy(listaTemp);
 	} else {
 		log_debug(logger, "Registros encontrados en .tmp");
 		int sizeTemp = list_size(listaTemp);
@@ -645,6 +646,7 @@ t_registro* BuscarKeyParticion(int key, char *bloque) {
 				for (int i = 0; i < cantElementos; i++) {
 					free(elementos[i]);
 				}
+				free(value);
 				free(elementos);
 				free(pathBlock);
 				fclose(file);

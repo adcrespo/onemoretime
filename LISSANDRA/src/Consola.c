@@ -212,9 +212,12 @@ void *crear_consola() {
 			;
 			printf("No se reconoce el comando %s .\n", comando[0]);
 		}
-		int elementos =  sizeof(comando) / sizeof(comando[0]);
 
-		liberar_comando(comando, elementos);
+		for(int j=0;comando[j]!=NULL;j++){
+			free(comando[j]);
+		}
+
+		if(comando) free(comando);
 	}
 	return 0;
 }
@@ -257,9 +260,15 @@ t_tipoComando buscar_enum_lfs(char *sval) {
 	return -1;
 }
 
-void liberar_comando(char ** comando, int elementos){
-	for(int i = 0; i<elementos; i++){
+/*void liberar_comando(char ** comando){//, int elementos){
+//	for(int i = 0; i < elementos; i++){
+//		free(comando[i]);
+//	}
+//	free(comando);
+	for(int i=0;comando[i]!=NULL;i++){
 		free(comando[i]);
+		log_info(logger, "Liberando comando %s", comando[i]);
 	}
-	free(comando);
-}
+
+	if(comando) free(comando);
+}*/
