@@ -626,33 +626,38 @@ t_registro* BuscarKeyParticion(int key, char *bloque) {
 //		fgets(linea, 100, file);
 		char * rd = fgets(linea,100,file);
 		if(rd!=NULL){
-		elementos = string_split(linea, ";");
-		int cantElementos = ContarElementosArray(elementos);
+			elementos = string_split(linea, ";");
+			int cantElementos = ContarElementosArray(elementos);
 
-		if (atoi(elementos[1]) == key) {
-			registro->timestamp = atoll(elementos[0]);
-			registro->key = atoi(elementos[1]);
-			char *value = string_new();
-			string_append(&value, elementos[2]);
-			value[strcspn(value, "\n")] = 0;
-			strcpy(registro->value, value);
+			if (atoi(elementos[1]) == key) {
+				registro->timestamp = atoll(elementos[0]);
+				registro->key = atoi(elementos[1]);
+				char *value = string_new();
+				string_append(&value, elementos[2]);
+				value[strcspn(value, "\n")] = 0;
+				strcpy(registro->value, value);
 
-			loggear(logger, LOG_LEVEL_INFO, "Timestamp:%llu",
-					registro->timestamp);
-			loggear(logger, LOG_LEVEL_INFO, "Key:%d", registro->key);
-			loggear(logger, LOG_LEVEL_INFO, "Value:%s", registro->value);
-//			return registro;
-		} else {
-			registro->timestamp = 0;
+				loggear(logger, LOG_LEVEL_INFO, "Timestamp:%llu",
+						registro->timestamp);
+				loggear(logger, LOG_LEVEL_INFO, "Key:%d", registro->key);
+				loggear(logger, LOG_LEVEL_INFO, "Value:%s", registro->value);
+
+				for (int i = 0; i < cantElementos; i++) {
+					free(elementos[i]);
+				}
+				free(elementos);
+				free(pathBlock);
+				fclose(file);
+				return registro;
+			} else {
+				registro->timestamp = 0;
+			}
+
+			for (int i = 0; i < cantElementos; i++) {
+				free(elementos[i]);
+			}
+			free(elementos);
 		}
-
-		for (int i = 0; i < cantElementos; i++) {
-			free(elementos[i]);
-		}
-		free(elementos);
-		}
-
-
 	}
 
 	free(pathBlock);
