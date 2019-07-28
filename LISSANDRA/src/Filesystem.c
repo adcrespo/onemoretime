@@ -452,7 +452,7 @@ t_registro* BuscarKey(t_select *selectMsg) {
 	//libero lista busqueda
 	log_info(logger, "Size lista busqueda %d", size_busqueda);
 	if (listaBusqueda != NULL) {
-		size_busqueda=list_size(listaBusqueda);
+		size_busqueda = list_size(listaBusqueda);
 		for (int i = 0; size_busqueda > i; i++) {
 //			log_info(logger, "Remove busqueda %d", i);
 			free(list_remove(listaBusqueda, 0));
@@ -460,8 +460,8 @@ t_registro* BuscarKey(t_select *selectMsg) {
 		size_busqueda = list_size(listaBusqueda);
 //		log_info(logger, "Size busqueda %d", size_busqueda);
 
-		list_destroy(listaBusqueda);
 	}
+	list_destroy(listaBusqueda);
 
 	//free(selectMsg);
 
@@ -493,7 +493,7 @@ t_list *BuscarKeyMemtable(int key, char *nombre) {
 		memcpy(reg,regEncontrado,sizeof(t_registro));
 		list_add(listaEncontrados,reg);
 	}
-
+	list_destroy(listaFiltrado);
 	return listaEncontrados;
 
 }
