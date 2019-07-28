@@ -37,6 +37,7 @@ pthread_t thread_refresh;
 pthread_t thread_planificacion;
 pthread_t thread_metricas;
 pthread_mutex_t mutex_metadata;
+pthread_mutex_t mutex_memoria_sc;
 
 /* Definición de tipos */
 sem_t sem_new, sem_ready, sem_exec, sem_exit, sem_multiprog;

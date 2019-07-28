@@ -25,14 +25,18 @@ void* planificar() {
 //		agregar_proceso(pcb, lista_exec, &sem_exec);
 //
 //		procesar_pcb(pcb);
-		aplicar_algoritmo_rr();
 
 
+//		aplicar_algoritmo_rr();
+
+
+		pthread_create(&thread_planificacion, NULL, aplicar_algoritmo_rr(), NULL);
 //		int hilo_algoritmo = pthread_create(&thread_planificacion, NULL, aplicar_algoritmo_rr(), NULL);
+
 //		if (hilo_algoritmo == -1) {
 //			log_error(logger, "THREAD|No se pudo generar el hilo para el algoritmo.");
 //		}
-//		log_info(logger, "THREAD|Se generó el hilo para el algoritmo.");
+		log_info(logger, "THREAD|Se generó el hilo para el algoritmo.");
 	}
 }
 
@@ -147,14 +151,16 @@ void retardo_ejecucion() {
 int procesar_pcb(t_pcb* pcb) {
 
 	int quantum_restante = calcular_quantum(pcb);
+	log_info(logger, "PLANIFIC| --- Quantum restante: %d ---", quantum_restante);
 
-	for (int i=0; quantum_restante >= i; i++ ) {
+	for (int i=0; quantum_restante > i; i++ ) {
 		log_info(logger, "PLANIFIC| --- Consumiendo Quantum ---");
 		retardo_ejecucion();
 
 		// Parsear request y procesarlo
 		char **linea = string_split(pcb->script, "\n");
 
+		log_info(logger, "Linea a ejecutar: %s", linea[pcb->program_counter]);
 		int resultado = ejecutar_request(linea[pcb->program_counter], pcb->id_proceso);
 
 		// Si el request falla, se termina el proceso
@@ -169,9 +175,9 @@ int procesar_pcb(t_pcb* pcb) {
 		log_info(logger, "PLANIFIC| Resultado del request: %d", resultado);
 
 		pcb->program_counter++;
-		quantum_restante--;
+//		quantum_restante--;
 		log_info(logger, "PLANIFIC| Nuevo Program Counter: %d", pcb->program_counter);
-		log_info(logger, "PLANIFIC| Quantum restante: %d", quantum_restante);
+//		log_info(logger, "PLANIFIC| Quantum restante: %d", quantum_restante);
 
 	}
 
@@ -287,6 +293,8 @@ int ejecutar_request(char* linea, int id_proceso) {
 				log_info(logger, "PLANIFIC| La tabla no existe.");
 				return -1;
 			}
+
+			log_info(logger, "PLANIFIC| La tabla %s.", tabla->nombreTabla);
 
 			log_info(logger, "PLANIFIC|Preparando INSERT");
 			t_insert* req_insert = malloc(sizeof(t_insert));

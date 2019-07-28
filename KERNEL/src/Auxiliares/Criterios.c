@@ -64,9 +64,11 @@ int agregar_memoria_a_criterio(int nro_memoria, char* criterio) {
 		case SC:
 
 			if(memoria_sc == NULL){
+				pthread_mutex_lock(&mutex_memoria_sc);
 				memoria_sc = malloc(sizeof(t_tipoSeeds));
 				memcpy(memoria_sc, memoria,sizeof(t_tipoSeeds));
 				log_info(logger, "CRITERIO| Memoria %d asignada a %s.", nro_memoria, criterio);
+				pthread_mutex_unlock(&mutex_memoria_sc);
 				resultado = 1;
 			}else{
 				log_info(logger, "CRITERIO| %s ya tiene memoria asignada.", criterio);

@@ -38,10 +38,10 @@ void enviar_journal_memorias() {
 
 void enviar_journal_sc() {
 	if(memoria_sc == NULL) return;
-	t_tipoSeeds *memoria;
-	memoria = obtener_memoria_lista(memoria_sc->numeroMemoria);
-	if (memoria != NULL) {
-		enviar_mensaje_journal(memoria);
+//	t_tipoSeeds *memoria;
+//	memoria = obtener_memoria_lista(memoria_sc->numeroMemoria);
+	if (memoria_sc != NULL) {
+		enviar_mensaje_journal(memoria_sc);
 	} else {
 		log_info(logger, "Memoria criterio SC no encontrada");
 	}

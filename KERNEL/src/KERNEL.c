@@ -13,12 +13,12 @@
 int main() {
 
 	/* 1. Logger */
-	logger = configurar_logger("../log/KERNEL.log", "Kernel");
-//	logger = configurar_logger("/home/utnso/Repositorios/tp-2019-1c-One-more-time//KERNEL/log/KERNEL.log", "Kernel");
+//	logger = configurar_logger("../log/KERNEL.log", "Kernel");
+	logger = configurar_logger("/home/utnso/Repositorios/tp-2019-1c-One-more-time//KERNEL/log/KERNEL.log", "Kernel");
 
 	/* 2. Configuración */
-	cargar_configuracion_kernel("../config/KERNEL.config");
-//	cargar_configuracion_kernel("/home/utnso/Repositorios/tp-2019-1c-One-more-time//KERNEL/config/KERNEL.config");
+//	cargar_configuracion_kernel("../config/KERNEL.config");
+	cargar_configuracion_kernel("/home/utnso/Repositorios/tp-2019-1c-One-more-time//KERNEL/config/KERNEL.config");
 
 	/* 3. Inicializar variables */
 	inicializar();
@@ -37,10 +37,12 @@ int main() {
 	crear_hilo_refresh();
 
 	/* 8. Planificador */
-	crear_hilo_planificador();
+//	crear_hilo_planificador();
 
 	/* 9. Metricas */
 	crear_hilo_metricas();
+
+	planificar();
 
 	pthread_join(thread_consola, NULL);
 
@@ -67,6 +69,7 @@ void inicializar_semaforos() {
 
 	sem_init(&sem_multiprog, 0, kernel_conf.multiprocesamiento);
 	pthread_mutex_init(&mutex_metadata, NULL);
+	pthread_mutex_init(&mutex_memoria_sc, NULL);
 }
 
 void inicializar_listas() {
