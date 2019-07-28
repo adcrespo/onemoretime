@@ -39,10 +39,8 @@ int proceso_select(char* tabla, int clave, char** buffer, int* largo_buffer) {
 	int paginaTabla = getPaginaForKey(tabla, clave);
 	if(paginaTabla>=0){
 		*buffer = leer_bytes_spa(tabla,0,paginaTabla*frame_spa_size,frame_spa_size);
-		t_registro *reg = descomponer_registro(*buffer);
-		*largo_buffer = sizeof(t_registro);
-		loggear(logger,LOG_LEVEL_ERROR,"El buffer de select es %s (pagina %d)",reg->value, paginaTabla);
 		if(*buffer[0]!=0x00){
+			*largo_buffer = sizeof(unsigned long long)+sizeof(int)+tamanio_value;
 			pthread_mutex_unlock(&journalingMutexSelect);
 			return 0;
 		}

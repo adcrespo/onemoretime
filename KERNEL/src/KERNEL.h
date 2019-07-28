@@ -38,11 +38,15 @@ pthread_mutex_t mutex_metadata;
 pthread_mutex_t mutex_memoria_sc;
 pthread_mutex_t mutex_memoria_shc;
 pthread_mutex_t mutex_memoria_ev;
-pthread_mutex_t mutex_lista_new;
-pthread_mutex_t mutex_lista_ready ;
-pthread_mutex_t mutex_lista_exec;
-pthread_mutex_t mutex_lista_exit;
+
 pthread_mutex_t mutex_LISTA_CONN;
+
+// Listas planificacion
+pthread_mutex_t mutex_new;
+pthread_mutex_t mutex_ready;
+pthread_mutex_t mutex_exec;
+pthread_mutex_t mutex_exit;
+
 
 /* Definición de tipos */
 sem_t sem_new, sem_ready, sem_exec, sem_exit, sem_multiprog;

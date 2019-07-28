@@ -72,12 +72,13 @@ void inicializar_semaforos() {
 	pthread_mutex_init(&mutex_memoria_shc, NULL);
 	pthread_mutex_init(&mutex_memoria_ev, NULL);
 
-	pthread_mutex_init(&mutex_lista_new, NULL);
-	pthread_mutex_init(&mutex_lista_ready, NULL);
-	pthread_mutex_init(&mutex_lista_exec, NULL);
-	pthread_mutex_init(&mutex_lista_exit, NULL);
-
 	pthread_mutex_init(&mutex_LISTA_CONN, NULL);
+
+	pthread_mutex_init(&mutex_new, NULL);
+	pthread_mutex_init(&mutex_ready, NULL);
+	pthread_mutex_init(&mutex_exec, NULL);
+	pthread_mutex_init(&mutex_exit, NULL);
+
 }
 
 void inicializar_listas() {
