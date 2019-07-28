@@ -16,17 +16,6 @@ void* planificar() {
 		sem_wait(&sem_multiprog);
 		sem_wait(&sem_ready);
 
-//		imprimir_listas();
-
-//		t_pcb* pcb = sacar_proceso_rr(lista_ready);
-//		log_info(logger, "PLANIFIC| Proceso N°: %d.", pcb->id_proceso);
-//
-//		log_info(logger, "PLANIFIC| Proceso %d pasa a EXEC", pcb->id_proceso);
-//		agregar_proceso(pcb, lista_exec, &sem_exec);
-//
-//		procesar_pcb(pcb);
-
-
 //		aplicar_algoritmo_rr();
 
 

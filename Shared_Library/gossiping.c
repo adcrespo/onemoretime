@@ -57,11 +57,11 @@ int connect_to_server_goss(char* IP, char* PUERTO, int proceso, int flag, t_log 
 	if(conectarseAServidor_w_to(socket, IP, atoi(PUERTO), logger)<=0)
 		return -1;
 
-	loggear(logger, LOG_LEVEL_INFO, "INICIO Handshake(%d)...", proceso);
+	loggear(logger, LOG_LEVEL_INFO, "GOSSIP| INICIO Handshake(%d)...", proceso);
 	enviarMensaje(mem, handshake, 0, NULL, socket, logger, proceso);
 	t_mensaje* msg = recibirMensaje(socket, logger);
 	destruirMensaje(msg);
-	loggear(logger, LOG_LEVEL_INFO, "FIN Handshake(%d)", proceso);
+	loggear(logger, LOG_LEVEL_INFO, "GOSSIP| FIN Handshake(%d)", proceso);
 	return socket;
 }
 
@@ -215,8 +215,8 @@ int crearListaSeedsStruct(char tipoProceso,char *MEM_CONF_IP,char *MEM_CONF_PUER
 {
 	int i=0;
 
-	loggear(logger,LOG_LEVEL_INFO,"Creando lista de SEEDS/PUERTOS...");
-	loggear(logger,LOG_LEVEL_INFO,"TIPO_PROCESO: %d", tipoProceso);
+	loggear(logger,LOG_LEVEL_INFO,"GOSSIP| Creando lista de SEEDS/PUERTOS...");
+	loggear(logger,LOG_LEVEL_INFO,"GOSSIP| TIPO_PROCESO: %d", tipoProceso);
 	if(tipoProceso == gossiping)
 	{
 		actualizaListaSeedConfigStruct(LISTA_CONN,getLocalIp(MEM_CONF_IP),MEM_CONF_PUERTO,MEM_CONF_NUMERO_MEMORIA,logger);
@@ -265,7 +265,7 @@ char *armarMensajeListaSEEDSStruct(t_log *logger,t_list *LISTA_CONN)
 		j++;
 	}
 
-	loggear(logger,LOG_LEVEL_INFO,"MSJ_GOSSIPING: %s", msj);
+	loggear(logger,LOG_LEVEL_INFO,"GOSSIP| MSJ_GOSSIPING: %s", msj);
 
 	return msj;
 }
@@ -298,7 +298,7 @@ int procesarMsjGossipingStruct(char *mensaje, char *primerParser, char *segundoP
 			}
 			else
 			{
-				loggear(logger,LOG_LEVEL_INFO,"ERROR PROCESO MSJ GOSSIPING");
+				loggear(logger,LOG_LEVEL_INFO,"GOSSIP| ERROR PROCESO MSJ GOSSIPING");
 				return -1;
 			}
 
@@ -310,7 +310,7 @@ int procesarMsjGossipingStruct(char *mensaje, char *primerParser, char *segundoP
 			}
 			else
 			{
-				loggear(logger,LOG_LEVEL_INFO,"ERROR PROCESO MSJ GOSSIPING");
+				loggear(logger,LOG_LEVEL_INFO,"GOSSIP| ERROR PROCESO MSJ GOSSIPING");
 				return -1;
 			}
 			if(parserIpPuerto[2] != NULL)
@@ -320,11 +320,11 @@ int procesarMsjGossipingStruct(char *mensaje, char *primerParser, char *segundoP
 			}
 			else
 			{
-				loggear(logger,LOG_LEVEL_INFO,"ERROR PROCESO MSJ GOSSIPING");
+				loggear(logger,LOG_LEVEL_INFO,"GOSSIP| ERROR PROCESO MSJ GOSSIPING");
 				return -1;
 			}
 
-			loggear(logger,LOG_LEVEL_INFO,"MENSAJE_RECIBIDO: NUMERO_MEMORIA: %d | IP: %s | PUERTO: %s", numMemoria,ip,puerto);
+			loggear(logger,LOG_LEVEL_INFO,"GOSSIP| MENSAJE_RECIBIDO: NUMERO_MEMORIA: %d | IP: %s | PUERTO: %s", numMemoria,ip,puerto);
 
 			//AGREGAR A LISTA LOCAL DE PROCESO DE MSJ
 			pthread_mutex_lock(&mutexGossiping);
@@ -337,7 +337,7 @@ int procesarMsjGossipingStruct(char *mensaje, char *primerParser, char *segundoP
 	}
 	else
 	{
-		loggear(logger,LOG_LEVEL_INFO,"ERROR PROCESO MSJ GOSSIPING");
+		loggear(logger,LOG_LEVEL_INFO,"GOSSIP| ERROR PROCESO MSJ GOSSIPING");
 		return-1;
 	}
 
@@ -355,11 +355,11 @@ void processGossipingStruct(t_log *logger,t_list *LISTA_CONN,char tipoProceso) {
 
 	if(pthread_mutex_trylock(&mutexprocessGossiping))
 	{
-		loggear(logger,LOG_LEVEL_INFO,"ERROR_MUTEX_GOSSIPING");
+		loggear(logger,LOG_LEVEL_INFO,"GOSSIP| ERROR_MUTEX_GOSSIPING");
 		return;
 	}
 
-	loggear(logger,LOG_LEVEL_INFO,"Se inicio proceso Gossiping...");
+	loggear(logger,LOG_LEVEL_INFO,"GOSSIP| Se inicio proceso Gossiping...");
 
 	pthread_mutex_lock(&mutexGossiping);
 	mensaje= armarMensajeListaSEEDSStruct(logger,LISTA_CONN);
@@ -379,10 +379,10 @@ void processGossipingStruct(t_log *logger,t_list *LISTA_CONN,char tipoProceso) {
 		seed = list_get(LISTA_CONN,i);
 		pthread_mutex_unlock(&mutexGossiping);
 
-		loggear(logger,LOG_LEVEL_DEBUG,"CONEXION LISTA SEEDS NUMERO: %d",i);
-		loggear(logger,LOG_LEVEL_INFO,"LISTA_MEMORY_NUMBER_SEEDS: %d", seed->numeroMemoria);
-		loggear(logger,LOG_LEVEL_INFO,"LISTA_IP_SEEDS: %s", seed->ip);
-		loggear(logger,LOG_LEVEL_INFO,"LISTA_PUERTO_SEEDS: %s", seed->puerto);
+		loggear(logger,LOG_LEVEL_DEBUG,"GOSSIP| CONEXION LISTA SEEDS NUMERO: %d",i);
+		loggear(logger,LOG_LEVEL_INFO,"GOSSIP| LISTA_MEMORY_NUMBER_SEEDS: %d", seed->numeroMemoria);
+		loggear(logger,LOG_LEVEL_INFO,"GOSSIP| LISTA_IP_SEEDS: %s", seed->ip);
+		loggear(logger,LOG_LEVEL_INFO,"GOSSIP| LISTA_PUERTO_SEEDS: %s", seed->puerto);
 
 		socketReceptor=connect_to_server_goss(seed->ip,seed->puerto,mem,gossiping,logger);
 
@@ -394,9 +394,9 @@ void processGossipingStruct(t_log *logger,t_list *LISTA_CONN,char tipoProceso) {
 			envioMsj = enviarMensaje(mem,gossipingMsg,strlen(mensaje)+1,mensaje,socketReceptor,logger,mem);
 
 			if(envioMsj < 1 )
-				loggear(logger,LOG_LEVEL_INFO,"NO SE PUDO ENVIAR MSJ %d",envioMsj);
+				loggear(logger,LOG_LEVEL_INFO,"GOSSIP| NO SE PUDO ENVIAR MSJ %d",envioMsj);
 			else
-				loggear(logger,LOG_LEVEL_INFO,"MSJ ENVIADO CON EXITO %d",envioMsj);
+				loggear(logger,LOG_LEVEL_INFO,"GOSSIP| MSJ ENVIADO CON EXITO %d",envioMsj);
 
 			//RECIBIR_LISTA_SEEDS
 			msjRecibido = recibirMensaje(socketReceptor,logger);
@@ -404,7 +404,7 @@ void processGossipingStruct(t_log *logger,t_list *LISTA_CONN,char tipoProceso) {
 			//PROCESAR_LISTA_SEEDS
 			if(msjRecibido != NULL)
 			{
-				loggear(logger,LOG_LEVEL_INFO,"MSJ RECIBIDO CON EXITO %d",envioMsj);
+				loggear(logger,LOG_LEVEL_INFO,"GOSSIP| MSJ RECIBIDO CON EXITO %d",envioMsj);
 				procesarMsjGossipingStruct(msjRecibido->content,"|",":",logger,LISTA_CONN);
 				destruirMensaje(msjRecibido);
 				pthread_mutex_lock(&mutexGossiping);
@@ -413,7 +413,7 @@ void processGossipingStruct(t_log *logger,t_list *LISTA_CONN,char tipoProceso) {
 			}
 			else
 			{
-				loggear(logger,LOG_LEVEL_INFO,"ERROR MSJ %d",envioMsj);
+				loggear(logger,LOG_LEVEL_INFO,"GOSSIP| ERROR MSJ %d",envioMsj);
 				pthread_mutex_lock(&mutexGossiping);
 				actualizarEstadoListaStruct(LISTA_CONN,logger,i,DESCONECTADO);
 				pthread_mutex_unlock(&mutexGossiping);
@@ -423,7 +423,7 @@ void processGossipingStruct(t_log *logger,t_list *LISTA_CONN,char tipoProceso) {
 		}
 		else
 		{
-			loggear(logger,LOG_LEVEL_INFO,"FALLÓ_CONEXION: %d", socketReceptor);
+			loggear(logger,LOG_LEVEL_INFO,"GOSSIP| FALLÓ_CONEXION: %d", socketReceptor);
 			pthread_mutex_lock(&mutexGossiping);
 			actualizarEstadoListaStruct(LISTA_CONN,logger,i,DESCONECTADO);
 			pthread_mutex_unlock(&mutexGossiping);
