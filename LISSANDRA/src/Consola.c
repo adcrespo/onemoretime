@@ -16,7 +16,7 @@ void *crear_consola() {
 	rl_attempted_completion_function = character_name_completion;
 
 	while (1) {
-		int i;
+		int i = 0;
 		line = readline("Ingrese un comando> ");
 		if (line) {
 			add_history(line);
@@ -118,7 +118,8 @@ void *crear_consola() {
 			} else {
 				printf("Registro insertado correctamente.\n");
 			}
-
+			free(comando[4]);
+			comando[4] = NULL;
 			free(insert);
 
 			break;
@@ -209,14 +210,10 @@ void *crear_consola() {
 			exit_gracefully(EXIT_SUCCESS);
 			break;
 		default:
-			;
 			printf("No se reconoce el comando %s .\n", comando[0]);
 		}
-
-		for(int j=0;comando[j]!=NULL;j++){
-			free(comando[j]);
-		}
-
+		for(i=0;comando[i]!=NULL;i++)
+			free(comando[i]);
 		if(comando) free(comando);
 	}
 	return 0;
