@@ -13,19 +13,21 @@ void* planificar() {
 	while(1) {
 
 		// Encuentro nuevo proceso en READY
+		log_info(logger, "PLANIFIC| Iniciando thread");
 		sem_wait(&sem_multiprog);
 		sem_wait(&sem_ready);
-
+		log_info(logger, "PLANIFIC| Semaforos OK");
 //		aplicar_algoritmo_rr();
 
+		pthread_t thread_planificacion;
+//		pthread_create(&thread_planificacion, NULL, aplicar_algoritmo_rr(), NULL);
+		int hilo_algoritmo = pthread_create(&thread_planificacion, NULL, aplicar_algoritmo_rr, NULL);
 
-		pthread_create(&thread_planificacion, NULL, aplicar_algoritmo_rr(), NULL);
-//		int hilo_algoritmo = pthread_create(&thread_planificacion, NULL, aplicar_algoritmo_rr(), NULL);
-
-//		if (hilo_algoritmo == -1) {
-//			log_error(logger, "THREAD|No se pudo generar el hilo para el algoritmo.");
-//		}
+		if (hilo_algoritmo == -1) {
+			log_error(logger, "THREAD|No se pudo generar el hilo para el algoritmo.");
+		}
 		log_info(logger, "THREAD|Se generó el hilo para el algoritmo.");
+		pthread_join(thread_planificacion,(void**)NULL);
 	}
 }
 
@@ -42,7 +44,9 @@ void crear_proceso(char* line,t_request* request) {
 
 	/* 2. Agregar a NEW */
 	log_info(logger, "PLANIFIC| Proceso %d generado", id_proceso);
+	pthread_mutex_lock(&mutex_lista_new);
 	agregar_proceso(proceso, lista_new, &sem_new);
+	pthread_mutex_unlock(&mutex_lista_new);
 	log_info(logger, "PLANIFIC| Proceso %d agregado a NEW", id_proceso);
 	imprimir_listas(); // SACAR
 
@@ -62,8 +66,14 @@ void crear_proceso(char* line,t_request* request) {
 	imprimir_pcb(proceso);
 
 	/* 4. Pasar PCB de NEW a READY */
+	pthread_mutex_lock(&mutex_lista_new);
 	proceso = sacar_proceso(id_proceso, lista_new, &sem_new);
+	pthread_mutex_unlock(&mutex_lista_new);
+
+	pthread_mutex_lock(&mutex_lista_ready);
 	agregar_proceso(proceso, lista_ready, &sem_ready);
+	pthread_mutex_unlock(&mutex_lista_ready);
+
 	log_info(logger, "PLANIFIC| Proceso %d de NEW a READY.", id_proceso);
 
 }
@@ -88,7 +98,12 @@ t_pcb* sacar_proceso(int id, t_list* lista, sem_t* sem) {
 t_pcb* sacar_proceso_rr(t_list* lista) {
 
 	log_info(logger, "PLANIFIC| Buscando PCB por ROUND ROBIN");
-	return (t_pcb *) list_remove(lista_ready, 0);
+
+//	pthread_mutex_lock(&mutex_lista_ready);
+	t_pcb *pcb = list_remove(lista_ready, 0);
+//	pthread_mutex_unlock(&mutex_lista_ready);
+
+	return pcb;
 
 //	int buscar_primer_elemento(t_pcb* pcb) {
 //		return pcb != NULL;
@@ -154,9 +169,13 @@ int procesar_pcb(t_pcb* pcb) {
 
 		// Si el request falla, se termina el proceso
 		if(resultado < 0) {
+			pthread_mutex_lock(&mutex_lista_exec);
 			sacar_proceso(pcb->id_proceso, lista_exec, &sem_exec);
+			pthread_mutex_unlock(&mutex_lista_exec);
 			sem_post(&sem_multiprog);
+			pthread_mutex_lock(&mutex_lista_exit);
 			agregar_proceso(pcb, lista_exit, &sem_exit);
+			pthread_mutex_unlock(&mutex_lista_exit);
 			log_info(logger, "PLANIFIC| Proceso %d pasa a EXIT", pcb->id_proceso);
 			return EXIT_FAILURE;
 		}
@@ -171,15 +190,22 @@ int procesar_pcb(t_pcb* pcb) {
 	}
 
 	// Saco proceso de EXEC y evaluo si finalizó o vuelve a READY
+	pthread_mutex_lock(&mutex_lista_exec);
 	sacar_proceso(pcb->id_proceso, lista_exec, &sem_exec);
+	pthread_mutex_unlock(&mutex_lista_exec);
+
 	sem_post(&sem_multiprog);
 
 	if (pcb->program_counter == pcb->cantidad_request) {
 
+		pthread_mutex_lock(&mutex_lista_exit);
 		agregar_proceso(pcb, lista_exit, &sem_exit);
+		pthread_mutex_unlock(&mutex_lista_exit);
 		log_info(logger, "PLANIFIC| Proceso %d pasa a EXIT", pcb->id_proceso);
 	} else {
+		pthread_mutex_lock(&mutex_lista_ready);
 		agregar_proceso(pcb, lista_ready, &sem_ready);
+		pthread_mutex_unlock(&mutex_lista_ready);
 		log_info(logger, "PLANIFIC| Proceso %d vuelve a READY", pcb->id_proceso);
 	}
 
@@ -351,9 +377,9 @@ int ejecutar_request(char* linea, int id_proceso) {
 			if (resultado == 0) {
 //				char** buff = string_from_format("DESCRIBE %s", req_create->nombreTabla);
 //				log_info(logger, "PLANIFIC| Solicitando: %s", buff);
-				pthread_mutex_lock(&mutex_metadata);
+//				pthread_mutex_lock(&mutex_metadata);
 				describe_global(cliente);
-				pthread_mutex_unlock(&mutex_metadata);
+//				pthread_mutex_unlock(&mutex_metadata);
 			}
 
 			free(req_create);
@@ -453,7 +479,9 @@ int ejecutar_request(char* linea, int id_proceso) {
 
 
 void* aplicar_algoritmo_rr() {
+	pthread_mutex_lock(&mutex_lista_ready);
 	t_pcb* pcb = sacar_proceso_rr(lista_ready);
+	pthread_mutex_unlock(&mutex_lista_ready);
 
 	if (pcb == NULL) {
 		log_info(logger, "PLANIFIC| No se encontró el PCB");
@@ -461,7 +489,10 @@ void* aplicar_algoritmo_rr() {
 		log_info(logger, "PLANIFIC| Proceso %d removido", pcb->id_proceso);
 	}
 
+	pthread_mutex_lock(&mutex_lista_exec);
 	agregar_proceso(pcb, lista_exec, &sem_exec);
+	pthread_mutex_unlock(&mutex_lista_exec);
+
 	imprimir_listas(); // SACAR
 
 	log_info(logger, "PLANIFIC| Proceso %d pasa a EXEC", pcb->id_proceso);
@@ -473,7 +504,9 @@ void* aplicar_algoritmo_rr() {
 	imprimir_listas();
 //	return NULL;
 //	return (void*)EXIT_SUCCESS;
-	return (void*)resultado;
+//	return (void*)resultado;
+	pthread_exit(NULL);
+//	return NULL;
 }
 
 void imprimir_listas() {

@@ -36,7 +36,9 @@ t_tipoSeeds* obtener_memoria_lista(int numero){
 
 	log_info(logger, "Buscando memoria %d en LISTA_CONN", numero);
 //	return list_find(LISTA_CONN, &findMemory);
+	pthread_mutex_lock(&mutex_LISTA_CONN);
 	t_tipoSeeds* mem = list_find(LISTA_CONN, (void *)findMemory);
+	pthread_mutex_unlock(&mutex_LISTA_CONN);
 
 	if (mem != NULL) {
 		log_info(logger, "MEMMMMMMM | Memoria devuelta por FIND %d", mem->numeroMemoria);
@@ -160,7 +162,9 @@ int get_memory_hash(int key) {
 			return (seed->estado == 1);
 		}
 
+		pthread_mutex_lock(&mutex_LISTA_CONN);
 		t_list *conectadas = list_filter(LISTA_CONN, (void *)buscar);
+		pthread_mutex_unlock(&mutex_LISTA_CONN);
 
 		int size_conectadas = (conectadas == NULL) ? 0 : list_size(conectadas);
 

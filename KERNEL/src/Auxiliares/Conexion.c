@@ -49,23 +49,32 @@ void enviar_journal_sc() {
 }
 
 void enviar_journal_shc() {
+	pthread_mutex_lock(&mutex_memoria_shc);
 	int size_shc = list_size(lista_criterio_shc);
+//	pthread_mutex_unlock(&mutex_memoria_shc);
 	t_tipoSeeds *memoria;
 	for (int i = 0; i < size_shc; i++) {
+//		pthread_mutex_lock(&mutex_memoria_shc);
 		memoria = list_get(lista_criterio_shc, i);
+//		pthread_mutex_unlock(&mutex_memoria_shc);
 		enviar_mensaje_journal(memoria);
-
 	}
+	pthread_mutex_unlock(&mutex_memoria_shc);
 }
 
 void enviar_journal_ev() {
+	pthread_mutex_unlock(&mutex_memoria_ev);
 	int size_ev = list_size(lista_criterio_ev);
+	pthread_mutex_unlock(&mutex_memoria_ev);
 	t_tipoSeeds *memoria;
 	for (int i = 0; i < size_ev; i++) {
+		pthread_mutex_unlock(&mutex_memoria_ev);
 		memoria = list_get(lista_criterio_ev, i);
+		pthread_mutex_unlock(&mutex_memoria_ev);
 		enviar_mensaje_journal(memoria);
 
 	}
+//	pthread_mutex_unlock(&mutex_memoria_ev);
 }
 
 void enviar_mensaje_journal(t_tipoSeeds *memoria) {

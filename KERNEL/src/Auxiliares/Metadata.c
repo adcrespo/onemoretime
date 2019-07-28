@@ -39,7 +39,9 @@ void guardar_metadata(char *buffer) {
 	strcpy(metadata->tipoConsistencia, elementos[1]);
 	metadata->particiones = atoi(elementos[2]);
 	metadata->compactationTime = atoi(elementos[3]);
+	pthread_mutex_lock(&mutex_metadata);
 	list_add(lista_metadata, metadata);
+	pthread_mutex_unlock(&mutex_metadata);
 //	pthread_mutex_unlock(&mutex_metadata);
 
 	log_info(logger, "REFRESH| Cantidad de Metadatas: %d", lista_metadata->elements_count);
@@ -54,6 +56,7 @@ void guardar_metadata(char *buffer) {
 }
 
 void limpiar_metadata() {
+	pthread_mutex_lock(&mutex_metadata);
 	if (lista_metadata != NULL) {
 //		pthread_mutex_lock(&mutex_metadata);
 		int size_metadata = list_size(lista_metadata);
@@ -64,6 +67,7 @@ void limpiar_metadata() {
 		list_clean(lista_metadata);
 //		pthread_mutex_unlock(&mutex_metadata);
 	}
+	pthread_mutex_unlock(&mutex_metadata);
 }
 
 void describe_global(int cliente) {

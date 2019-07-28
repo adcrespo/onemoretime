@@ -13,12 +13,12 @@
 int main() {
 
 	/* 1. Logger */
-//	logger = configurar_logger("../log/KERNEL.log", "Kernel");
-	logger = configurar_logger("/home/utnso/Repositorios/tp-2019-1c-One-more-time//KERNEL/log/KERNEL.log", "Kernel");
+	logger = configurar_logger("../log/KERNEL.log", "Kernel");
+//	logger = configurar_logger("/home/utnso/Repositorios/tp-2019-1c-One-more-time//KERNEL/log/KERNEL.log", "Kernel");
 
 	/* 2. Configuración */
-//	cargar_configuracion_kernel("../config/KERNEL.config");
-	cargar_configuracion_kernel("/home/utnso/Repositorios/tp-2019-1c-One-more-time//KERNEL/config/KERNEL.config");
+	cargar_configuracion_kernel("../config/KERNEL.config");
+//	cargar_configuracion_kernel("/home/utnso/Repositorios/tp-2019-1c-One-more-time//KERNEL/config/KERNEL.config");
 
 	/* 3. Inicializar variables */
 	inicializar();
@@ -71,6 +71,13 @@ void inicializar_semaforos() {
 	pthread_mutex_init(&mutex_memoria_sc, NULL);
 	pthread_mutex_init(&mutex_memoria_shc, NULL);
 	pthread_mutex_init(&mutex_memoria_ev, NULL);
+
+	pthread_mutex_init(&mutex_lista_new, NULL);
+	pthread_mutex_init(&mutex_lista_ready, NULL);
+	pthread_mutex_init(&mutex_lista_exec, NULL);
+	pthread_mutex_init(&mutex_lista_exit, NULL);
+
+	pthread_mutex_init(&mutex_LISTA_CONN, NULL);
 }
 
 void inicializar_listas() {
