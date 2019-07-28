@@ -233,7 +233,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 
 			// BUSCANDO MEMORIA
 			log_info(logger, "Buscando memoria del criterio %s", tabla->tipoConsistencia);
-			memoria = get_memoria_por_criterio(tabla->tipoConsistencia);
+			memoria = get_memoria_por_criterio(tabla->tipoConsistencia, req_select->key);
 			cliente = conectar_a_memoria(memoria);
 
 			// REQUEST
@@ -297,7 +297,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 			log_info(logger, "PLANIFIC| INSERT: %s, %llu, %d, %s", req_insert->nombreTabla, req_insert->timestamp, req_insert->key, req_insert->value);
 
 			//TODO: FALTA BUSCAR MEMORIA POR CRITERIO Y CONECTARSE
-			memoria = get_memoria_por_criterio(tabla->tipoConsistencia);
+			memoria = get_memoria_por_criterio(tabla->tipoConsistencia, req_insert->key);
 
 			log_info(logger, "VALIDACION| MEMORIA SC: %d", memoria_sc->numeroMemoria);
 //			memoria = obtener_memoria_random(); // cambiar para hacerlo dinamico para los criterios

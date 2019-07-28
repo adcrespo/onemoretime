@@ -17,7 +17,6 @@
 #include "parser.h"
 #include "Auxiliares/Logueo.h"
 #include "Auxiliares/Consola.h"
-//#include "Auxiliares/Planificador.h"
 #include "Auxiliares/Metricas.h"
 #include "Auxiliares/Configuracion.h"
 #include "Auxiliares/Conexion.h"
@@ -29,7 +28,6 @@
 #define MAX_PATH 50
 
 /* Variables globales */
-//t_log* logger;
 pthread_t thread_consola;
 pthread_t thread_gossiping;
 pthread_t inotify;
@@ -38,6 +36,8 @@ pthread_t thread_planificacion;
 pthread_t thread_metricas;
 pthread_mutex_t mutex_metadata;
 pthread_mutex_t mutex_memoria_sc;
+pthread_mutex_t mutex_memoria_shc;
+pthread_mutex_t mutex_memoria_ev;
 
 /* Definición de tipos */
 sem_t sem_new, sem_ready, sem_exec, sem_exit, sem_multiprog;
@@ -53,7 +53,6 @@ char** lista_puertos;
 
 
 /* Declaración de Procesos*/
-//void cargar_configuracion_kernel();
 void inicializar();
 void inicializar_semaforos();
 void inicializar_listas();

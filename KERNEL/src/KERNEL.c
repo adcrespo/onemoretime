@@ -53,8 +53,7 @@ int main() {
 void inicializar() {
 
 	cont_id_procesos = 0;
-//	memoria_sc = -1;
-//	memoria_sc = malloc(sizeof(t_tipoSeeds));
+	hashdictionary = dictionary_create();
 
 	inicializar_listas();
 	inicializar_semaforos();
@@ -70,6 +69,8 @@ void inicializar_semaforos() {
 	sem_init(&sem_multiprog, 0, kernel_conf.multiprocesamiento);
 	pthread_mutex_init(&mutex_metadata, NULL);
 	pthread_mutex_init(&mutex_memoria_sc, NULL);
+	pthread_mutex_init(&mutex_memoria_shc, NULL);
+	pthread_mutex_init(&mutex_memoria_ev, NULL);
 }
 
 void inicializar_listas() {
