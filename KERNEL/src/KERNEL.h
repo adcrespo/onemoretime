@@ -32,7 +32,7 @@ pthread_t thread_consola;
 pthread_t thread_gossiping;
 pthread_t inotify;
 pthread_t thread_refresh;
-
+pthread_t thread_planificador;
 pthread_t thread_metricas;
 pthread_mutex_t mutex_metadata;
 pthread_mutex_t mutex_memoria_sc;

@@ -145,16 +145,16 @@ void crear_hilo_refresh() {
 	log_info(logger, "THREAD| Hilo Refresh OK.");
 }
 
-//void crear_hilo_planificador() {
-//
-//	int hilo_planificador = pthread_create(&thread_planificacion, NULL,
-//			planificar, NULL);
-//	if (hilo_planificador == -1) {
-//		log_error(logger,
-//				"THREAD| Error al generar hilo Planificador.");
-//	}
-//	log_info(logger, "THREAD| Hilo Planificador OK.");
-//}
+void crear_hilo_planificador() {
+
+	int hilo_planificador = pthread_create(&thread_planificador, NULL,
+			planificar, NULL);
+	if (hilo_planificador == -1) {
+		log_error(logger,
+				"THREAD| Error al generar hilo Planificador.");
+	}
+	log_info(logger, "THREAD| Hilo Planificador OK.");
+}
 
 void crear_hilo_metricas() {
 

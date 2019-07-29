@@ -37,12 +37,12 @@ int main() {
 	crear_hilo_refresh();
 
 	/* 8. Planificador */
-//	crear_hilo_planificador();
+	crear_hilo_planificador();
 
 	/* 9. Metricas */
 	crear_hilo_metricas();
 
-	planificar();
+	//planificar();
 
 	pthread_join(thread_consola, NULL);
 
