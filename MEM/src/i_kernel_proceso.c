@@ -12,6 +12,7 @@
 #include "proceso.h"
 #include "connection.h"
 #include "journaling.h"
+#include "error.h"
 
 int proceso_describe_global(char* tabla,int socketKER, fd_set* set_master){
 	//DECLARACIONES - INICIALIZACIONES
@@ -19,7 +20,6 @@ int proceso_describe_global(char* tabla,int socketKER, fd_set* set_master){
 	int largo_content = 0;
 	char *content = NULL;
 	int cantidad;
-	int longAcum = 0;
 	t_mensaje* mensajeDescribe=NULL;
 
 	//SEM_MUTEX
