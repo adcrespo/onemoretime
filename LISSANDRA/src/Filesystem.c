@@ -1044,30 +1044,30 @@ t_list *ObtenerRegistrosArchivo(char *tabla, char *archivo, char *extension) {
 	return NULL;
 }
 
-//int ContarTablas() {
-//	DIR *dir;
-//	struct dirent *entry;
-//	int count = 0;
-//
-//	char *path = string_from_format("%s", rutaTablas);
-//
-//	if ((dir = opendir(path)) == NULL) {
-//		perror("openndir() error");
-//	}
-//
-//	while ((entry = readdir(dir)) != NULL) {
-//		if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, "..")) {
-//
-//		} else {
-//			count++;
-//		}
-//	}
-//
-//	free(entry);
-//	free(dir);
-//	free(path);
-//	return count;
-//}
+int ContarTablas() {
+	DIR *dir;
+	struct dirent *entry;
+	int count = 0;
+
+	char *path = string_from_format("%s", rutaTablas);
+
+	if ((dir = opendir(path)) == NULL) {
+		perror("openndir() error");
+	}
+
+	while ((entry = readdir(dir)) != NULL) {
+		if (!strcmp(entry->d_name, ".") || !strcmp(entry->d_name, "..")) {
+
+		} else {
+			count++;
+		}
+	}
+
+	closedir(dir);
+	free(entry);
+	free(path);
+	return count;
+}
 
 void CargarTablas(){
 	DIR *dir;

@@ -130,9 +130,16 @@ int cantidad_request(char* buffer) {
 
 t_tipoSeeds* obtener_memoria_random() {
 
-	t_tipoSeeds *memory = get_memoria_conectada();;
-	log_info(logger, "REFRESH| Numero Memoria: %d", memory->numeroMemoria);
+//	t_tipoSeeds *memory = get_memoria_conectada();;
+//	log_info(logger, "REFRESH| Numero Memoria: %d", memory->numeroMemoria);
+//	return memory;
+	int n;
+	int size_ev = list_size(lista_criterio_ev);
+	n = rand() % size_ev;
+	t_tipoSeeds *memory;
+	memory = list_get(lista_criterio_ev, n);
 	return memory;
+
 }
 
 void retardo_ejecucion() {

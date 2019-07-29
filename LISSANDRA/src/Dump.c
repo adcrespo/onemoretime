@@ -95,7 +95,7 @@ void DumpearTabla(t_list *lista, char *nombre)
 			disponibleActual = tamanio_bloques;
 			//bloqueActual ++;
 			disponibleActual -= lenLinea;
-			free(rutaActual);
+			rutaActual = "";
 			rutaActual = string_from_format("%s%d.bin", rutaBloques,
 					bloqueActual);
 			GuardarEnBloque(linea, rutaActual);

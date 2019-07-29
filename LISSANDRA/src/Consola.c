@@ -157,7 +157,8 @@ void *crear_consola() {
 			printf("CONSOLA: Se ingresó comando DESCRIBE \n");
 			if (comando[1] == NULL) {
 				printf("Obteniendo metadata de todas las tablas.\n");
-				ObtenerMetadataCompleto();
+				int tablas = ContarTablas();
+				(tablas != 0) ? ObtenerMetadataCompleto() : printf("No hay tablas en el filesystem.\n");
 			} else {
 				int resultExists = ExisteTabla(comando[1]);
 				char *tableName = string_new();

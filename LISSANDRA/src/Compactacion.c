@@ -375,7 +375,9 @@ int process_compactacion(char* path_tabla)
 			{
 				nBloque++;
 				int bloque = (int)list_get(lbloques,nBloque);
+				rutaActual = "";
 				rutaActual = string_from_format("%s%d.bin", rutaBloques,bloque);
+				disponibleActual = tamanio_bloques;
 				disponibleActual -= lenLinea;
 				GuardarEnBloque(linea, rutaActual);
 				loggear(logger, LOG_LEVEL_INFO, "El disponible es: %d", disponibleActual);
