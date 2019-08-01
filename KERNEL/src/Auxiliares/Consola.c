@@ -112,6 +112,8 @@ int procesar_comando(char *line) {
 				int numeroMemoria = atoi(request->parametro2);
 				int resultado = agregar_memoria_a_criterio(numeroMemoria, request->parametro4);
 				log_info(logger, "CONSOLA| Resultado: %d", resultado);
+				t_tipoSeeds* memoria = obtener_memoria_lista(numeroMemoria);
+				list_add(mem_asociadas, memoria);
 
 				break;
 

@@ -57,6 +57,7 @@ t_list *lista_criterio_shc;
 t_list *lista_criterio_ev;
 t_list *lista_metadata;
 t_list *LISTA_CONN;
+t_list *mem_asociadas;
 char** lista_ips;
 char** lista_puertos;
 
