@@ -452,8 +452,9 @@ int ejecutar_request(char* linea, int id_proceso) {
 
 			log_info(logger, "PLANIFIC| CREATE: %s, %s, %d, %d", req_create->nombreTabla, req_create->tipo_cons, req_create->num_part, req_create->comp_time);
 
-			//TODO: FALTA BUSCAR MEMORIA POR CRITERIO Y CONECTARSE
-			memoria = obtener_memoria_random(); // cambiar para hacerlo dinamico para los criterios
+			//BUSCA CUALQUIER MEMORIA CONECTADA - EL CREATE LO HACE SI O SI
+			memoria = get_memoria_conectada();
+
 			if (memoria->numeroMemoria <0)
 			{
 				log_info(logger, "PLANIFIC| CREATE: MEMORIA: %d",memoria->numeroMemoria);
@@ -497,25 +498,44 @@ int ejecutar_request(char* linea, int id_proceso) {
 			req_describe->id_proceso = id_proceso;
 			strcpy(req_describe->nombreTabla, "");
 
-			//VER SI PUEDO SELECCIONAR CUALQUIER CRITERIO
-			//memoria = get_memoria_conectada();
-			memoria = obtener_memoria_random(); // cambiar para hacerlo dinamico para los criterios
-			if (memoria->numeroMemoria <0)
-			{
-				log_info(logger, "PLANIFIC| DESCRIBE: MEMORIA: %d",memoria->numeroMemoria);
-				free (memoria);
-				return -1;
-			}
-			cliente = conectar_a_memoria(memoria);
 
 			if (string_is_empty(request->parametro1)) {
 				log_info(logger, "PLANIFIC| DESCRIBE: Describe GLOBAL.");
+
+				//TODO: VER SI SEPUEDE CON MEMORIA ASOCIADA
+				//OBTENGO UNA MEMORIA CUALQUIERA
+				memoria = get_memoria_conectada();
+				if (memoria->numeroMemoria <0)
+				{
+					log_info(logger, "PLANIFIC| DESCRIBE: MEMORIA: %d",memoria->numeroMemoria);
+					free (memoria);
+					return -1;
+				}
+				cliente = conectar_a_memoria(memoria);
 				describe_global(cliente);
+
 			} else {
 				log_info(logger, "PLANIFIC| DESCRIBE: %s", req_describe->nombreTabla);
 				log_info(logger, "PLANIFIC| DESCRIBE: Describe %s.", request->parametro1);
 				log_info(logger, "PLANIFIC| DESCRIBE: Parámetro 1: %s", request->parametro1);
 				strcpy(req_describe->nombreTabla, request->parametro1);
+
+				//OBTENGO UNA MEMORIA DE ACUERDO A LA TABLA
+				tabla = buscar_tabla(request->parametro1);
+				if(tabla == NULL) {
+					log_info(logger, "PLANIFIC| DESCRIBE: La tabla no existe.");
+					return -1;
+				}
+				int keyCualquiera=rand();
+				memoria = get_memoria_por_criterio(tabla->tipoConsistencia, keyCualquiera);
+				if (memoria->numeroMemoria <0)
+				{
+					log_info(logger, "PLANIFIC| DESCRIBE: MEMORIA: %d",memoria->numeroMemoria);
+					free (memoria);
+					return -1;
+				}
+				log_info(logger, "PLANIFIC| DESCRIBE: MEMORIA ASIGNADA: %d",memoria->numeroMemoria);
+				cliente = conectar_a_memoria(memoria);
 
 
 				log_info(logger, "PLANIFIC| DESCRIBE: Enviando a MEMORIA");
@@ -558,8 +578,11 @@ int ejecutar_request(char* linea, int id_proceso) {
 
 			log_info(logger, "PLANIFIC| DROP: OK. %s", req_drop->nombreTabla);
 
-			//VER SI PUEDO SELECCIONAR CUALQUIER MEMORIA
-			memoria = obtener_memoria_random(); // cambiar para hacerlo dinamico para los criterios
+			//SELECCIONO EL CRITERIO QUE LE CORRESPONDE POR LA TABLA, le paso cualquier KEY
+			int keyCualquiera=rand();
+			memoria = get_memoria_por_criterio(tabla->tipoConsistencia, keyCualquiera);
+			//memoria = obtener_memoria_random(); // cambiar para hacerlo dinamico para los criterios
+
 			if (memoria->numeroMemoria <0)
 			{
 				log_info(logger, "PLANIFIC| DROP: MEMORIA: %d",memoria->numeroMemoria);
