@@ -13,7 +13,7 @@
 int main() {
 
 	/* 1. Logger */
-	logger = configurar_logger_verbose("../log/KERNEL.log", "Kernel",true);
+	logger = configurar_logger("./log/KERNEL.log", "Kernel");
 //	logger = configurar_logger("/home/utnso/Repositorios/tp-2019-1c-One-more-time//KERNEL/log/KERNEL.log", "Kernel");
 
 	/* 2. Configuración */
