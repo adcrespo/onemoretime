@@ -14,6 +14,10 @@ void *crear_consola() {
 
 	int estado;
 
+	//TODO: TIEMPO QUE TARDA EN HACER GOSSIPING PARA TENER AL MENOS 1 MEMORIA CONECTADA
+	//int tiempo = 20000;
+	//sleep(tiempo / 1000);
+
 	while (1) {
 		line = readline("Ingrese un comando > ");
 

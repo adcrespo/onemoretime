@@ -134,10 +134,21 @@ t_tipoSeeds* obtener_memoria_random() {
 //	log_info(logger, "REFRESH| Numero Memoria: %d", memory->numeroMemoria);
 //	return memory;
 	int n;
+	pthread_mutex_lock(&mutex_memoria_ev);
 	int size_ev = list_size(lista_criterio_ev);
-	n = rand() % size_ev;
 	t_tipoSeeds *memory;
+	if(size_ev == 0)
+	{
+		memory = malloc(sizeof(t_tipoSeeds));
+		memset(memory, 0x00, sizeof(t_tipoSeeds));
+		memory->numeroMemoria = -1;
+		pthread_mutex_unlock(&mutex_memoria_ev);
+		return memory;
+	}
+	n = rand() % size_ev;
+
 	memory = list_get(lista_criterio_ev, n);
+	pthread_mutex_unlock(&mutex_memoria_ev);
 	return memory;
 
 }
@@ -260,6 +271,12 @@ int ejecutar_request(char* linea, int id_proceso) {
 			// BUSCANDO MEMORIA
 			log_info(logger, "Buscando memoria del criterio %s", tabla->tipoConsistencia);
 			memoria = get_memoria_por_criterio(tabla->tipoConsistencia, req_select->key);
+			if (memoria->numeroMemoria <0)
+			{
+				log_info(logger, "PLANIFIC| SELECT - MEMORIA: %d",memoria->numeroMemoria);
+				free (memoria);
+				return -1;
+			}
 			cliente = conectar_a_memoria(memoria);
 
 			// REQUEST
@@ -271,6 +288,11 @@ int ejecutar_request(char* linea, int id_proceso) {
 			log_info(logger, "PLANIFIC| RECIBIENDO SELECT");
 			t_mensaje* resultado_req_select = recibirMensaje(cliente, logger);
 
+			if(resultado_req_select->header.error==-100)
+			{
+				//TODO: HACER JOURNALLING A LAS MEMORIAS
+				//TODO: VOLVER A ENVIAR EL MSJ - SELECT
+			}
 
 			int largo_buffer = resultado_req_select->header.longitud;
 			char *buffer = malloc(largo_buffer);
@@ -299,8 +321,8 @@ int ejecutar_request(char* linea, int id_proceso) {
 		case _insert:
 			// INSERT [NOMBRE_TABLA] [KEY] “[VALUE]”
 			// INSERT TABLA1 3 “Mi nombre es Lissandra”
-
-			log_info(logger, "VALIDACION| MEMORIA SC: %d", memoria_sc->numeroMemoria);
+			if (memoria_sc != NULL)
+				log_info(logger, "VALIDACION| MEMORIA SC: %d", memoria_sc->numeroMemoria);
 
 			tabla = buscar_tabla(request->parametro1);
 
@@ -311,7 +333,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 
 			log_info(logger, "PLANIFIC| La tabla %s.", tabla->nombreTabla);
 
-			log_info(logger, "PLANIFIC|Preparando INSERT");
+			log_info(logger, "PLANIFIC| Preparando INSERT");
 			t_insert* req_insert = malloc(sizeof(t_insert));
 
 			req_insert->id_proceso = id_proceso;
@@ -324,18 +346,33 @@ int ejecutar_request(char* linea, int id_proceso) {
 
 			//TODO: FALTA BUSCAR MEMORIA POR CRITERIO Y CONECTARSE
 			memoria = get_memoria_por_criterio(tabla->tipoConsistencia, req_insert->key);
-
-			log_info(logger, "VALIDACION| MEMORIA SC: %d", memoria_sc->numeroMemoria);
+			if (memoria->numeroMemoria <0)
+			{
+				log_info(logger, "PLANIFIC| INSERT - MEMORIA: %d",memoria->numeroMemoria);
+				free (memoria);
+				return -1;
+			}
+			if (memoria_sc != NULL)
+				log_info(logger, "VALIDACION| MEMORIA SC: %d", memoria_sc->numeroMemoria);
 //			memoria = obtener_memoria_random(); // cambiar para hacerlo dinamico para los criterios
 			cliente = conectar_a_memoria(memoria);
 
 			log_info(logger, "PLANIFIC| Enviando INSERT a MEMORIA");
-			log_info(logger, "PLANIFC - INSERT| Memoria SC tiene: %d", memoria_sc->numeroMemoria);
+			if (memoria_sc != NULL)
+				log_info(logger, "PLANIFC - INSERT| Memoria SC tiene: %d", memoria_sc->numeroMemoria);
 			log_info(logger, "PLANIFC - INSERT| Memoria Asignada tiene: %d", memoria->numeroMemoria);
 			int resultado_mensaje_insert = enviarMensajeConError(kernel, insert, sizeof(t_insert), req_insert, cliente, logger, mem, 0);
 			log_info(logger, "Resultado de enviar mensaje INSERT: %d", resultado_mensaje_insert);
 
 			t_mensaje* resultado_req_insert = recibirMensaje(cliente, logger);
+
+			if(resultado_req_insert->header.error==-100)
+			{
+				//TODO: HACER JOURNALLING A LAS MEMORIAS
+				//TODO: VOLVER A ENVIAR EL MSJ - SELECT
+			}
+
+
 			resultado = resultado_req_insert->header.error;
 			log_info(logger, "PLANIFIC| Resultado de INSERT: %d", resultado);
 
@@ -363,6 +400,12 @@ int ejecutar_request(char* linea, int id_proceso) {
 
 			//TODO: FALTA BUSCAR MEMORIA POR CRITERIO Y CONECTARSE
 			memoria = obtener_memoria_random(); // cambiar para hacerlo dinamico para los criterios
+			if (memoria->numeroMemoria <0)
+			{
+				log_info(logger, "PLANIFIC| CREATE - MEMORIA: %d",memoria->numeroMemoria);
+				free (memoria);
+				return -1;
+			}
 			cliente = conectar_a_memoria(memoria);
 
 			log_info(logger, "PLANIFIC| Enviando CREATE a MEMORIA");
@@ -399,7 +442,15 @@ int ejecutar_request(char* linea, int id_proceso) {
 			req_describe->id_proceso = id_proceso;
 			strcpy(req_describe->nombreTabla, "");
 
-			memoria = obtener_memoria_random(); // ----- cambiar para hacerlo dinamico para los criterios
+//			memoria = obtener_memoria_random(); // ----- cambiar para hacerlo dinamico para los criterios
+			//memoria = get_memoria_conectada();
+			memoria = obtener_memoria_random(); // cambiar para hacerlo dinamico para los criterios
+			if (memoria->numeroMemoria <0)
+			{
+				log_info(logger, "PLANIFIC| DESCRIBE - MEMORIA: %d",memoria->numeroMemoria);
+				free (memoria);
+				return -1;
+			}
 			cliente = conectar_a_memoria(memoria);
 
 			if (string_is_empty(request->parametro1)) {
@@ -438,7 +489,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 			tabla = buscar_tabla(request->parametro1);
 
 			if(tabla == NULL) {
-				log_info(logger, "PLANIFIC| La tabla no existe.");
+				log_info(logger, "PLANIFIC| DROP - La tabla no existe.");
 				return -1;
 			}
 
@@ -452,6 +503,13 @@ int ejecutar_request(char* linea, int id_proceso) {
 
 			//TODO: FALTA BUSCAR MEMORIA POR CRITERIO Y CONECTARSE
 			memoria = obtener_memoria_random(); // cambiar para hacerlo dinamico para los criterios
+			if (memoria->numeroMemoria <0)
+			{
+				log_info(logger, "PLANIFIC| DROP - MEMORIA: %d",memoria->numeroMemoria);
+				free (memoria);
+				return -1;
+			}
+			log_info(logger, "PLANIFIC| DROP - MEMORIA ASIGNADA: %d",memoria->numeroMemoria);
 			cliente = conectar_a_memoria(memoria);
 
 			log_info(logger, "PLANIFIC| Enviando DROP a MEMORIA");
