@@ -453,7 +453,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 			log_info(logger, "PLANIFIC| CREATE: %s, %s, %d, %d", req_create->nombreTabla, req_create->tipo_cons, req_create->num_part, req_create->comp_time);
 
 			//BUSCA CUALQUIER MEMORIA CONECTADA - EL CREATE LO HACE SI O SI
-			memoria = get_memoria_conectada();
+			memoria = get_memoria_asociada();
 
 			if (memoria->numeroMemoria <0)
 			{
@@ -504,7 +504,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 
 				//TODO: VER SI SEPUEDE CON MEMORIA ASOCIADA
 				//OBTENGO UNA MEMORIA CUALQUIERA
-				memoria = get_memoria_conectada();
+				memoria = get_memoria_asociada();
 				if (memoria->numeroMemoria <0)
 				{
 					log_info(logger, "PLANIFIC| DESCRIBE: MEMORIA: %d",memoria->numeroMemoria);

@@ -78,7 +78,7 @@ void inicializar_semaforos() {
 	pthread_mutex_init(&mutex_ready, NULL);
 	pthread_mutex_init(&mutex_exec, NULL);
 	pthread_mutex_init(&mutex_exit, NULL);
-
+	pthread_mutex_init(&mutex_asociadas, NULL);
 }
 
 void inicializar_listas() {

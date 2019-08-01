@@ -25,5 +25,6 @@ int enviarjournalSegunCriterio(char *criterio);
 t_tipoSeeds* get_memoria_por_criterio(char *criterio, int key);
 int existe_memoria(t_tipoSeeds* memoria, t_list* lista);
 int get_memory_hash_SHC(int key);
+t_tipoSeeds * get_memoria_asociada();
 
 #endif /* AUXILIARES_CRITERIOS_H_ */
