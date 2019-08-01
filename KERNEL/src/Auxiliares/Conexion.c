@@ -32,8 +32,8 @@ int conectar_a_servidor(char* ip, int puerto, int proceso) {
 
 void enviar_journal_memorias() {
 	enviar_journal_sc();
-	//enviar_journal_shc();
-	//enviar_journal_ev();
+	enviar_journal_shc();
+	enviar_journal_ev();
 }
 
 void enviar_journal_sc() {
@@ -41,7 +41,10 @@ void enviar_journal_sc() {
 //	t_tipoSeeds *memoria;
 //	memoria = obtener_memoria_lista(memoria_sc->numeroMemoria);
 	if (memoria_sc != NULL) {
+		//TODO: MUTEX
+		pthread_mutex_lock(&mutex_memoria_sc);
 		enviar_mensaje_journal(memoria_sc);
+		pthread_mutex_lock(&mutex_memoria_sc);
 	} else {
 		log_info(logger, "Memoria criterio SC no encontrada");
 	}
@@ -65,16 +68,16 @@ void enviar_journal_shc() {
 void enviar_journal_ev() {
 	pthread_mutex_unlock(&mutex_memoria_ev);
 	int size_ev = list_size(lista_criterio_ev);
-	pthread_mutex_unlock(&mutex_memoria_ev);
+//	pthread_mutex_unlock(&mutex_memoria_ev);
 	t_tipoSeeds *memoria;
 	for (int i = 0; i < size_ev; i++) {
-		pthread_mutex_unlock(&mutex_memoria_ev);
+//		pthread_mutex_unlock(&mutex_memoria_ev);
 		memoria = list_get(lista_criterio_ev, i);
-		pthread_mutex_unlock(&mutex_memoria_ev);
+//		pthread_mutex_unlock(&mutex_memoria_ev);
 		enviar_mensaje_journal(memoria);
 
 	}
-//	pthread_mutex_unlock(&mutex_memoria_ev);
+	pthread_mutex_unlock(&mutex_memoria_ev);
 }
 
 void enviar_mensaje_journal(t_tipoSeeds *memoria) {
@@ -83,6 +86,17 @@ void enviar_mensaje_journal(t_tipoSeeds *memoria) {
 
 	if (socket > 0) {
 		enviarMensaje(kernel, journal, 0, NULL, client_socket, logger, mem);
+		//TODO: RECIBIR MSJ
+		t_mensaje* mensaje = recibirMensaje(client_socket, logger);
+		if(mensaje == NULL) {
+			loggear(logger,LOG_LEVEL_ERROR,"No se pudo recibir mensaje");
+		}
+		int insert_error = mensaje->header.error;
+		destruirMensaje(mensaje);
+		if(insert_error != 0) {
+			loggear(logger,LOG_LEVEL_ERROR,"No se pudo insertar en lis correctamente");
+		}
+
 		close(client_socket);
 	}
 }

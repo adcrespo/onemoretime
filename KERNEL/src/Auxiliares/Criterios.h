@@ -21,9 +21,9 @@ t_tipoCriterio criterio_to_enum(char *sval);
 t_tipoSeeds* obtener_memoria_lista_SHC(int numero);
 t_tipoSeeds* obtener_memoria_lista(int numero);
 int agregar_memoria_a_criterio(int nro_memoria, char* criterio);
+int enviarjournalSegunCriterio(char *criterio);
 t_tipoSeeds* get_memoria_por_criterio(char *criterio, int key);
 int existe_memoria(t_tipoSeeds* memoria, t_list* lista);
-int get_memory_hash(int key);
 int get_memory_hash_SHC(int key);
 
 #endif /* AUXILIARES_CRITERIOS_H_ */

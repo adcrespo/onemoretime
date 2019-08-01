@@ -153,6 +153,27 @@ int agregar_memoria_a_criterio(int nro_memoria, char* criterio) {
 	return resultado;
 }
 
+int enviarjournalSegunCriterio(char *criterio)
+{
+	int tipo_criterio = criterio_to_enum(criterio);
+	int resultado = 1;
+	switch (tipo_criterio) {
+		case SC:
+			enviar_journal_sc();
+
+			break;
+		case SHC:
+			enviar_journal_shc();
+
+			break;
+		case EV:
+			enviar_journal_ev();
+
+			break;
+	}
+	return resultado;
+}
+
 t_tipoSeeds* get_memoria_por_criterio(char *criterio, int key) {
 	t_tipoSeeds *memory;
 	int tipo_criterio = criterio_to_enum(criterio);
@@ -200,38 +221,6 @@ int existe_memoria(t_tipoSeeds* memoria, t_list* lista_criterio) {
 	}
 
 	return list_any_satisfy(lista_criterio, (void *) existe_memoria);
-}
-
-int get_memory_hash(int key) {
-
-	char *key_convert = string_itoa(key);
-	int * memoria_dic = dictionary_get(hashdictionary, key_convert);
-	int memoria;
-
-	if (memoria_dic == NULL) {
-
-		int buscar(t_tipoSeeds *seed) {
-			return (seed->estado == 1);
-		}
-
-		pthread_mutex_lock(&mutex_LISTA_CONN);
-		t_list *conectadas = list_filter(LISTA_CONN, (void *)buscar);
-		pthread_mutex_unlock(&mutex_LISTA_CONN);
-
-		int size_conectadas = (conectadas == NULL) ? 0 : list_size(conectadas);
-
-		if (size_conectadas == 0)
-			return 0;
-		memoria = key % size_conectadas;
-
-		dictionary_put(hashdictionary, key_convert, &memoria);
-
-	} else
-		memoria = *memoria_dic;
-
-	log_info(logger, "Hash | Key %d Memoria %d", key, memoria);
-	free(key_convert);
-	return memoria;
 }
 
 int get_memory_hash_SHC(int key) {

@@ -245,6 +245,8 @@ int ejecutar_request(char* linea, int id_proceso) {
 	switch (request->request) {
 
 		case _select:;
+			// SELECT [NOMBRE_TABLA] [KEY]
+			// SELECT TABLA1 1
 
 			t_inicio = obtenerTimeStamp();
 
@@ -252,14 +254,14 @@ int ejecutar_request(char* linea, int id_proceso) {
 			tabla = buscar_tabla(request->parametro1);
 
 			if(tabla == NULL) {
-				log_info(logger, "PLANIFIC| La tabla no existe.");
+				log_info(logger, "PLANIFIC| SELECT: La tabla no existe.");
 				t_fin = obtenerTimeStamp();
-				log_info(logger, "PLANIFIC| DURACION SELECT: %d segundos", t_fin - t_inicio);
+				log_info(logger, "PLANIFIC| SELECT: DURACION: %d segundos", t_fin - t_inicio);
 				return -1;
 			}
 
 			// PREPARANDO REQUEST
-			log_info(logger, "PLANIFIC|Preparando SELECT");
+			log_info(logger, "PLANIFIC| SELECT: Preparando... ");
 			t_select* req_select = malloc(sizeof(t_select));
 
 			req_select->id_proceso = id_proceso;
@@ -269,7 +271,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 			log_info(logger, "PLANIFIC| SELECT: %s, %d", req_select->nombreTabla, req_select->key);
 
 			// BUSCANDO MEMORIA
-			log_info(logger, "Buscando memoria del criterio %s", tabla->tipoConsistencia);
+			log_info(logger, "PLANIFIC| SELECT: Buscando memoria del criterio %s", tabla->tipoConsistencia);
 			memoria = get_memoria_por_criterio(tabla->tipoConsistencia, req_select->key);
 			if (memoria->numeroMemoria <0)
 			{
@@ -280,18 +282,42 @@ int ejecutar_request(char* linea, int id_proceso) {
 			cliente = conectar_a_memoria(memoria);
 
 			// REQUEST
-			log_info(logger, "PLANIFIC| Enviando SELECT a MEMORIA");
+			log_info(logger, "PLANIFIC| SELECT: Enviando a MEMORIA");
 			int resultado_mensaje_select = enviarMensajeConError(kernel, selectMsg, sizeof(t_select), req_select, cliente, logger, mem, 0);
-			log_info(logger, "Resultado de enviar mensaje SELECT: %d", resultado_mensaje_select);
+			log_info(logger, "PLANIFIC| SELECT: Resultado de enviar mensaje: %d", resultado_mensaje_select);
+
+			//TODO: VER SI NO PUEDE MANDAR NADA A MEMORIA
 
 			// RESPUESTA
-			log_info(logger, "PLANIFIC| RECIBIENDO SELECT");
+			log_info(logger, "PLANIFIC| SELECT: RECIBIENDO...");
 			t_mensaje* resultado_req_select = recibirMensaje(cliente, logger);
 
+			//JOURNALING
+			log_info(logger, "PLANIFIC| SELECT: Resultado de MSJ a MEM %d",resultado_req_select->header.error);
 			if(resultado_req_select->header.error==-100)
 			{
-				//TODO: HACER JOURNALLING A LAS MEMORIAS
-				//TODO: VOLVER A ENVIAR EL MSJ - SELECT
+				log_info(logger, "PLANIFIC| SELECT - MEMORIA COMPLETA - INICIANDO JOURNALING PARA %s",tabla->tipoConsistencia);
+				//HACER JOURNALLING A LAS MEMORIAS
+				int resultado = enviarjournalSegunCriterio(tabla->tipoConsistencia);
+
+				if(resultado > 0)
+				{
+					// VOLVER A ENVIAR EL MSJ SELECT
+					memoria = get_memoria_por_criterio(tabla->tipoConsistencia, req_select->key);
+					if (memoria->numeroMemoria <0)
+					{
+						log_info(logger, "PLANIFIC| SELECT: POST-JOURNAL MEMORIA: %d",memoria->numeroMemoria);
+						free (memoria);
+						return -1;
+					}
+					cliente = conectar_a_memoria(memoria);
+
+					// REQUEST
+					log_info(logger, "PLANIFIC| SELECT: POST-JOURNAL Enviando a MEMORIA");
+					int resultado_mensaje_select = enviarMensajeConError(kernel, selectMsg, sizeof(t_select), req_select, cliente, logger, mem, 0);
+					log_info(logger, "PLANIFIC| SELECT: POST-JOURNAL Resultado de enviar mensaje: %d", resultado_mensaje_select);
+				}
+
 			}
 
 			int largo_buffer = resultado_req_select->header.longitud;
@@ -300,14 +326,12 @@ int ejecutar_request(char* linea, int id_proceso) {
 
 			t_registro* reg = descomponer_registro(buffer);
 
-			log_info(logger, "PLANIFIC| RESPUESTA SELECT: KEY:%d, VALOR:%s TIMESTAMP:%llu", reg->key, reg->value,reg->timestamp);
-
-			resultado = resultado_mensaje_select;
+			log_info(logger, "PLANIFIC| SELECT: RESPUESTA KEY:%d, VALOR:%s TIMESTAMP:%llu", reg->key, reg->value,reg->timestamp);
 
 			// METRICAS
 			t_fin = obtenerTimeStamp();
 			int duracion = (t_fin - t_inicio) / 1000;
-			log_info(logger, "PLANIFIC| DURACION SELECT: %d segundos", duracion);
+			log_info(logger, "PLANIFIC| SELECT: DURACION %d segundos", duracion);
 
 			// LIBERAR MEMORIA
 			free(req_select);
@@ -321,19 +345,20 @@ int ejecutar_request(char* linea, int id_proceso) {
 		case _insert:
 			// INSERT [NOMBRE_TABLA] [KEY] “[VALUE]”
 			// INSERT TABLA1 3 “Mi nombre es Lissandra”
+
 			if (memoria_sc != NULL)
 				log_info(logger, "VALIDACION| MEMORIA SC: %d", memoria_sc->numeroMemoria);
 
 			tabla = buscar_tabla(request->parametro1);
 
 			if(tabla == NULL) {
-				log_info(logger, "PLANIFIC| La tabla no existe.");
+				log_info(logger, "PLANIFIC| INSERT: La tabla no existe.");
 				return -1;
 			}
 
-			log_info(logger, "PLANIFIC| La tabla %s.", tabla->nombreTabla);
+			log_info(logger, "PLANIFIC| INSERT: La tabla %s.", tabla->nombreTabla);
 
-			log_info(logger, "PLANIFIC| Preparando INSERT");
+			log_info(logger, "PLANIFIC| INSERT: Preparando...");
 			t_insert* req_insert = malloc(sizeof(t_insert));
 
 			req_insert->id_proceso = id_proceso;
@@ -344,37 +369,64 @@ int ejecutar_request(char* linea, int id_proceso) {
 
 			log_info(logger, "PLANIFIC| INSERT: %s, %llu, %d, %s", req_insert->nombreTabla, req_insert->timestamp, req_insert->key, req_insert->value);
 
-			//TODO: FALTA BUSCAR MEMORIA POR CRITERIO Y CONECTARSE
+			//BUSCAR MEMORIA POR CRITERIO Y CONECTARSE
 			memoria = get_memoria_por_criterio(tabla->tipoConsistencia, req_insert->key);
+
 			if (memoria->numeroMemoria <0)
 			{
 				log_info(logger, "PLANIFIC| INSERT - MEMORIA: %d",memoria->numeroMemoria);
 				free (memoria);
 				return -1;
 			}
+
 			if (memoria_sc != NULL)
 				log_info(logger, "VALIDACION| MEMORIA SC: %d", memoria_sc->numeroMemoria);
-//			memoria = obtener_memoria_random(); // cambiar para hacerlo dinamico para los criterios
+
 			cliente = conectar_a_memoria(memoria);
 
-			log_info(logger, "PLANIFIC| Enviando INSERT a MEMORIA");
+			log_info(logger, "PLANIFIC| INSERT: Enviando a MEMORIA");
+
 			if (memoria_sc != NULL)
-				log_info(logger, "PLANIFC - INSERT| Memoria SC tiene: %d", memoria_sc->numeroMemoria);
-			log_info(logger, "PLANIFC - INSERT| Memoria Asignada tiene: %d", memoria->numeroMemoria);
+				log_info(logger, "VALIDACION| Memoria SC tiene: %d", memoria_sc->numeroMemoria);
+
+			log_info(logger, "PLANIFC| INSERT: Memoria Asignada tiene: %d", memoria->numeroMemoria);
 			int resultado_mensaje_insert = enviarMensajeConError(kernel, insert, sizeof(t_insert), req_insert, cliente, logger, mem, 0);
-			log_info(logger, "Resultado de enviar mensaje INSERT: %d", resultado_mensaje_insert);
+			log_info(logger, "PLANIFC| INSERT: Resultado de enviar mensaje: %d", resultado_mensaje_insert);
+
+			//TODO: VER SI NO PUEDE MANDAR NADA A MEMORIA
 
 			t_mensaje* resultado_req_insert = recibirMensaje(cliente, logger);
 
+			//JOURNALLING
+			log_info(logger, "PLANIFIC| INSERT: Resultado de MSJ a MEM %d",resultado_req_insert->header.error);
 			if(resultado_req_insert->header.error==-100)
 			{
-				//TODO: HACER JOURNALLING A LAS MEMORIAS
-				//TODO: VOLVER A ENVIAR EL MSJ - SELECT
+				log_info(logger, "PLANIFIC| INSERT: MEMORIA COMPLETA - INICIANDO JOURNALING PARA %s",tabla->tipoConsistencia);
+				//HACER JOURNALLING A LAS MEMORIAS
+				int resultado = enviarjournalSegunCriterio(tabla->tipoConsistencia);
+
+				if(resultado > 0)
+				{
+					//VOLVER A ENVIAR EL MSJ - INSERT
+					memoria = get_memoria_por_criterio(tabla->tipoConsistencia, req_insert->key);
+					if (memoria->numeroMemoria <0)
+					{
+						log_info(logger, "PLANIFIC| INSERT: POST-JOURNAL MEMORIA: %d",memoria->numeroMemoria);
+						free (memoria);
+						return -1;
+					}
+					cliente = conectar_a_memoria(memoria);
+
+					log_info(logger, "PLANIFC| INSERT: POST-JOURNAL Memoria Asignada tiene: %d", memoria->numeroMemoria);
+					int resultado_mensaje_insert = enviarMensajeConError(kernel, insert, sizeof(t_insert), req_insert, cliente, logger, mem, 0);
+					log_info(logger, "PLANIFC| INSERT: POST-JOURNAL Resultado de enviar mensaje INSERT: %d", resultado_mensaje_insert);
+				}
+
 			}
 
 
 			resultado = resultado_req_insert->header.error;
-			log_info(logger, "PLANIFIC| Resultado de INSERT: %d", resultado);
+			log_info(logger, "PLANIFIC| INSERT: Resultado: %d", resultado);
 
 			free(req_insert);
 			destruirMensaje(resultado_req_insert);
@@ -386,7 +438,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 			// CREATE [TABLA] [TIPO_CONSISTENCIA] [NUMERO_PARTICIONES] [COMPACTION_TIME]
 			// CREATE TABLA1 SC 4 60000
 
-			log_info(logger, "PLANIFIC|Preparando CREATE");
+			log_info(logger, "PLANIFIC| CREATE: Preparando...");
 
 			t_create* req_create = malloc(sizeof(t_create));
 
@@ -402,24 +454,25 @@ int ejecutar_request(char* linea, int id_proceso) {
 			memoria = obtener_memoria_random(); // cambiar para hacerlo dinamico para los criterios
 			if (memoria->numeroMemoria <0)
 			{
-				log_info(logger, "PLANIFIC| CREATE - MEMORIA: %d",memoria->numeroMemoria);
+				log_info(logger, "PLANIFIC| CREATE: MEMORIA: %d",memoria->numeroMemoria);
 				free (memoria);
 				return -1;
 			}
 			cliente = conectar_a_memoria(memoria);
 
-			log_info(logger, "PLANIFIC| Enviando CREATE a MEMORIA");
-//			int resultado_mensaje = enviarMensaje(kernel, create, sizeof(t_create), req_create, cliente, logger, mem);
+			log_info(logger, "PLANIFIC| CREATE: Enviando  a MEMORIA");
 			int resultado_mensaje = enviarMensajeConError(kernel, create, sizeof(t_create), req_create, cliente, logger, mem, 0);
-			log_info(logger, "Resultado de enviar mensaje: %d", resultado_mensaje);
+			log_info(logger, "PLANIFIC| CREATE: Resultado de enviar mensaje: %d", resultado_mensaje);
+
+			//TODO: VER SI NO PUEDE MANDAR NADA A MEMORIA
 
 			t_mensaje* resultado_req_create = recibirMensaje(cliente, logger);
 			resultado = resultado_req_create->header.error;
-			log_info(logger, "PLANIFIC| Resultado de CREATE: %d", resultado);
+			log_info(logger, "PLANIFIC| CREATE: Resultado: %d", resultado);
 
 			if (resultado == 0) {
-//				char** buff = string_from_format("DESCRIBE %s", req_create->nombreTabla);
-//				log_info(logger, "PLANIFIC| Solicitando: %s", buff);
+				log_info(logger, "PLANIFIC| CREATE: Solicitando describe_global");
+				//LOS MUTEX SE HACEN CUANDO HACE EL LIST_ADD
 //				pthread_mutex_lock(&mutex_metadata);
 				describe_global(cliente);
 //				pthread_mutex_unlock(&mutex_metadata);
@@ -436,41 +489,43 @@ int ejecutar_request(char* linea, int id_proceso) {
 			// DESCRIBE
 			// DESCRIBE TABLA1
 
-			log_info(logger, "PLANIFIC|Preparando DESCRIBE");
+			log_info(logger, "PLANIFIC| DESCRIBE: Preparando...");
 
 			t_describe* req_describe = malloc(sizeof(t_describe));
 			req_describe->id_proceso = id_proceso;
 			strcpy(req_describe->nombreTabla, "");
 
-//			memoria = obtener_memoria_random(); // ----- cambiar para hacerlo dinamico para los criterios
+			//VER SI PUEDO SELECCIONAR CUALQUIER CRITERIO
 			//memoria = get_memoria_conectada();
 			memoria = obtener_memoria_random(); // cambiar para hacerlo dinamico para los criterios
 			if (memoria->numeroMemoria <0)
 			{
-				log_info(logger, "PLANIFIC| DESCRIBE - MEMORIA: %d",memoria->numeroMemoria);
+				log_info(logger, "PLANIFIC| DESCRIBE: MEMORIA: %d",memoria->numeroMemoria);
 				free (memoria);
 				return -1;
 			}
 			cliente = conectar_a_memoria(memoria);
 
 			if (string_is_empty(request->parametro1)) {
-				log_info(logger, "PLANIFIC| Describe GLOBAL.");
+				log_info(logger, "PLANIFIC| DESCRIBE: Describe GLOBAL.");
 				describe_global(cliente);
 			} else {
 				log_info(logger, "PLANIFIC| DESCRIBE: %s", req_describe->nombreTabla);
-				log_info(logger, "PLANIFIC| Describe %s.", request->parametro1);
-				log_info(logger, "PLANIFIC| Parámetro 1: %s", request->parametro1);
+				log_info(logger, "PLANIFIC| DESCRIBE: Describe %s.", request->parametro1);
+				log_info(logger, "PLANIFIC| DESCRIBE: Parámetro 1: %s", request->parametro1);
 				strcpy(req_describe->nombreTabla, request->parametro1);
 
 
-				log_info(logger, "PLANIFIC| Enviando DESCRIBE a MEMORIA");
+				log_info(logger, "PLANIFIC| DESCRIBE: Enviando a MEMORIA");
 				enviarMensaje(kernel, describe, sizeof(t_describe), req_describe, cliente, logger, mem);
+
+				//TODO: VER SI NO PUEDE MANDAR NADA A MEMORIA
 
 				t_mensaje* msg_describe = recibirMensaje(cliente, logger);
 				char* buffer_describe= string_new();
 				string_append(&buffer_describe, msg_describe->content);
 
-				log_info(logger, "RESULTADO METADATA TABLA %s| Metadata: %s",req_describe->nombreTabla, buffer_describe);
+				log_info(logger, "PLANIFIC| DESCRIBE: RESULTADO METADATA TABLA %s| Metadata: %s",req_describe->nombreTabla, buffer_describe);
 
 				//guardar_metadata(buffer_describe);
 				destruirMensaje(msg_describe);
@@ -489,36 +544,47 @@ int ejecutar_request(char* linea, int id_proceso) {
 			tabla = buscar_tabla(request->parametro1);
 
 			if(tabla == NULL) {
-				log_info(logger, "PLANIFIC| DROP - La tabla no existe.");
+				log_info(logger, "PLANIFIC| DROP: La tabla no existe.");
 				return -1;
 			}
 
-			log_info(logger, "PLANIFIC|Preparando DROP");
+			log_info(logger, "PLANIFIC| DROP: Preparando...");
 			t_drop* req_drop = malloc(sizeof(t_drop));
 
 			req_drop->id_proceso = id_proceso;
 			strcpy(req_drop->nombreTabla, request->parametro1);
 
-			log_info(logger, "PLANIFIC| DROP OK. %s", req_drop->nombreTabla);
+			log_info(logger, "PLANIFIC| DROP: OK. %s", req_drop->nombreTabla);
 
-			//TODO: FALTA BUSCAR MEMORIA POR CRITERIO Y CONECTARSE
+			//VER SI PUEDO SELECCIONAR CUALQUIER MEMORIA
 			memoria = obtener_memoria_random(); // cambiar para hacerlo dinamico para los criterios
 			if (memoria->numeroMemoria <0)
 			{
-				log_info(logger, "PLANIFIC| DROP - MEMORIA: %d",memoria->numeroMemoria);
+				log_info(logger, "PLANIFIC| DROP: MEMORIA: %d",memoria->numeroMemoria);
 				free (memoria);
 				return -1;
 			}
-			log_info(logger, "PLANIFIC| DROP - MEMORIA ASIGNADA: %d",memoria->numeroMemoria);
+			log_info(logger, "PLANIFIC| DROP: MEMORIA ASIGNADA: %d",memoria->numeroMemoria);
 			cliente = conectar_a_memoria(memoria);
 
-			log_info(logger, "PLANIFIC| Enviando DROP a MEMORIA");
+			log_info(logger, "PLANIFIC| DROP: Enviando a MEMORIA");
 			int resultado_mensaje_drop = enviarMensajeConError(kernel, drop, sizeof(t_drop), req_drop, cliente, logger, mem, 0);
-			log_info(logger, "Resultado de enviar mensaje: %d", resultado_mensaje_drop);
+			log_info(logger, "PLANIFIC| DROP: Resultado de enviar mensaje: %d", resultado_mensaje_drop);
+
+			//TODO: VER SI NO PUEDE MANDAR NADA A MEMORIA
 
 			t_mensaje* resultado_req_drop = recibirMensaje(cliente, logger);
 			resultado = resultado_req_drop->header.error;
-			log_info(logger, "PLANIFIC| Resultado de DROP: %d", resultado);
+			log_info(logger, "PLANIFIC| DROP: Resultado: %d", resultado);
+
+
+			if (resultado == 0) {
+				log_info(logger, "PLANIFIC| DROP: Solicitando describe_global");
+				//LOS MUTEX SE HACEN CUANDO HACE EL LIST_CLEAN
+//				pthread_mutex_lock(&mutex_metadata);
+				describe_global(cliente);
+//				pthread_mutex_unlock(&mutex_metadata);
+			}
 
 			free(req_drop);
 			destruirMensaje(resultado_req_drop);
