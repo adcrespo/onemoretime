@@ -302,6 +302,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 
 				if(resultado > 0)
 				{
+					free (memoria);
 					// VOLVER A ENVIAR EL MSJ SELECT
 					memoria = get_memoria_por_criterio(tabla->tipoConsistencia, req_select->key);
 					if (memoria->numeroMemoria <0)
@@ -407,6 +408,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 
 				if(resultado > 0)
 				{
+					free (memoria);
 					//VOLVER A ENVIAR EL MSJ - INSERT
 					memoria = get_memoria_por_criterio(tabla->tipoConsistencia, req_insert->key);
 					if (memoria->numeroMemoria <0)
