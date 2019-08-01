@@ -22,6 +22,10 @@ void loguear_carga_propiedad(char* propiedad, char* valor) {
 	string_append_with_format(&str, descripcion_prop, propiedad);
 	string_append_with_format(&str, descripcion_valor, valor);
 	log_info(logger, str);
+	free(valor);
+	free(descripcion_valor);
+	free(descripcion_prop);
+	free(str);
 }
 
 void loguear_error_carga_propiedad(char* propiedad) {
@@ -30,4 +34,6 @@ void loguear_error_carga_propiedad(char* propiedad) {
 	string_append(&descripcion,"CONFIG|Error carga propiedad: %s");
 	string_append_with_format(&str, descripcion, propiedad);
 	log_error(logger, str);
+	free(descripcion);
+	free(str);
 }
