@@ -112,12 +112,16 @@ int procesar_comando(char *line) {
 				int numeroMemoria = atoi(request->parametro2);
 				int resultado = agregar_memoria_a_criterio(numeroMemoria, request->parametro4);
 				log_info(logger, "CONSOLA| Resultado: %d", resultado);
-				t_tipoSeeds* memoria = obtener_memoria_lista(numeroMemoria);
-				t_tipoSeeds* mem = malloc(sizeof(t_tipoSeeds));
-				memcpy(mem, memoria, sizeof(t_tipoSeeds));
-				pthread_mutex_lock(&mutex_asociadas);
-				list_add(mem_asociadas, mem);
-				pthread_mutex_unlock(&mutex_asociadas);
+				//Si dio ok agrego a la lista global
+				if(resultado == 1){
+					t_tipoSeeds* memoria = obtener_memoria_lista(numeroMemoria);
+					t_tipoSeeds* mem = malloc(sizeof(t_tipoSeeds));
+					memcpy(mem, memoria, sizeof(t_tipoSeeds));
+					pthread_mutex_lock(&mutex_asociadas);
+					list_add(mem_asociadas, mem);
+					pthread_mutex_unlock(&mutex_asociadas);
+				}
+
 
 				break;
 

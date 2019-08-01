@@ -263,6 +263,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 			// PREPARANDO REQUEST
 			log_info(logger, "PLANIFIC| SELECT: Preparando... ");
 			t_select* req_select = malloc(sizeof(t_select));
+			memset(req_select, 0x00, sizeof(t_select));
 
 			req_select->id_proceso = id_proceso;
 			strcpy(req_select->nombreTabla, request->parametro1);
@@ -361,7 +362,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 
 			log_info(logger, "PLANIFIC| INSERT: Preparando...");
 			t_insert* req_insert = malloc(sizeof(t_insert));
-
+			memset(req_insert, 0x00, sizeof(t_insert));
 			req_insert->id_proceso = id_proceso;
 			strcpy(req_insert->nombreTabla, request->parametro1);
 			req_insert->timestamp = obtenerTimeStamp();
@@ -443,6 +444,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 			log_info(logger, "PLANIFIC| CREATE: Preparando...");
 
 			t_create* req_create = malloc(sizeof(t_create));
+			memset(req_create, 0x00, sizeof(t_create));
 
 			req_create->id_proceso = id_proceso;
 			strcpy(req_create->nombreTabla, request->parametro1);
@@ -495,6 +497,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 			log_info(logger, "PLANIFIC| DESCRIBE: Preparando...");
 
 			t_describe* req_describe = malloc(sizeof(t_describe));
+			memset(req_describe, 0x00, sizeof(t_describe));
 			req_describe->id_proceso = id_proceso;
 			strcpy(req_describe->nombreTabla, "");
 
@@ -573,6 +576,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 
 			log_info(logger, "PLANIFIC| DROP: Preparando...");
 			t_drop* req_drop = malloc(sizeof(t_drop));
+			memset(req_drop, 0x00, sizeof(t_drop));
 
 			req_drop->id_proceso = id_proceso;
 			strcpy(req_drop->nombreTabla, request->parametro1);
@@ -647,8 +651,8 @@ void* aplicar_algoritmo_rr() {
 
 	log_info(logger, "PLANIFIC| Proceso %d pasa a EXEC", pcb->id_proceso);
 
-	int resultado = procesar_pcb(pcb);
-
+//	int resultado = procesar_pcb(pcb);
+	procesar_pcb(pcb);
 	log_info(logger, "PLANIFIC| Fin hilo planificación proceso N° %d", pcb->id_proceso);
 
 	imprimir_listas();
