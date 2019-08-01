@@ -528,13 +528,14 @@ int ejecutar_request(char* linea, int id_proceso) {
 				}
 				int keyCualquiera=rand();
 				memoria = get_memoria_por_criterio(tabla->tipoConsistencia, keyCualquiera);
+
 				if (memoria->numeroMemoria <0)
 				{
 					log_info(logger, "PLANIFIC| DESCRIBE: MEMORIA: %d",memoria->numeroMemoria);
 					free (memoria);
 					return -1;
 				}
-				log_info(logger, "PLANIFIC| DESCRIBE: MEMORIA ASIGNADA: %d",memoria->numeroMemoria);
+				log_info(logger, "PLANIFIC| DESCRIBE:  MEMORIA ASIGNADA: %d",memoria->numeroMemoria);
 				cliente = conectar_a_memoria(memoria);
 
 
