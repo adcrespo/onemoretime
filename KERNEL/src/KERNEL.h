@@ -38,6 +38,7 @@ pthread_mutex_t mutex_metadata;
 pthread_mutex_t mutex_memoria_sc;
 pthread_mutex_t mutex_memoria_shc;
 pthread_mutex_t mutex_memoria_ev;
+pthread_mutex_t mutex_asociadas;
 
 pthread_mutex_t mutex_LISTA_CONN;
 

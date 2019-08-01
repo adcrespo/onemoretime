@@ -257,3 +257,23 @@ int get_memory_hash_SHC(int key) {
 	free(key_convert);
 	return *memoria_dic;
 }
+
+t_tipoSeeds * get_memoria_asociada() {
+	int n;
+	pthread_mutex_lock(&mutex_asociadas);
+	int size_mem = list_size(mem_asociadas);
+	pthread_mutex_unlock(&mutex_asociadas);
+	t_tipoSeeds *memory;
+
+	if(size_mem == 0){
+		memory=malloc(sizeof(t_tipoSeeds));
+		memset(memory, 0x00, sizeof(t_tipoSeeds));
+		memory->numeroMemoria = -1;
+		return memory;
+	}
+
+	n = rand() % size_mem;
+	memory = list_get(mem_asociadas, n);
+
+	return memory;
+}
