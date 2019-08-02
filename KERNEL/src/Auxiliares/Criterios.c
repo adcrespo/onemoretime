@@ -233,17 +233,21 @@ int get_memory_hash_SHC(int key) {
 	if (memoria_dic == NULL) {
 
 		pthread_mutex_lock(&mutex_memoria_shc);
-		int size_conectadas = list_size(lista_criterio_shc);
+		int sizeLista = list_size(lista_criterio_shc);
 		pthread_mutex_unlock(&mutex_memoria_shc);
 
-		log_info(logger, "Hash| tamaño lista_criterio_shc  %d", size_conectadas);
+		log_info(logger, "Hash| tamaño lista_criterio_shc  %d", sizeLista);
 
-		if (size_conectadas == 0)
+		if (sizeLista == 0)
 			return 0;
+
+		int randomMemoria = key % sizeLista;
+
+		t_tipoSeeds *memoryRandom = list_get(lista_criterio_shc,randomMemoria);
 
 		int * memoria = malloc(sizeof(int));
 
-		*memoria = key % size_conectadas;
+		*memoria = memoryRandom->numeroMemoria;
 
 		log_info(logger, "Hash Dictionary PUT| Key %d Memoria %d", key, *memoria);
 
