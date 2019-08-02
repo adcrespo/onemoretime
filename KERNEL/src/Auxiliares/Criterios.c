@@ -11,7 +11,7 @@
 char* criterio_str[] = {
 		"SC"
 		, "SHC"
-		, "EV"
+		, "EC"
 		, NULL
 };
 
@@ -27,13 +27,13 @@ t_tipoCriterio criterio_to_enum(char *sval) {
 t_tipoSeeds* obtener_memoria_lista_SHC(int numero){
 
 	int findMemory(t_tipoSeeds * memoria) {
-		log_info(logger, "CRITERIOS BUSQUEDA SHC | Memoria %d en LISTA_CONN", memoria->numeroMemoria);
-		log_info(logger, "CRITERIOS BUSQUEDA SHC | Numero buscado %d", numero);
-		log_info(logger, "CRITERIOS BUSQUEDA SHC | Igualdad: %d", memoria->numeroMemoria == numero);
+		log_info(logger, "CRITERIO| CRITERIOS BUSQUEDA SHC | Memoria %d en LISTA_CONN", memoria->numeroMemoria);
+		log_info(logger, "CRITERIO| CRITERIOS BUSQUEDA SHC | Numero buscado %d", numero);
+		log_info(logger, "CRITERIO| CRITERIOS BUSQUEDA SHC | Igualdad: %d", memoria->numeroMemoria == numero);
 		return memoria->numeroMemoria == numero;
 	}
 
-	log_info(logger, "Buscando memoria %d en lista_criterio_shc", numero);
+	log_info(logger, "CRITERIO| Buscando memoria %d en lista_criterio_shc", numero);
 //	return list_find(LISTA_CONN, &findMemory);
 	pthread_mutex_lock(&mutex_memoria_shc);
 	t_tipoSeeds* mem = list_get(lista_criterio_shc,numero);
@@ -41,14 +41,14 @@ t_tipoSeeds* obtener_memoria_lista_SHC(int numero){
 	pthread_mutex_unlock(&mutex_memoria_shc);
 
 	if (mem != NULL) {
-		log_info(logger, "CRITERIOS BUSQUEDA SHC | Memoria devuelta por FIND %d", mem->numeroMemoria);
+		log_info(logger, "CRITERIO| CRITERIOS BUSQUEDA SHC | Memoria devuelta por FIND %d", mem->numeroMemoria);
 	}
 	else
 	{
 		mem = malloc(sizeof(t_tipoSeeds));
 		memset(mem, 0x00, sizeof(t_tipoSeeds));
 		mem->numeroMemoria = -1;
-		log_info(logger, "CRITERIOS BUSQUEDA SHC NO ENCONTRADA | Memoria devuelta por FIND %d", mem->numeroMemoria);
+		log_info(logger, "CRITERIO| CRITERIOS BUSQUEDA SHC NO ENCONTRADA | Memoria devuelta por FIND %d", mem->numeroMemoria);
 	}
 	return mem;
 
@@ -57,21 +57,21 @@ t_tipoSeeds* obtener_memoria_lista_SHC(int numero){
 t_tipoSeeds* obtener_memoria_lista(int numero){
 
 	int findMemory(t_tipoSeeds * memoria) {
-		log_info(logger, "Memoria %d en LISTA_CONN", memoria->numeroMemoria);
-		log_info(logger, "Numero buscado %d", numero);
-		log_info(logger, "Igualdad: %d", memoria->numeroMemoria == numero);
+		log_info(logger, "CRITERIO| Memoria %d en LISTA_CONN", memoria->numeroMemoria);
+		log_info(logger, "CRITERIO| Numero buscado %d", numero);
+		log_info(logger, "CRITERIO| Igualdad: %d", memoria->numeroMemoria == numero);
 		return memoria->numeroMemoria == numero;
 	}
 
 
-	log_info(logger, "Buscando memoria %d en LISTA_CONN", numero);
+	log_info(logger, "CRITERIO| Buscando memoria %d en LISTA_CONN", numero);
 //	return list_find(LISTA_CONN, &findMemory);
 	pthread_mutex_lock(&mutex_LISTA_CONN);
 	t_tipoSeeds* mem = list_find(LISTA_CONN, (void *)findMemory);
 	pthread_mutex_unlock(&mutex_LISTA_CONN);
 
 	if (mem != NULL) {
-		log_info(logger, "MEMMMMMMM | Memoria devuelta por FIND %d", mem->numeroMemoria);
+		log_info(logger, "CRITERIO| MEMMMMMMM | Memoria devuelta por FIND %d", mem->numeroMemoria);
 	}
 	return mem;
 
@@ -128,7 +128,7 @@ int agregar_memoria_a_criterio(int nro_memoria, char* criterio) {
 			resultado = 1;
 			break;
 
-		case EV:
+		case EC:
 
 			pthread_mutex_lock(&mutex_memoria_ev);
 			if (!existe_memoria(memoria, lista_criterio_ev)) {
@@ -166,7 +166,7 @@ int enviarjournalSegunCriterio(char *criterio)
 			enviar_journal_shc();
 
 			break;
-		case EV:
+		case EC:
 			enviar_journal_ev();
 
 			break;
@@ -195,17 +195,17 @@ t_tipoSeeds* get_memoria_por_criterio(char *criterio, int key) {
 
 			memory = obtener_memoria_lista_SHC(nro_memoria);
 
-			//TODO: HACER JOURNALING A TODAS LAS MEMORIAS
+			//TODO: HACER JOURNALING A TODAS LAS MEMORIAS??
 
 			break;
 
-		case EV:
+		case EC:
 			// TODO
 			//memoria random
 			memory = obtener_memoria_random();
 			if (memory->numeroMemoria <0)
 			{
-				log_info(logger, "PLANIFIC| MEMORIA: %d",memory->numeroMemoria);
+				log_info(logger, "CRITERIO| MEMORIA: %d",memory->numeroMemoria);
 				return memory;
 			}
 			break;
@@ -262,7 +262,7 @@ t_tipoSeeds * get_memoria_asociada() {
 	int n;
 	pthread_mutex_lock(&mutex_asociadas);
 	int size_mem = list_size(mem_asociadas);
-	pthread_mutex_unlock(&mutex_asociadas);
+
 	t_tipoSeeds *memory;
 
 	if(size_mem == 0){
@@ -274,6 +274,7 @@ t_tipoSeeds * get_memoria_asociada() {
 
 	n = rand() % size_mem;
 	memory = list_get(mem_asociadas, n);
+	pthread_mutex_unlock(&mutex_asociadas);
 
 	return memory;
 }

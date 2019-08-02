@@ -45,7 +45,6 @@ void *inicializar_refresh() {
 	while (1) {
 		aplicar_tiempo_refresh();
 //		pthread_mutex_lock(&mutex_metadata);
-		limpiar_metadata();
 		if (hay_memorias_disponibles()) {
 			log_info(logger, "REFRESH| Hay memoria disponible");
 			actualizar_metadata();

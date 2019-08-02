@@ -39,9 +39,9 @@ void guardar_metadata(char *buffer) {
 	strcpy(metadata->tipoConsistencia, elementos[1]);
 	metadata->particiones = atoi(elementos[2]);
 	metadata->compactationTime = atoi(elementos[3]);
-	pthread_mutex_lock(&mutex_metadata);
+//	pthread_mutex_lock(&mutex_metadata);
 	list_add(lista_metadata, metadata);
-	pthread_mutex_unlock(&mutex_metadata);
+//	pthread_mutex_unlock(&mutex_metadata);
 //	pthread_mutex_unlock(&mutex_metadata);
 
 	log_info(logger, "REFRESH| Cantidad de Metadatas: %d", lista_metadata->elements_count);
@@ -56,7 +56,7 @@ void guardar_metadata(char *buffer) {
 }
 
 void limpiar_metadata() {
-	pthread_mutex_lock(&mutex_metadata);
+//	pthread_mutex_lock(&mutex_metadata);
 	if (lista_metadata != NULL) {
 //		pthread_mutex_lock(&mutex_metadata);
 		int size_metadata = list_size(lista_metadata);
@@ -67,7 +67,7 @@ void limpiar_metadata() {
 		list_clean(lista_metadata);
 //		pthread_mutex_unlock(&mutex_metadata);
 	}
-	pthread_mutex_unlock(&mutex_metadata);
+//	pthread_mutex_unlock(&mutex_metadata);
 }
 
 void describe_global(int cliente) {
@@ -81,6 +81,8 @@ void describe_global(int cliente) {
 
 	int longAcum = 0;
 
+	pthread_mutex_lock(&mutex_metadata);
+	limpiar_metadata();
 	while (cantidad-- > 0) {
 
 		t_mensaje* mensaje = recibirMensaje(cliente, logger);
@@ -100,6 +102,7 @@ void describe_global(int cliente) {
 		destruirMensaje(mensaje);
 		free(buffer_describe);
 	}
+	pthread_mutex_unlock(&mutex_metadata);
 }
 
 int validar_tabla(char *nombre){
@@ -116,6 +119,7 @@ int validar_tabla(char *nombre){
 
 t_metadata* buscar_tabla(char *nombre) {
 
+	t_metadata* tablaEncontrada=NULL;
 	int esLaTabla(t_metadata *tabla) {
 		return string_equals_ignore_case(nombre, tabla->nombreTabla);
 	}
@@ -124,7 +128,11 @@ t_metadata* buscar_tabla(char *nombre) {
 
 	pthread_mutex_lock(&mutex_metadata);
 	t_metadata* tabla = list_find(lista_metadata, (void*) esLaTabla);
+	if(tabla!=NULL){
+		tablaEncontrada = malloc(sizeof(t_metadata));
+		memcpy(tablaEncontrada,tabla,sizeof(t_metadata));
+	}
 	pthread_mutex_unlock(&mutex_metadata);
 
-	return tabla;
+	return tablaEncontrada;
 }

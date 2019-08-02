@@ -74,6 +74,15 @@ void cargar_configuracion_kernel(char * path_config) {
 		loguear_error_carga_propiedad("SLEEP_EJEC");
 	}
 
+	if (config_has_property(config, "RETARDO_GOSSIPING")) {
+		kernel_conf.retardo_gossiping = config_get_int_value(config,
+				"RETARDO_GOSSIPING");
+		loguear_carga_propiedad("RETARDO_GOSSIPING",
+				string_itoa(kernel_conf.retardo_gossiping));
+	} else {
+		loguear_error_carga_propiedad("RETARDO_GOSSIPING");
+	}
+
 }
 
 // Auxiliares
