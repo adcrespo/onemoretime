@@ -65,6 +65,7 @@ int process_journaling(){
 				int insert_error = mensaje->header.error;
 				destruirMensaje(mensaje);
 
+/*				
 				if(insert_error != 0) {
 					loggear(logger,LOG_LEVEL_ERROR,"No se pudo insertar en lis correctamente");
 					pthread_mutex_unlock(&journalingMutex);
@@ -75,6 +76,7 @@ int process_journaling(){
 //					pthread_mutex_unlock(&journalingMutexDrop);
 					return insert_error;
 				}
+*/
 				free_spa(adm_table->path_tabla,j);
 			//}
 		}
