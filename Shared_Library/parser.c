@@ -108,17 +108,17 @@ t_request* parsear(char* linea, t_log* logger) {
 					string_append(&request->parametro2, parametro_aux);
 
 					// Validación Parámetro 3
-					parametro_aux = strtok(NULL, """");
+					parametro_aux = strtok(NULL, "\"\"");
 
 					if(parametro_aux == NULL) {
-						log_error(logger, "PARSER|Parámetro 3 vacío.");
+						log_error(logger, "PARSER|Parámetro 3 vacio.");
 						break;
 					}
 
 					string_append(&request->parametro3, parametro_aux);
 
 					// Validacion Parametro 4
-					parametro_aux = strtok(NULL, "");
+					parametro_aux = strtok(NULL, " ");
 
 					if(parametro_aux != NULL) {
 						string_append(&request->parametro4, parametro_aux);

@@ -108,7 +108,8 @@ void *crearConsola() {
 			}
 			else
 				printf("[ERR] No se pudo obtener el registro \n");
-			free(buffer_select);
+			if(buffer_select!=NULL)
+				free(buffer_select);
 			break;
 		case insert_:;
 			if (comando[1] == NULL || comando[2] == NULL || comando[3] == NULL) {

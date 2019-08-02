@@ -113,7 +113,7 @@ int proceso_describe_global(char* tabla,int socketKER, fd_set* set_master){
 void procesar_KER(t_mensaje* msg, int socketKER, fd_set* set_master) {
 	char tabla[MAX_PATH];
 	int clave;
-	char* buffer;
+	char* buffer = NULL;
 	int largo_buffer;
 
 	switch(msg->header.tipoMensaje) {
@@ -138,7 +138,7 @@ void procesar_KER(t_mensaje* msg, int socketKER, fd_set* set_master) {
 
 			memcpy(&tabla,msg->content,MAX_PATH);
 			tabla[MAX_PATH-1] = 0x00;
-			memcpy(&clave,&msg->content+MAX_PATH,sizeof(int));
+			memcpy(&clave,msg->content+MAX_PATH,sizeof(int));
 
 			int select_result = proceso_select(msgselect->nombreTabla,msgselect->key,&buffer,&largo_buffer);
 			loggear(logger, LOG_LEVEL_INFO, "MSJ SELECT ENVIANDO...");
@@ -151,7 +151,8 @@ void procesar_KER(t_mensaje* msg, int socketKER, fd_set* set_master) {
 				close(socketKER);
 				FD_CLR(socketKER, set_master);;
 			}
-			free(buffer);
+			if(buffer!=NULL)
+				free(buffer);
 			free(msgselect);
 		//TODO: select
 			break;
