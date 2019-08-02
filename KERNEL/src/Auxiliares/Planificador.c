@@ -124,6 +124,11 @@ int cantidad_request(char* buffer) {
 		cantidad_lineas = 1;
 	}
 
+	for (int i = 0; arrays_linea[i] != NULL; i++)
+		free(arrays_linea[i]);
+	if (arrays_linea)
+		free(arrays_linea);
+
 	return cantidad_lineas;
 }
 
@@ -197,6 +202,7 @@ int procesar_pcb(t_pcb* pcb) {
 		//libero script
 		for(int j=0;linea[j]!=NULL;j++)
 			free(linea[j]);
+		if(linea) free(linea);
 
 	}
 

@@ -299,6 +299,16 @@ int procesarMsjGossipingStruct(char *mensaje, char *primerParser, char *segundoP
 			else
 			{
 				loggear(logger,LOG_LEVEL_INFO,"GOSSIP| ERROR PROCESO MSJ GOSSIPING");
+				for (int j = 0; parserIpPuerto[j] != NULL; j++)
+					free(parserIpPuerto[j]);
+				if (parserIpPuerto)
+					free(parserIpPuerto);
+
+				for (int j = 0; parser[j] != NULL; j++)
+					free(parser[j]);
+				if (parser)
+					free(parser);
+
 				return -1;
 			}
 
@@ -311,6 +321,15 @@ int procesarMsjGossipingStruct(char *mensaje, char *primerParser, char *segundoP
 			else
 			{
 				loggear(logger,LOG_LEVEL_INFO,"GOSSIP| ERROR PROCESO MSJ GOSSIPING");
+				for (int j = 0; parserIpPuerto[j] != NULL; j++)
+					free(parserIpPuerto[j]);
+				if (parserIpPuerto)
+					free(parserIpPuerto);
+
+				for (int j = 0; parser[j] != NULL; j++)
+					free(parser[j]);
+				if (parser)
+					free(parser);
 				return -1;
 			}
 			if(parserIpPuerto[2] != NULL)
@@ -321,6 +340,15 @@ int procesarMsjGossipingStruct(char *mensaje, char *primerParser, char *segundoP
 			else
 			{
 				loggear(logger,LOG_LEVEL_INFO,"GOSSIP| ERROR PROCESO MSJ GOSSIPING");
+				for (int j = 0; parserIpPuerto[j] != NULL; j++)
+					free(parserIpPuerto[j]);
+				if (parserIpPuerto)
+					free(parserIpPuerto);
+
+				for (int j = 0; parser[j] != NULL; j++)
+					free(parser[j]);
+				if (parser)
+					free(parser);
 				return -1;
 			}
 
@@ -332,7 +360,17 @@ int procesarMsjGossipingStruct(char *mensaje, char *primerParser, char *segundoP
 			pthread_mutex_unlock(&mutexGossiping);
 
 			i++;
+
+			for (int j = 0; parserIpPuerto[j] != NULL; j++)
+				free(parserIpPuerto[j]);
+			if (parserIpPuerto)
+				free(parserIpPuerto);
+
 		}
+		for (int j = 0; parser[j] != NULL; j++)
+			free(parser[j]);
+		if (parser)
+			free(parser);
 		//loggearLista(LISTA_CONN,logger);
 	}
 	else
