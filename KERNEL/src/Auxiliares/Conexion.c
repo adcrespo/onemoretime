@@ -44,7 +44,7 @@ void enviar_journal_sc() {
 		//TODO: MUTEX
 		pthread_mutex_lock(&mutex_memoria_sc);
 		enviar_mensaje_journal(memoria_sc);
-		pthread_mutex_lock(&mutex_memoria_sc);
+		pthread_mutex_unlock(&mutex_memoria_sc);
 	} else {
 		log_info(logger, "Memoria criterio SC no encontrada");
 	}
@@ -66,7 +66,7 @@ void enviar_journal_shc() {
 }
 
 void enviar_journal_ev() {
-	pthread_mutex_unlock(&mutex_memoria_ev);
+	pthread_mutex_lock(&mutex_memoria_ev);
 	int size_ev = list_size(lista_criterio_ev);
 //	pthread_mutex_unlock(&mutex_memoria_ev);
 	t_tipoSeeds *memoria;

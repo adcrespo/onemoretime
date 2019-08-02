@@ -21,6 +21,7 @@ typedef struct {
 	int multiprocesamiento;
 	int metadata_refresh;
 	int sleep_ejecucion;
+	int retardo_gossiping;
 } t_kernel_conf;
 
 

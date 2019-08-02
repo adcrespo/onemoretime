@@ -13,7 +13,7 @@
 //t_tipoSeeds* memoria_sc;
 t_dictionary *hashdictionary;
 typedef enum tipoCriterio {
-	SC,SHC,EV
+	SC,SHC,EC
 } t_tipoCriterio;
 
 

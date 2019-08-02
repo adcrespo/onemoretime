@@ -103,6 +103,7 @@ int procesar_comando(char *line) {
 
 			case _journal:
 
+				log_info(logger, "CONSOLA| ENVIAR JOURNAL");
 				enviar_journal_memorias();
 
 				break;
