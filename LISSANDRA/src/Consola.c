@@ -22,6 +22,10 @@ void *crear_consola() {
 			add_history(line);
 		}
 
+		char *lineaCompleta = string_new();
+		string_append(&lineaCompleta, line);
+
+
 		char** comando = string_split(line, " ");
 		free(line);
 
@@ -75,6 +79,13 @@ void *crear_consola() {
 		case _insert:
 
 			printf("CONSOLA: Se ingresó comando INSERT \n");
+
+			char** comandoCopia = string_split(lineaCompleta, "\"");
+			char *comandoValue = string_new();
+			string_append(&comandoValue, "\"");
+			string_append(&comandoValue, comandoCopia[1]);
+			string_append(&comandoValue, "\"");
+
 			if (comando[1] == NULL || comando[2] == NULL || comando[3] == NULL) {
 				printf("Faltan ingresar datos para utilizar el comando\n");
 				break;
@@ -92,21 +103,21 @@ void *crear_consola() {
 				printf("La tabla %s no existe.\n", comando[1]);
 				break;
 			}
-			if (comando[4] == NULL) {
+			if (comandoCopia[2] == NULL) {
 				unsigned long long timestamp = obtenerTimeStamp();
-				comando[4] = malloc(20);
-				sprintf(comando[4], "%llu", timestamp);
+				comandoCopia[2] = malloc(20);
+				sprintf(comandoCopia[2], "%llu", timestamp);
 			}
 
 			printf("Tabla: %s\n", comando[1]);
 			printf("Key: %s\n", comando[2]);
-			printf("Value: %s\n", comando[3]);
-			printf("Timestamp: %s\n", comando[4]);
+			printf("Value: %s\n", comandoValue);
+			printf("Timestamp: %s\n", comandoCopia[2]);
 			t_insert *insert = malloc(sizeof(t_insert));
 			strcpy(insert->nombreTabla, comando[1]);
 			insert->key = atoi(comando[2]);
-			strcpy(insert->value, comando[3]);
-			insert->timestamp = atoll(comando[4]);
+			strcpy(insert->value, comandoValue);
+			insert->timestamp = atoll(comandoCopia[2]);
 
 			int resultInsert = InsertarTabla(insert);
 			if (resultInsert == -1) {
@@ -121,6 +132,13 @@ void *crear_consola() {
 			free(comando[4]);
 			comando[4] = NULL;
 			free(insert);
+
+			free(comandoCopia[2]);
+			comandoCopia[2] = NULL;
+			for(i=0;comandoCopia[i]!=NULL;i++)
+				free(comandoCopia[i]);
+			if(comandoCopia) free(comandoCopia);
+			free(comandoValue);
 
 			break;
 
@@ -216,6 +234,9 @@ void *crear_consola() {
 		for(i=0;comando[i]!=NULL;i++)
 			free(comando[i]);
 		if(comando) free(comando);
+
+
+		free(lineaCompleta);
 	}
 	return 0;
 }
