@@ -184,6 +184,7 @@ t_tipoSeeds* get_memoria_por_criterio(char *criterio, int key) {
 				memory = malloc(sizeof(t_tipoSeeds));
 				memset(memory, 0x00, sizeof(t_tipoSeeds));
 				memory->numeroMemoria = -1;
+				pthread_mutex_unlock(&mutex_memoria_sc);
 				return memory;
 			}
 			memory = memoria_sc;

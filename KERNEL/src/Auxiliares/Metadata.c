@@ -20,6 +20,11 @@ void actualizar_metadata() {
 	log_info(logger, "REFRESH| Memoria asignada: %d", memoria->numeroMemoria);
 	int cliente = conectar_a_memoria(memoria);
 
+	if(cliente < 0){
+		log_info(logger, "REFRESH| ERR - NO PUDO CONECTARSE A MEM.");
+		return;
+	}
+
 	// Solicitud
 	describe_global(cliente);
 	log_info(logger, "REFRESH| Finalizado.");
@@ -75,6 +80,10 @@ void describe_global(int cliente) {
 	log_info(logger, "DESCRIBE| Inicio de DESCRIBE");
 	enviarMensaje(kernel, describe_global_, 0, NULL, cliente, logger, mem);
 	t_mensaje* mensajeCantidad = recibirMensaje(cliente, logger);
+	if (mensajeCantidad == NULL) {
+		loggear(logger, LOG_LEVEL_ERROR,"No se pudo recibir mensaje de mem");
+		return;
+	}
 	cantidad = mensajeCantidad->header.error;
 	log_info(logger, "METADATA| La cantidad de tablas es: %d", cantidad);
 	destruirMensaje(mensajeCantidad);

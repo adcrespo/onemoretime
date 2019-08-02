@@ -141,5 +141,14 @@ void cargar_configuracion_kernel_inotify(char* path) {
 	} else {
 		loguear_error_carga_propiedad("SLEEP_EJECUCION");
 	}
+
+	if (config_has_property(config, "RETARDO_GOSSIPING")) {
+		kernel_conf.retardo_gossiping = config_get_int_value(config,
+				"RETARDO_GOSSIPING");
+		loguear_carga_propiedad("RETARDO_GOSSIPING",
+				string_itoa(kernel_conf.retardo_gossiping));
+	} else {
+		loguear_error_carga_propiedad("RETARDO_GOSSIPING");
+	}
 	//mostrar_propiedades();
 }

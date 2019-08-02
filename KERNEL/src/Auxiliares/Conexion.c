@@ -12,7 +12,10 @@ int conectar_a_servidor(char* ip, int puerto, int proceso) {
 	int socket;
 
 	if((socket = definirSocket(logger))<= 0)
+	{
 		log_error(logger, "No se pudo definir socket.");
+		return -1;
+	}
 
 	// sacar esto
 	log_info(logger, "Socket creado: %d", socket);
@@ -20,7 +23,10 @@ int conectar_a_servidor(char* ip, int puerto, int proceso) {
 	log_info(logger, "puerto: %d", puerto);
 
 	if(conectarseAServidor(socket, ip, puerto, logger)<=0)
+	{
 		log_error(logger, "No se pudo conectar a servidor.");
+		return -1;
+	}
 
 	loggear(logger,LOG_LEVEL_INFO, "INICIO Handshake(%d)...", proceso);
 	enviarMensaje(kernel, handshake, 0, NULL, socket, logger, proceso);
