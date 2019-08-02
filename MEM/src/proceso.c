@@ -101,7 +101,7 @@ int proceso_select(char* tabla, int clave, char** buffer, int* largo_buffer) {
 		loggear(logger,LOG_LEVEL_ERROR,"Error en solicitar pagina: %d", paginaNueva);
 		pthread_mutex_unlock(&journalingMutex);
 //		pthread_mutex_unlock(&journalingMutexSelect);
-		return -1;
+		return paginaNueva;
 	}
 
 	int escrito = escribir_bytes_spa(tabla,0,paginaNueva*frame_spa_size,frame_spa_size,*buffer,0);
@@ -150,7 +150,7 @@ int proceso_insert(char* tabla, int clave, char* value, unsigned long long tstam
 		loggear(logger,LOG_LEVEL_ERROR,"Error en escribir_bytes: %d", paginaNueva);
 		pthread_mutex_unlock(&journalingMutex);
 //		pthread_mutex_unlock(&journalingMutexInsert);
-		return -1;
+		return paginaNueva;
 	}
 
 	escrito = escribir_bytes_spa(tabla,0,paginaNueva*frame_spa_size,frame_spa_size,buffer,1);
