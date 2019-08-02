@@ -151,6 +151,8 @@ void remover_memoria(t_tipoSeeds* memoria) {
 			posSHC = i;
 			log_info(logger, "REMOVE | Memoria %d de memorias SHC",
 					memoria->numeroMemoria);
+			//remueve de hashdictionary
+			remove_memoria_hashdictionary(memoria->numeroMemoria);
 			free(list_remove(lista_criterio_shc, posSHC));
 		}
 	}
@@ -172,3 +174,22 @@ void remover_memoria(t_tipoSeeds* memoria) {
 	pthread_mutex_unlock(&mutex_memoria_ev);
 
 }
+
+void remove_memoria_hashdictionary(int numeroMemoria) {
+
+	for (int i = 0; 65535 > i; i++) {
+
+		char *key = string_itoa(i);
+
+		int * memoria_dic = dictionary_get(hashdictionary, key);
+		if (memoria_dic == numeroMemoria) {
+			free(dictionary_remove(hashdictionary, key));
+			log_info(logger, "REMOVE| Memoria %d key %s de diccionario hash",
+					numeroMemoria, key);
+		}
+
+		free(key);
+	}
+
+}
+

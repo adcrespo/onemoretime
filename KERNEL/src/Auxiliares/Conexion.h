@@ -21,6 +21,7 @@ void enviar_journal_ev();
 void enviar_mensaje_journal(t_tipoSeeds *memoria);
 int conectar_a_memoria(t_tipoSeeds* memoria);
 void remover_memoria(t_tipoSeeds* memoria);
+void remove_memoria_hashdictionary(int numeroMemoria);
 
 
 #endif /* AUXILIARES_CONEXION_H_ */
