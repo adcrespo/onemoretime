@@ -194,6 +194,10 @@ int procesar_pcb(t_pcb* pcb) {
 		pcb->program_counter++;
 		log_info(logger, "PLANIFIC| Nuevo Program Counter: %d", pcb->program_counter);
 
+		//libero script
+		for(int j=0;linea[j]!=NULL;j++)
+			free(linea[j]);
+
 	}
 
 	// Saco proceso de EXEC y evaluo si finalizó o vuelve a READY
@@ -404,6 +408,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 			free(req_select);
 			destruirMensaje(resultado_req_select);
 			free(reg);
+			free(buffer);
 
 
 			break;
