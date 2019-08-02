@@ -11,11 +11,23 @@
 #include "../KERNEL.h"
 
 // Structs
-struct t_metric {
-	int duracion;
+typedef struct {
+	float duracion;
 	int contador;
-} t_metric;
+} t_metrics;
+
+t_metrics metric_insert;
+t_metrics metric_select;
+
 
 void* metricas();
+void get_metricas_log();
+void get_metricas_consola();
+void resetear_metricas();
+float get_read_latency();
+float get_write_latency();
+
+
+
 
 #endif /* AUXILIARES_METRICAS_H_ */

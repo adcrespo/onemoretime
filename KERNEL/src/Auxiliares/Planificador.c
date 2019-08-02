@@ -235,7 +235,8 @@ t_registro* descomponer_registro(char *buffer)
 
 int ejecutar_request(char* linea, int id_proceso) {
 
-	int t_inicio, t_fin;
+	unsigned long long t_inicioSelect, t_finSelect;
+	unsigned long long t_inicioInsert, t_finInsert;
 	log_info(logger, "PLANIFIC| Request a ejecutar: %s", linea);
 	t_request* request = parsear(linea, logger);
 	int resultado, cliente;
@@ -248,15 +249,17 @@ int ejecutar_request(char* linea, int id_proceso) {
 			// SELECT [NOMBRE_TABLA] [KEY]
 			// SELECT TABLA1 1
 
-			t_inicio = obtenerTimeStamp();
+		t_inicioSelect = obtenerTimeStamp();
 
 			// VALIDAR EXISTENCIA DE TABLA
 			tabla = buscar_tabla(request->parametro1);
 
 			if(tabla == NULL) {
 				log_info(logger, "PLANIFIC| SELECT: La tabla no existe.");
-				t_fin = obtenerTimeStamp();
-				log_info(logger, "PLANIFIC| SELECT: DURACION: %d segundos", t_fin - t_inicio);
+				metric_select.contador++;
+				t_finSelect = obtenerTimeStamp();
+//				log_info(logger, "PLANIFIC| SELECT: DURACION: %d segundos", t_finSelect - t_inicioSelect);
+				metric_select.duracion += (t_finSelect - t_inicioSelect) / 1000;
 				return -1;
 			}
 
@@ -384,9 +387,10 @@ int ejecutar_request(char* linea, int id_proceso) {
 			log_info(logger, "PLANIFIC| SELECT: RESPUESTA KEY:%d, VALOR:%s TIMESTAMP:%llu", reg->key, reg->value,reg->timestamp);
 
 			// METRICAS
-			t_fin = obtenerTimeStamp();
-			int duracion = (t_fin - t_inicio) / 1000;
-			log_info(logger, "PLANIFIC| SELECT: DURACION %d segundos", duracion);
+			metric_select.contador++;
+			t_finSelect = obtenerTimeStamp();
+			metric_select.duracion += (t_finSelect - t_inicioSelect) / 1000;
+//			log_info(logger, "PLANIFIC| SELECT: DURACION %d segundos", duracion);
 
 			if(resultado_req_select->header.error<0)
 			{
@@ -401,12 +405,13 @@ int ejecutar_request(char* linea, int id_proceso) {
 			destruirMensaje(resultado_req_select);
 			free(reg);
 
+
 			break;
 
 		case _insert:
 			// INSERT [NOMBRE_TABLA] [KEY] “[VALUE]”
 			// INSERT TABLA1 3 “Mi nombre es Lissandra”
-
+			t_inicioInsert = obtenerTimeStamp();
 			if (memoria_sc != NULL)
 				log_info(logger, "VALIDACION| MEMORIA SC: %d", memoria_sc->numeroMemoria);
 
@@ -414,6 +419,9 @@ int ejecutar_request(char* linea, int id_proceso) {
 
 			if(tabla == NULL) {
 				log_info(logger, "PLANIFIC| INSERT: La tabla no existe.");
+				metric_insert.contador++;
+				t_finInsert = obtenerTimeStamp();
+				metric_insert.duracion += (t_finInsert - t_inicioInsert) / 1000;
 				return -1;
 			}
 
@@ -548,6 +556,10 @@ int ejecutar_request(char* linea, int id_proceso) {
 			free(tabla);
 			free(req_insert);
 			destruirMensaje(resultado_req_insert);
+
+			metric_insert.contador++;
+			t_finInsert = obtenerTimeStamp();
+			metric_insert.duracion += (t_finInsert - t_inicioInsert) / 1000;
 
 			break;
 

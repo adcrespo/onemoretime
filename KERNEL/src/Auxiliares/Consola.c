@@ -136,10 +136,11 @@ int procesar_comando(char *line) {
 
 			case _metrics:
 
-				log_info(logger, "Lista NEW: %d elementos.", list_size(lista_new));
-				log_info(logger, "Lista READY: %d elementos.", list_size(lista_ready));
-				log_info(logger, "Lista EXEC: %d elementos.", list_size(lista_exec));
-				log_info(logger, "Lista EXIT: %d elementos.", list_size(lista_exit));
+//				log_info(logger, "Lista NEW: %d elementos.", list_size(lista_new));
+//				log_info(logger, "Lista READY: %d elementos.", list_size(lista_ready));
+//				log_info(logger, "Lista EXEC: %d elementos.", list_size(lista_exec));
+//				log_info(logger, "Lista EXIT: %d elementos.", list_size(lista_exit));
+				get_metricas_consola();
 
 				break;
 
