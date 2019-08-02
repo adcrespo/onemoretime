@@ -107,3 +107,62 @@ int conectar_a_memoria(t_tipoSeeds* memoria) {
 	int puerto = atoi(memoria->puerto);
 	return conectar_a_servidor(memoria->ip, puerto, mem);
 }
+
+void remover_memoria(t_tipoSeeds* memoria) {
+
+	//Busco en mem_asociadas
+	pthread_mutex_lock(&mutex_asociadas);
+	int size_asociadas = list_size(mem_asociadas);
+	int posAsoc = 0;
+	for (int i = 0; size_asociadas > i; i++) {
+		t_tipoSeeds *mem = list_get(mem_asociadas, i);
+		if (memoria->numeroMemoria == mem->numeroMemoria) {
+			posAsoc = i;
+			log_info(logger, "REMOVE | Memoria %d de memorias asociadas",
+					memoria->numeroMemoria);
+			free(list_remove(mem_asociadas, posAsoc));
+		}
+	}
+	pthread_mutex_unlock(&mutex_asociadas);
+
+	//Busco en SC
+	if (memoria->numeroMemoria == memoria_sc->numeroMemoria) {
+		pthread_mutex_lock(&mutex_memoria_sc);
+		memoria_sc = NULL;
+		log_info(logger, "REMOVE | Memoria %d de memoria SC",
+				memoria->numeroMemoria);
+		pthread_mutex_unlock(&mutex_memoria_sc);
+	}
+
+	//Busco en SHC
+	pthread_mutex_lock(&mutex_memoria_shc);
+	int size_shc = list_size(lista_criterio_shc);
+	int posSHC = 0;
+	for (int i = 0; size_shc > i; i++) {
+		t_tipoSeeds *mem = list_get(lista_criterio_shc, i);
+		if (memoria->numeroMemoria == mem->numeroMemoria) {
+			//Si la encontro aca, remover del diccionario
+			posSHC = i;
+			log_info(logger, "REMOVE | Memoria %d de memorias SHC",
+					memoria->numeroMemoria);
+			free(list_remove(lista_criterio_shc, posSHC));
+		}
+	}
+	pthread_mutex_unlock(&mutex_memoria_shc);
+
+	//Busco en EC
+	pthread_mutex_lock(&mutex_memoria_ev);
+	int size_ev = list_size(lista_criterio_ev);
+	int posEC = 0;
+	for (int i = 0; size_ev > i; i++) {
+		t_tipoSeeds *mem = list_get(lista_criterio_ev, i);
+		if (memoria->numeroMemoria == mem->numeroMemoria) {
+			posEC = i;
+			log_info(logger, "REMOVE | Memoria %d de memorias EC",
+					memoria->numeroMemoria);
+			free(list_remove(lista_criterio_ev, posEC));
+		}
+	}
+	pthread_mutex_unlock(&mutex_memoria_ev);
+
+}
