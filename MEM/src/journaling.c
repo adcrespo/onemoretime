@@ -21,11 +21,11 @@ int process_journaling(){
 		return -1;
 	}*/
 	pthread_mutex_lock(&journalingMutex);
-	pthread_mutex_lock(&journalingMutexSelect);
-	pthread_mutex_lock(&journalingMutexInsert);
-	pthread_mutex_lock(&journalingMutexCreate);
-	pthread_mutex_lock(&journalingMutexDescribe);
-	pthread_mutex_lock(&journalingMutexDrop);
+//	pthread_mutex_lock(&journalingMutexSelect);
+//	pthread_mutex_lock(&journalingMutexInsert);
+//	pthread_mutex_lock(&journalingMutexCreate);
+//	pthread_mutex_lock(&journalingMutexDescribe);
+//	pthread_mutex_lock(&journalingMutexDrop);
 
 	loggear(logger,LOG_LEVEL_INFO,"Init JOURNALING...");
 	int i,j;
@@ -38,7 +38,7 @@ int process_journaling(){
 			t_paginas_spa* adm_table_pag = list_get(adm_table_seg->pag_lista,j);
 			loggear(logger,LOG_LEVEL_INFO,"Pagina: %d, Frame: %d, Modificado: %d, TS: %llu",
 					j, adm_table_pag->frame, adm_table_pag->modificado, adm_table_pag->timestamp);
-			if(adm_table_pag->modificado==1) {
+			//if(adm_table_pag->modificado==1) {
 				loggear(logger,LOG_LEVEL_INFO,"Enviando INSERT");
 				sleep(MEM_CONF.RETARDO_FS/1000);
 				char* buffer_leer = leer_bytes_spa(adm_table->path_tabla,0,j*frame_spa_size,frame_spa_size);
@@ -55,11 +55,11 @@ int process_journaling(){
 				if(mensaje == NULL) {
 					loggear(logger,LOG_LEVEL_ERROR,"No se pudo recibir mensaje de lis");
 					pthread_mutex_unlock(&journalingMutex);
-					pthread_mutex_unlock(&journalingMutexSelect);
-					pthread_mutex_unlock(&journalingMutexInsert);
-					pthread_mutex_unlock(&journalingMutexCreate);
-					pthread_mutex_unlock(&journalingMutexDescribe);
-					pthread_mutex_unlock(&journalingMutexDrop);
+//					pthread_mutex_unlock(&journalingMutexSelect);
+//					pthread_mutex_unlock(&journalingMutexInsert);
+//					pthread_mutex_unlock(&journalingMutexCreate);
+//					pthread_mutex_unlock(&journalingMutexDescribe);
+//					pthread_mutex_unlock(&journalingMutexDrop);
 					_exit_with_error("ERROR - Se desconecto LISSANDRA",NULL);
 				}
 				int insert_error = mensaje->header.error;
@@ -68,24 +68,24 @@ int process_journaling(){
 				if(insert_error != 0) {
 					loggear(logger,LOG_LEVEL_ERROR,"No se pudo insertar en lis correctamente");
 					pthread_mutex_unlock(&journalingMutex);
-					pthread_mutex_unlock(&journalingMutexSelect);
-					pthread_mutex_unlock(&journalingMutexInsert);
-					pthread_mutex_unlock(&journalingMutexCreate);
-					pthread_mutex_unlock(&journalingMutexDescribe);
-					pthread_mutex_unlock(&journalingMutexDrop);
+//					pthread_mutex_unlock(&journalingMutexSelect);
+//					pthread_mutex_unlock(&journalingMutexInsert);
+//					pthread_mutex_unlock(&journalingMutexCreate);
+//					pthread_mutex_unlock(&journalingMutexDescribe);
+//					pthread_mutex_unlock(&journalingMutexDrop);
 					return insert_error;
 				}
 				free_spa(adm_table->path_tabla,j);
-			}
+			//}
 		}
 	}
 	loggear(logger,LOG_LEVEL_INFO,"End JOURNALING...");
 	pthread_mutex_unlock(&journalingMutex);
-	pthread_mutex_unlock(&journalingMutexSelect);
-	pthread_mutex_unlock(&journalingMutexInsert);
-	pthread_mutex_unlock(&journalingMutexCreate);
-	pthread_mutex_unlock(&journalingMutexDescribe);
-	pthread_mutex_unlock(&journalingMutexDrop);
+//	pthread_mutex_unlock(&journalingMutexSelect);
+//	pthread_mutex_unlock(&journalingMutexInsert);
+//	pthread_mutex_unlock(&journalingMutexCreate);
+//	pthread_mutex_unlock(&journalingMutexDescribe);
+//	pthread_mutex_unlock(&journalingMutexDrop);
 	return 0;
 }
 
@@ -103,11 +103,11 @@ void *crearJournaling() {
 int crearHiloJournaling()
 {
 	pthread_mutex_init (&journalingMutex, NULL);
-	pthread_mutex_init (&journalingMutexSelect, NULL);
-	pthread_mutex_init (&journalingMutexInsert, NULL);
-	pthread_mutex_init (&journalingMutexCreate, NULL);
-	pthread_mutex_init (&journalingMutexDescribe, NULL);
-	pthread_mutex_init (&journalingMutexDrop, NULL);
+//	pthread_mutex_init (&journalingMutexSelect, NULL);
+//	pthread_mutex_init (&journalingMutexInsert, NULL);
+//	pthread_mutex_init (&journalingMutexCreate, NULL);
+//	pthread_mutex_init (&journalingMutexDescribe, NULL);
+//	pthread_mutex_init (&journalingMutexDrop, NULL);
 
 	sigset_t set;
 	int s;

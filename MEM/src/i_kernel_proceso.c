@@ -23,7 +23,8 @@ int proceso_describe_global(char* tabla,int socketKER, fd_set* set_master){
 	t_mensaje* mensajeDescribe=NULL;
 
 	//SEM_MUTEX
-	pthread_mutex_lock(&journalingMutexDescribe);
+	pthread_mutex_lock(&journalingMutex);
+//	pthread_mutex_lock(&journalingMutexDescribe);
 
 	//PROCESO_COUNT-TABLE
 	cantidad=1;
@@ -33,7 +34,8 @@ int proceso_describe_global(char* tabla,int socketKER, fd_set* set_master){
 		mensajeCantidad = recibirMensaje(socket_lis, logger);
 		if(mensajeCantidad == NULL) {
 			loggear(logger,LOG_LEVEL_ERROR,"No se pudo recibir mensaje de lis");
-			pthread_mutex_unlock(&journalingMutexDescribe);
+			pthread_mutex_unlock(&journalingMutex);
+//			pthread_mutex_unlock(&journalingMutexDescribe);
 			_exit_with_error("ERROR - Se desconecto LISSANDRA",NULL);
 		}
 		cantidad=mensajeCantidad->header.error;
@@ -76,7 +78,8 @@ int proceso_describe_global(char* tabla,int socketKER, fd_set* set_master){
 
 		if(mensajeDescribe == NULL) {
 			loggear(logger,LOG_LEVEL_ERROR,"No se pudo recibir mensaje de lis");
-			pthread_mutex_unlock(&journalingMutexDescribe);
+			pthread_mutex_unlock(&journalingMutex);
+//			pthread_mutex_unlock(&journalingMutexDescribe);
 			_exit_with_error("ERROR - Se desconecto LISSANDRA",NULL);
 		}
 
@@ -101,7 +104,8 @@ int proceso_describe_global(char* tabla,int socketKER, fd_set* set_master){
 	free(content);
 
 	//SEM_MUTEX
-	pthread_mutex_unlock(&journalingMutexDescribe);
+	pthread_mutex_unlock(&journalingMutex);
+//	pthread_mutex_unlock(&journalingMutexDescribe);
 
 	return 1;
 }
