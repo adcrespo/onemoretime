@@ -36,8 +36,8 @@ t_tipoSeeds* obtener_memoria_lista_SHC(int numero){
 	log_info(logger, "CRITERIO| Buscando memoria %d en lista_criterio_shc", numero);
 //	return list_find(LISTA_CONN, &findMemory);
 	pthread_mutex_lock(&mutex_memoria_shc);
-	t_tipoSeeds* mem = list_get(lista_criterio_shc,numero);
-//	t_tipoSeeds* mem = list_find(lista_criterio_shc, (void *)findMemory);
+//	t_tipoSeeds* mem = list_get(lista_criterio_shc,numero);
+	t_tipoSeeds* mem = list_find(lista_criterio_shc, (void *)findMemory);
 	pthread_mutex_unlock(&mutex_memoria_shc);
 
 	if (mem != NULL) {
@@ -243,7 +243,9 @@ int get_memory_hash_SHC(int key) {
 
 		int randomMemoria = key % sizeLista;
 
+		pthread_mutex_lock(&mutex_memoria_shc);
 		t_tipoSeeds *memoryRandom = list_get(lista_criterio_shc,randomMemoria);
+		pthread_mutex_unlock(&mutex_memoria_shc);
 
 		int * memoria = malloc(sizeof(int));
 

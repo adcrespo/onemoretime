@@ -182,7 +182,7 @@ void remove_memoria_hashdictionary(int numeroMemoria) {
 		char *key = string_itoa(i);
 
 		int * memoria_dic = dictionary_get(hashdictionary, key);
-		if (memoria_dic == numeroMemoria) {
+		if (* memoria_dic == numeroMemoria) {
 			free(dictionary_remove(hashdictionary, key));
 			log_info(logger, "REMOVE| Memoria %d key %s de diccionario hash",
 					numeroMemoria, key);
