@@ -191,6 +191,10 @@ int procesar_pcb(t_pcb* pcb) {
 			pthread_mutex_unlock(&mutex_exit);
 
 			log_info(logger, "PLANIFIC| Proceso %d pasa a EXIT", pcb->id_proceso);
+			//libero script
+			for(int j=0;linea[j]!=NULL;j++)
+				free(linea[j]);
+			if(linea) free(linea);
 			return EXIT_FAILURE;
 		}
 
@@ -328,7 +332,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 			{
 				log_info(logger, "PLANIFIC| SELECT - NO SE PUDO CONECTAR MEMORIA: %d",memoria->numeroMemoria);
 				remover_memoria(memoria);
-				free (memoria);
+//				free (memoria);
 				free(tabla);
 				free(request);
 				return 0;
@@ -344,7 +348,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 
 				if(resultadoJournal > 0)
 				{
-					free (memoria);
+//					free (memoria);
 					// VOLVER A ENVIAR EL MSJ SELECT
 					memoria = get_memoria_por_criterio(tabla->tipoConsistencia, req_select->key);
 					if (memoria->numeroMemoria <0)
@@ -388,7 +392,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 			{
 				log_info(logger, "PLANIFIC| SELECT - NO SE PUDO CONECTAR MEMORIA: %d",memoria->numeroMemoria);
 				remover_memoria(memoria);
-				free (memoria);
+//				free (memoria);
 				free(tabla);
 				free(request);
 				return 0;
@@ -505,7 +509,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 			{
 				log_info(logger, "PLANIFIC| SELECT - NO SE PUDO CONECTAR MEMORIA: %d",memoria->numeroMemoria);
 				remover_memoria(memoria);
-				free (memoria);
+//				free (memoria);
 				free(request);
 				return 0;
 			}
@@ -520,7 +524,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 
 				if(resultado > 0)
 				{
-					free (memoria);
+//					free (memoria);
 					//VOLVER A ENVIAR EL MSJ - INSERT
 					memoria = get_memoria_por_criterio(tabla->tipoConsistencia, req_insert->key);
 					if (memoria->numeroMemoria <0)
@@ -566,7 +570,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 			{
 				log_info(logger, "PLANIFIC| SELECT - NO SE PUDO CONECTAR MEMORIA: %d",memoria->numeroMemoria);
 				remover_memoria(memoria);
-				free (memoria);
+//				free (memoria);
 				free(request);
 				return 0;
 			}
@@ -639,7 +643,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 			{
 				log_info(logger, "PLANIFIC| SELECT - NO SE PUDO CONECTAR MEMORIA: %d",memoria->numeroMemoria);
 				remover_memoria(memoria);
-				free (memoria);
+//				free (memoria);
 				free(request);
 				return 0;
 			}
@@ -658,7 +662,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 
 			resultado = resultado_req_create->header.error; // Cambiar por lo que devuelve la memoria.
 
-			free (memoria);
+//			free (memoria);
 			free(req_create);
 			destruirMensaje(resultado_req_create);
 
@@ -756,7 +760,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 				{
 					log_info(logger, "PLANIFIC| SELECT - NO SE PUDO CONECTAR MEMORIA: %d",memoria->numeroMemoria);
 					remover_memoria(memoria);
-					free (memoria);
+//					free (memoria);
 					free(tabla);
 					free(request);
 					return 0;
@@ -768,7 +772,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 				log_info(logger, "PLANIFIC| DESCRIBE: RESULTADO METADATA TABLA %s| Metadata: %s",req_describe->nombreTabla, buffer_describe);
 				resultado = msg_describe->header.error;
 				//guardar_metadata(buffer_describe);
-				free (memoria);
+//				free (memoria);
 				free(tabla);
 				destruirMensaje(msg_describe);
 				free(buffer_describe);
@@ -842,7 +846,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 			{
 				log_info(logger, "PLANIFIC| SELECT - NO SE PUDO CONECTAR MEMORIA: %d",memoria->numeroMemoria);
 				remover_memoria(memoria);
-				free (memoria);
+//				free (memoria);
 				free(tabla);
 				free(request);
 				return 0;
@@ -863,7 +867,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 
 			resultado = resultado_req_drop->header.error; // Cambiar por lo que devuelve la memoria.
 
-			free (memoria);
+//			free (memoria);
 			free(tabla);
 			free(req_drop);
 			destruirMensaje(resultado_req_drop);

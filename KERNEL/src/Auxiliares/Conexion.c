@@ -122,6 +122,8 @@ void remover_memoria(t_tipoSeeds* memoria) {
 	int posAsoc = 0;
 	for (int i = 0; size_asociadas > i; i++) {
 		t_tipoSeeds *mem = list_get(mem_asociadas, i);
+		log_info(logger, "REMOVE | MEMORIAS ASOCIADAS %d",
+				mem->numeroMemoria);
 		if (memoria->numeroMemoria == mem->numeroMemoria) {
 			posAsoc = i;
 			log_info(logger, "REMOVE | Memoria %d de memorias asociadas",
