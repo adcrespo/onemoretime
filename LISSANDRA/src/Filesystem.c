@@ -512,6 +512,7 @@ t_list *BuscarKeyTemporales(int key, char *tabla) {
 	t_list *tempBlocksCollection = list_create();
 
 	//busco todos los bloques de los tmp
+	pthread_mutex_lock(&mutex_temp);
 	while ((entry = readdir(dir)) != NULL) {
 		if (string_ends_with(entry->d_name, ".tmp")) {
 
@@ -535,6 +536,7 @@ t_list *BuscarKeyTemporales(int key, char *tabla) {
 	}
 
 	closedir(dir);
+	pthread_mutex_unlock(&mutex_temp);
 
 	//leo bloque por bloque y agrego registro si es la key buscada
 	int lenghtCollection = list_size(tempBlocksCollection);

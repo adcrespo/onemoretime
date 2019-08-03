@@ -176,7 +176,9 @@ int procesar_pcb(t_pcb* pcb) {
 		// Parsear request y procesarlo
 		char **linea = string_split(pcb->script, "\n");
 
+		pthread_mutex_lock(&mutex_request);
 		int resultado = ejecutar_request(linea[pcb->program_counter], pcb->id_proceso);
+		pthread_mutex_unlock(&mutex_request);
 
 		// Si el request falla, se termina el proceso
 		if(resultado < 0) {

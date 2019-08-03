@@ -47,6 +47,7 @@ pthread_mutex_t mutex_new;
 pthread_mutex_t mutex_ready;
 pthread_mutex_t mutex_exec;
 pthread_mutex_t mutex_exit;
+pthread_mutex_t mutex_request;
 
 
 /* Definición de tipos */
