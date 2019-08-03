@@ -156,7 +156,8 @@ int proceso_insert(char* tabla, int clave, char* value, unsigned long long tstam
 	escrito = escribir_bytes_spa(tabla,0,paginaNueva*frame_spa_size,frame_spa_size,buffer,1);
 	if(escrito<0){
 		free(buffer);
-		loggear(logger,LOG_LEVEL_ERROR,"Error en escribir_bytes: %d", escrito);
+		loggear(logger,LOG_LEVEL_ERROR,"Error en escribir_bytes(1/2): %d, tabla %s", paginaNueva, tabla);
+		loggear(logger,LOG_LEVEL_ERROR,"Error en escribir_bytes(1/2): %d", escrito);
 		pthread_mutex_unlock(&journalingMutex);
 //		pthread_mutex_unlock(&journalingMutexInsert);
 		return -1;

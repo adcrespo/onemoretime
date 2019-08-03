@@ -337,10 +337,12 @@ char* leer_bytes_spa(char* path_table, int segmento, int offset, int size) {
 		adm_table_seg = list_get(adm_table->seg_lista,segmento);
 		if(adm_table_seg==NULL)
 			break;
-		segmento += (offset/(list_size(adm_table_seg->pag_lista)*frame_spa_size))>=1? 1:0;
+		//segmento += (offset/(list_size(adm_table_seg->pag_lista)*frame_spa_size))>=1? 1:0;
 		offset = (offset/(list_size(adm_table_seg->pag_lista)*frame_spa_size))>=1? offset-(list_size(adm_table_seg->pag_lista)*frame_spa_size):offset;
 	} while(offset>(list_size(adm_table_seg->pag_lista)*frame_spa_size));
 
+	loggear(logger,LOG_LEVEL_DEBUG, "Segmento %d, offset %d, size pag %d, frame spa %d",
+				segmento, offset, list_size(adm_table_seg->pag_lista), frame_spa_size);
 	adm_table_seg = list_get(adm_table->seg_lista,segmento);
 
 	loggear(logger,LOG_LEVEL_DEBUG, "%s",
@@ -375,10 +377,12 @@ int escribir_bytes_spa(char* path_table, int segmento, int offset, int size, cha
 		adm_table_seg = list_get(adm_table->seg_lista,segmento);
 		if(adm_table_seg==NULL)
 			break;
-		segmento += (offset/(list_size(adm_table_seg->pag_lista)*frame_spa_size))>=1? 1:0;
+		//segmento += (offset/(list_size(adm_table_seg->pag_lista)*frame_spa_size))>=1? 1:0;
 		offset = (offset/(list_size(adm_table_seg->pag_lista)*frame_spa_size))>=1? offset-(list_size(adm_table_seg->pag_lista)*frame_spa_size):offset;
 	} while(offset>(list_size(adm_table_seg->pag_lista)*frame_spa_size));
 
+	loggear(logger,LOG_LEVEL_DEBUG, "Segmento %d, offset %d, size pag %d, frame spa %d",
+			segmento, offset, list_size(adm_table_seg->pag_lista), frame_spa_size);
 	adm_table_seg = list_get(adm_table->seg_lista,segmento);
 
 	loggear(logger,LOG_LEVEL_DEBUG, "%s",
