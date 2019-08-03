@@ -15,11 +15,14 @@ void CargarConfigLFS() {
 
 	if (config_has_property(config, "PUERTO"))
 		lfs_conf.puerto = config_get_string_value(config, "PUERTO");
+	remove_quotes(lfs_conf.puerto);
+	string_trim_right(&lfs_conf.puerto);
 
 	if (config_has_property(config, "PUNTO_MONTAJE"))
 		lfs_conf.punto_montaje = config_get_string_value(config,
 				"PUNTO_MONTAJE");
 	remove_quotes(lfs_conf.punto_montaje);
+	string_trim_right(&lfs_conf.punto_montaje);
 
 	if (config_has_property(config, "RETARDO"))
 		lfs_conf.retardo = config_get_int_value(config, "RETARDO");
@@ -47,11 +50,14 @@ void get_modify_config(char* path) {
 
 	if (config_has_property(config, "PUERTO"))
 		lfs_conf.puerto = config_get_string_value(config, "PUERTO");
+	remove_quotes(lfs_conf.puerto);
+	string_trim_right(&lfs_conf.puerto);
 
 	if (config_has_property(config, "PUNTO_MONTAJE"))
 		lfs_conf.punto_montaje = config_get_string_value(config,
 				"PUNTO_MONTAJE");
 	remove_quotes(lfs_conf.punto_montaje);
+	string_trim_right(&lfs_conf.punto_montaje);
 
 	if (config_has_property(config, "RETARDO"))
 		lfs_conf.retardo = config_get_int_value(config, "RETARDO");

@@ -411,7 +411,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 			metric_select.duracion += (t_finSelect - t_inicioSelect) / 1000;
 //			log_info(logger, "PLANIFIC| SELECT: DURACION %d segundos", duracion);
 
-			if(resultado_req_select->header.error<0)
+			if(resultado_req_select->header.error == -100)
 			{
 				resultado = resultado_req_select->header.error; // Cambiar por lo que devuelve la memoria.
 			}else{
