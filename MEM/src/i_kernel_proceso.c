@@ -39,12 +39,13 @@ int proceso_describe_global(char* tabla,int socketKER, fd_set* set_master){
 			_exit_with_error("ERROR - Se desconecto LISSANDRA",NULL);
 		}
 		cantidad=mensajeCantidad->header.error;
+		enviarMensajeConError(mem,countTables,mensajeCantidad->header.longitud,mensajeCantidad->content,socketKER,logger,kernel,mensajeCantidad->header.error);
 		//loggear(logger,LOG_LEVEL_INFO, "CANTIDAD DE TABLAS DESCRIBE: %d",cantidad);
-		if(enviarMensajeConError(mem,countTables,mensajeCantidad->header.longitud,mensajeCantidad->content,socketKER,logger,kernel,mensajeCantidad->header.error)<=0)
-		{
-			close(socketKER);
-			FD_CLR(socketKER, set_master);
-		}
+//		if(enviarMensajeConError(mem,countTables,mensajeCantidad->header.longitud,mensajeCantidad->content,socketKER,logger,kernel,mensajeCantidad->header.error)<=0)
+//		{
+//			close(socketKER);
+//			FD_CLR(socketKER, set_master);
+//		}
 		loggear(logger,LOG_LEVEL_INFO, " MSJ ENVIADO KERNEL");
 
 		//PROCESO_DESCRIBE - GLOBAL
