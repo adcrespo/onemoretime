@@ -278,6 +278,7 @@ t_tipoSeeds * get_memoria_asociada() {
 		memory=malloc(sizeof(t_tipoSeeds));
 		memset(memory, 0x00, sizeof(t_tipoSeeds));
 		memory->numeroMemoria = -1;
+		pthread_mutex_unlock(&mutex_asociadas);
 		return memory;
 	}
 

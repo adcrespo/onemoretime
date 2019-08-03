@@ -122,7 +122,7 @@ int procesar_comando(char *line) {
 					list_add(mem_asociadas, mem);
 					pthread_mutex_unlock(&mutex_asociadas);
 				}
-
+				actualizar_metadata();
 
 				break;
 
