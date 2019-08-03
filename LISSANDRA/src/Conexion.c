@@ -2,7 +2,7 @@
  * Conexion.c
  *
  *  Created on: 3 may. 2019
- *      Author: utnso
+ *      Author: utnso Registro key:
  */
 #include "Conexion.h"
 #include "Configuracion.h"
