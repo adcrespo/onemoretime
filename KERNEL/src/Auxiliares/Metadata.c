@@ -15,7 +15,8 @@ void actualizar_metadata() {
 
 	log_info(logger, "REFRESH| Iniciando.");
 
-	t_tipoSeeds *memoria = get_memoria_conectada();
+	//t_tipoSeeds *memoria = get_memoria_conectada();
+	t_tipoSeeds *memoria = get_memoria_asociada();
 
 	log_info(logger, "REFRESH| Memoria asignada: %d", memoria->numeroMemoria);
 	int cliente = conectar_a_memoria(memoria);
