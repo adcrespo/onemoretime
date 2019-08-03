@@ -118,13 +118,11 @@ int procesar_comando(char *line) {
 					t_tipoSeeds* memoria = obtener_memoria_lista(numeroMemoria);
 					t_tipoSeeds* mem = malloc(sizeof(t_tipoSeeds));
 					memcpy(mem, memoria, sizeof(t_tipoSeeds));
-//					pthread_mutex_lock(&mutex_asociadas);
+					pthread_mutex_lock(&mutex_asociadas);
 					list_add(mem_asociadas, mem);
-//					pthread_mutex_unlock(&mutex_asociadas);
+					pthread_mutex_unlock(&mutex_asociadas);
 				}
-				pthread_mutex_lock(&mutex_request);
-				actualizar_metadata();
-				pthread_mutex_unlock(&mutex_request);
+
 
 				break;
 

@@ -67,19 +67,18 @@ void inicializar_semaforos() {
 	sem_init(&sem_exit, 0, 0);
 
 	sem_init(&sem_multiprog, 0, kernel_conf.multiprocesamiento);
-//	pthread_mutex_init(&mutex_metadata, NULL);
-//	pthread_mutex_init(&mutex_memoria_sc, NULL);
-//	pthread_mutex_init(&mutex_memoria_shc, NULL);
-//	pthread_mutex_init(&mutex_memoria_ev, NULL);
+	pthread_mutex_init(&mutex_metadata, NULL);
+	pthread_mutex_init(&mutex_memoria_sc, NULL);
+	pthread_mutex_init(&mutex_memoria_shc, NULL);
+	pthread_mutex_init(&mutex_memoria_ev, NULL);
 
 	pthread_mutex_init(&mutex_LISTA_CONN, NULL);
 
-//	pthread_mutex_init(&mutex_new, NULL);
-//	pthread_mutex_init(&mutex_ready, NULL);
-//	pthread_mutex_init(&mutex_exec, NULL);
-//	pthread_mutex_init(&mutex_exit, NULL);
-//	pthread_mutex_init(&mutex_asociadas, NULL);
-	pthread_mutex_init(&mutex_request, NULL);
+	pthread_mutex_init(&mutex_new, NULL);
+	pthread_mutex_init(&mutex_ready, NULL);
+	pthread_mutex_init(&mutex_exec, NULL);
+	pthread_mutex_init(&mutex_exit, NULL);
+	pthread_mutex_init(&mutex_asociadas, NULL);
 }
 
 void inicializar_listas() {

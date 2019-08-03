@@ -15,8 +15,7 @@ void actualizar_metadata() {
 
 	log_info(logger, "REFRESH| Iniciando.");
 
-	//t_tipoSeeds *memoria = get_memoria_conectada();
-	t_tipoSeeds *memoria = get_memoria_asociada();
+	t_tipoSeeds *memoria = get_memoria_conectada();
 
 	log_info(logger, "REFRESH| Memoria asignada: %d", memoria->numeroMemoria);
 	int cliente = conectar_a_memoria(memoria);
@@ -91,7 +90,7 @@ void describe_global(int cliente) {
 
 	int longAcum = 0;
 
-//	pthread_mutex_lock(&mutex_metadata);
+	pthread_mutex_lock(&mutex_metadata);
 	limpiar_metadata();
 	while (cantidad-- > 0) {
 
@@ -99,6 +98,7 @@ void describe_global(int cliente) {
 		if (mensaje == NULL) {
 			loggear(logger, LOG_LEVEL_ERROR,
 					"No se pudo recibir mensaje de mem");
+			pthread_mutex_unlock(&mutex_metadata);
 			return;
 		}
 		log_info(logger, "DESCRIBE| Mensaje recibido: %d", cantidad);
@@ -112,7 +112,7 @@ void describe_global(int cliente) {
 		destruirMensaje(mensaje);
 		free(buffer_describe);
 	}
-//	pthread_mutex_unlock(&mutex_metadata);
+	pthread_mutex_unlock(&mutex_metadata);
 }
 
 int validar_tabla(char *nombre){
@@ -120,9 +120,9 @@ int validar_tabla(char *nombre){
 			t_metadata *metadata = element;
 			return string_equals_ignore_case(nombre, metadata->nombreTabla);
 		}
-//	pthread_mutex_lock(&mutex_metadata);
+	pthread_mutex_lock(&mutex_metadata);
 	int result = list_any_satisfy(lista_metadata, &findMd);
-//	pthread_mutex_unlock(&mutex_metadata);
+	pthread_mutex_unlock(&mutex_metadata);
 
 	return result;
 }
@@ -136,13 +136,13 @@ t_metadata* buscar_tabla(char *nombre) {
 
 	loggear(logger, LOG_LEVEL_INFO, "Buscando %s en Metadata", nombre);
 
-//	pthread_mutex_lock(&mutex_metadata);
+	pthread_mutex_lock(&mutex_metadata);
 	t_metadata* tabla = list_find(lista_metadata, (void*) esLaTabla);
 	if(tabla!=NULL){
 		tablaEncontrada = malloc(sizeof(t_metadata));
 		memcpy(tablaEncontrada,tabla,sizeof(t_metadata));
 	}
-//	pthread_mutex_unlock(&mutex_metadata);
+	pthread_mutex_unlock(&mutex_metadata);
 
 	return tablaEncontrada;
 }

@@ -35,10 +35,10 @@ t_tipoSeeds* obtener_memoria_lista_SHC(int numero){
 
 	log_info(logger, "CRITERIO| Buscando memoria %d en lista_criterio_shc", numero);
 //	return list_find(LISTA_CONN, &findMemory);
-//	pthread_mutex_lock(&mutex_memoria_shc);
+	pthread_mutex_lock(&mutex_memoria_shc);
 //	t_tipoSeeds* mem = list_get(lista_criterio_shc,numero);
 	t_tipoSeeds* mem = list_find(lista_criterio_shc, (void *)findMemory);
-//	pthread_mutex_unlock(&mutex_memoria_shc);
+	pthread_mutex_unlock(&mutex_memoria_shc);
 
 	if (mem != NULL) {
 		log_info(logger, "CRITERIO| CRITERIOS BUSQUEDA SHC | Memoria devuelta por FIND %d", mem->numeroMemoria);
@@ -97,11 +97,11 @@ int agregar_memoria_a_criterio(int nro_memoria, char* criterio) {
 
 			if(memoria_sc == NULL){
 
-//				pthread_mutex_lock(&mutex_memoria_sc);
+				pthread_mutex_lock(&mutex_memoria_sc);
 				memoria_sc = malloc(sizeof(t_tipoSeeds));
 				memcpy(memoria_sc, memoria,sizeof(t_tipoSeeds));
 				log_info(logger, "CRITERIO| Memoria %d asignada a %s.", nro_memoria, criterio);
-//				pthread_mutex_unlock(&mutex_memoria_sc);
+				pthread_mutex_unlock(&mutex_memoria_sc);
 
 				resultado = 1;
 
@@ -112,7 +112,7 @@ int agregar_memoria_a_criterio(int nro_memoria, char* criterio) {
 
 		case SHC:
 
-//			pthread_mutex_lock(&mutex_memoria_shc);
+			pthread_mutex_lock(&mutex_memoria_shc);
 			if (!existe_memoria(memoria, lista_criterio_shc)) {
 
 				t_tipoSeeds* memoriaSHC = malloc(sizeof(t_tipoSeeds));
@@ -124,14 +124,14 @@ int agregar_memoria_a_criterio(int nro_memoria, char* criterio) {
 			} else {
 				log_info(logger, "CRITERIO| Memoria %d ya existe en %s.", nro_memoria, criterio);
 			}
-//			pthread_mutex_unlock(&mutex_memoria_shc);
+			pthread_mutex_unlock(&mutex_memoria_shc);
 
 
 			break;
 
 		case EC:
 
-//			pthread_mutex_lock(&mutex_memoria_ev);
+			pthread_mutex_lock(&mutex_memoria_ev);
 			if (!existe_memoria(memoria, lista_criterio_ev)) {
 
 				t_tipoSeeds* memoriaEV = malloc(sizeof(t_tipoSeeds));
@@ -143,7 +143,7 @@ int agregar_memoria_a_criterio(int nro_memoria, char* criterio) {
 			} else {
 				log_info(logger, "CRITERIO| Memoria %d ya existe en %s.", nro_memoria, criterio);
 			}
-//			pthread_mutex_unlock(&mutex_memoria_ev);
+			pthread_mutex_unlock(&mutex_memoria_ev);
 
 
 			break;
@@ -181,16 +181,16 @@ t_tipoSeeds* get_memoria_por_criterio(char *criterio, int key) {
 	int tipo_criterio = criterio_to_enum(criterio);
 	switch (tipo_criterio) {
 		case SC:
-//			pthread_mutex_lock(&mutex_memoria_sc);
+			pthread_mutex_lock(&mutex_memoria_sc);
 			if (memoria_sc == NULL) {
 				memory = malloc(sizeof(t_tipoSeeds));
 				memset(memory, 0x00, sizeof(t_tipoSeeds));
 				memory->numeroMemoria = -1;
-//				pthread_mutex_unlock(&mutex_memoria_sc);
+				pthread_mutex_unlock(&mutex_memoria_sc);
 				return memory;
 			}
 			memory = memoria_sc;
-//			pthread_mutex_unlock(&mutex_memoria_sc);
+			pthread_mutex_unlock(&mutex_memoria_sc);
 			break;
 
 		case SHC:;
@@ -234,9 +234,9 @@ int get_memory_hash_SHC(int key) {
 
 	if (memoria_dic == NULL) {
 
-//		pthread_mutex_lock(&mutex_memoria_shc);
+		pthread_mutex_lock(&mutex_memoria_shc);
 		int sizeLista = list_size(lista_criterio_shc);
-//		pthread_mutex_unlock(&mutex_memoria_shc);
+		pthread_mutex_unlock(&mutex_memoria_shc);
 
 		log_info(logger, "Hash| tamaño lista_criterio_shc  %d", sizeLista);
 
@@ -245,9 +245,9 @@ int get_memory_hash_SHC(int key) {
 
 		int randomMemoria = key % sizeLista;
 
-//		pthread_mutex_lock(&mutex_memoria_shc);
+		pthread_mutex_lock(&mutex_memoria_shc);
 		t_tipoSeeds *memoryRandom = list_get(lista_criterio_shc,randomMemoria);
-//		pthread_mutex_unlock(&mutex_memoria_shc);
+		pthread_mutex_unlock(&mutex_memoria_shc);
 
 		int * memoria = malloc(sizeof(int));
 
@@ -269,7 +269,7 @@ int get_memory_hash_SHC(int key) {
 
 t_tipoSeeds * get_memoria_asociada() {
 	int n;
-//	pthread_mutex_lock(&mutex_asociadas);
+	pthread_mutex_lock(&mutex_asociadas);
 	int size_mem = list_size(mem_asociadas);
 
 	t_tipoSeeds *memory;
@@ -278,13 +278,13 @@ t_tipoSeeds * get_memoria_asociada() {
 		memory=malloc(sizeof(t_tipoSeeds));
 		memset(memory, 0x00, sizeof(t_tipoSeeds));
 		memory->numeroMemoria = -1;
-//		pthread_mutex_unlock(&mutex_asociadas);
+		pthread_mutex_unlock(&mutex_asociadas);
 		return memory;
 	}
 
 	n = rand() % size_mem;
 	memory = list_get(mem_asociadas, n);
-//	pthread_mutex_unlock(&mutex_asociadas);
+	pthread_mutex_unlock(&mutex_asociadas);
 
 	return memory;
 }
