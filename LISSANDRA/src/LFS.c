@@ -34,5 +34,6 @@ void Inicializar()
 	listaHilos = list_create();
 
 	pthread_mutex_init(&mutex_temp, NULL);
-
+	pthread_mutex_init(&mutex_compactacion, NULL);
+	pthread_mutex_init(&mutex_bitmap, NULL);
 }

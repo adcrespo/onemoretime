@@ -102,7 +102,9 @@ void procesar(int n_descriptor, fd_set* set_master) {
 
 			loggear(logger, LOG_LEVEL_INFO, "Value :%s", msginsert->value);
 
+			pthread_mutex_lock(&mutex_compactacion);
 			int resultadoInsert = InsertarTabla(msginsert);
+			pthread_mutex_unlock(&mutex_compactacion);
 
 			loggear(logger, LOG_LEVEL_WARNING, "Resultado insert :%d",
 					resultadoInsert);
@@ -154,7 +156,9 @@ void procesar(int n_descriptor, fd_set* set_master) {
 			memcpy(selectMensaje, msg->content, msg->header.longitud);
 			loggear(logger, LOG_LEVEL_INFO, "Buscando key: %d en tabla: %s",
 					selectMensaje->key, selectMensaje->nombreTabla);
+			pthread_mutex_lock(&mutex_compactacion);
 			t_registro *resultado = BuscarKey(selectMensaje);
+			pthread_mutex_unlock(&mutex_compactacion);
 			aplicar_retardo();
 			if (resultado != NULL && resultado->key != -1) {
 				enviarMensajeConError(lis, selectMsg, sizeof(t_registro),

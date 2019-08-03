@@ -255,12 +255,12 @@ int InsertarTabla(t_insert *insert) {
 	}
 
 	//Valido tabla bloqueada
-	int bloqueado = GetEstadoTabla(nombre_tabla);
-	if(bloqueado){
-		//free(insert);
-		free(nombre_tabla);
-		return -1;
-	}
+//	int bloqueado = GetEstadoTabla(nombre_tabla);
+//	if(bloqueado){
+//		//free(insert);
+//		free(nombre_tabla);
+//		return -1;
+//	}
 
 	//Verifico si no tiene datos a dumpear
 	t_tabla *tabla;
@@ -330,12 +330,12 @@ t_registro* BuscarKey(t_select *selectMsg) {
 		return registroInit;
 	}
 
-	int bloqueado = GetEstadoTabla(selectMsg->nombreTabla);
-	if(bloqueado){
-		t_registro *registroInit = malloc(sizeof(t_registro));
-		registroInit->key = -1;
-		return registroInit;
-	}
+//	int bloqueado = GetEstadoTabla(selectMsg->nombreTabla);
+//	if(bloqueado){
+//		t_registro *registroInit = malloc(sizeof(t_registro));
+//		registroInit->key = -1;
+//		return registroInit;
+//	}
 
 	//Inicializo lista donde se concatenaran las restantes
 	t_list *listaBusqueda = list_create();
@@ -523,10 +523,16 @@ t_list *BuscarKeyTemporales(int key, char *tabla) {
 			t_config *config_file = cargarConfiguracion(pathFile, logger);
 			int size = config_get_int_value(config_file, "SIZE");
 			int cantBloques = CalcularBloques(size);
+			int recorrido = 0;
+
+
 			char **bloques = config_get_array_value(config_file, "BLOCKS");
 			config_destroy(config_file);
+			while(bloques[recorrido] != NULL){
+				recorrido ++;
+			}
 
-			for (int i = 0; cantBloques > i; i++) {
+			for (int i = 0; recorrido > i; i++) {
 				list_add(tempBlocksCollection, (int*)atoi(bloques[i]));
 				free(bloques[i]);
 			}
@@ -736,6 +742,7 @@ int CrearTabla(t_create *msgCreate) {
 }
 
 int AgregarBloque() {
+	pthread_mutex_lock(&mutex_bitmap);
 	//Descomentar cuando se encuentre el bitmap del fs disponible
 	size_t sizeBitmap = bitarray_get_max_bit(bitmap);
 	 int bloque = 1;
@@ -752,11 +759,12 @@ int AgregarBloque() {
 	 bitarray_set_bit(bitmap, count);
 	 log_info(logger,"Bloque %d asignado", count);
 	 bloque = count;
+	 pthread_mutex_unlock(&mutex_bitmap);
 	 return bloque;
 	 }
 	 count ++;
 	 }
-
+	 pthread_mutex_unlock(&mutex_bitmap);
 	return bloque;
 //	return 1;
 }
@@ -918,9 +926,13 @@ t_list *ObtenerRegistros(char *tabla, char *extension) {
 					int size = config_get_int_value(config_file, "SIZE");
 
 					int cantBloques = CalcularBloques(size);
+					int recorrido = 0;
 					char **bloques = config_get_array_value(config_file, "BLOCKS");
+					while(bloques[recorrido] != NULL) {
+						recorrido ++;
+					}
 					config_destroy(config_file);
-					for (int i = 0; cantBloques > i; i++) {
+					for (int i = 0; recorrido > i; i++) {
 						char *bloque = string_from_format("%s%s.bin",
 								rutaBloques, bloques[i]);
 						//abrirArchivo
@@ -997,8 +1009,12 @@ t_list *ObtenerRegistrosArchivo(char *tabla, char *archivo, char *extension) {
 
 					int cantBloques = CalcularBloques(size);
 					char **bloques = config_get_array_value(config_file, "BLOCKS");
+					int recorrido = 0;
+					while(bloques[recorrido] != NULL){
+						recorrido ++;
+					}
 					config_destroy(config_file);
-					for (int i = 0; cantBloques > i; i++) {
+					for (int i = 0; recorrido > i; i++) {
 						char *bloque = string_from_format("%s%s.bin",
 								rutaBloques, bloques[i]);
 						//abrirArchivo

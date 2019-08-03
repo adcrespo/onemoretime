@@ -51,6 +51,8 @@ typedef struct {
 }__attribute__((packed)) t_tcb;
 
 pthread_mutex_t mutex_temp;
+pthread_mutex_t mutex_compactacion;
+pthread_mutex_t mutex_bitmap;
 
 void Inicializar();
 t_tabla* ObtenerTabla(char *nombre);

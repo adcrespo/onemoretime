@@ -229,13 +229,13 @@ int process_compactacion(char* path_tabla)
 		//Realizar la reasignacion de bloques
 			//Bloquear la tabla y tomar timestamp
 	unsigned long long timeStamp = obtenerTimeStamp();
-	bool findBloqueado(void* element) {
-		t_tcb* registroBusqueda = element;
-		return string_equals_ignore_case(registroBusqueda->nombre_tabla, path_tabla);
-	}
-	t_tcb* registroEncontrado = list_find(tablasGlobal,&findBloqueado);
-	registroEncontrado->bloqueado = 1;
-
+//	bool findBloqueado(void* element) {
+//		t_tcb* registroBusqueda = element;
+//		return string_equals_ignore_case(registroBusqueda->nombre_tabla, path_tabla);
+//	}
+//	t_tcb* registroEncontrado = list_find(tablasGlobal,&findBloqueado);
+//	registroEncontrado->bloqueado = 1;
+	pthread_mutex_lock(&mutex_compactacion);
 	//*****************************
 	//ESTO TIENE QUE ESTAR EN UN MUTEX?
 			//TODO: Preguntar si hay bloquesdisponibles
@@ -405,7 +405,9 @@ int process_compactacion(char* path_tabla)
 	//********************************
 
 			//Desbloquer la tabla y tomar el tiempo cuanto estuvo bloqueada
-	registroEncontrado->bloqueado = 0;
+//	registroEncontrado->bloqueado = 0;
+
+	pthread_mutex_unlock(&mutex_compactacion);
 	unsigned long long tiempo = obtenerTimeStamp() - timeStamp;
 	log_info(logger, "Tiempo consumido %d", tiempo);
 
