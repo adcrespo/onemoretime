@@ -317,12 +317,15 @@ int process_compactacion(char* path_tabla)
 				log_info(logger, "Size Bin %d", sizeBin);
 			}
 		}
+		pthread_mutex_lock(&mutex_temp);
 
 		FILE *file = fopen(path, "w");
 
 		if (file == NULL) {
 			//loggear(logger, LOG_LEVEL_ERROR, "Error abriendo archivo %s", file);
 			printf("Error abriendo archivo %s\n", path);
+			pthread_mutex_unlock(&mutex_temp);
+			break;
 		}
 
 		char *stringSize = string_from_format("SIZE=%d\n", sizeBin);
@@ -339,7 +342,10 @@ int process_compactacion(char* path_tabla)
 			else
 				fputs(",", file);
 		}
+		fflush(file);
 		fclose(file);
+
+		pthread_mutex_unlock(&mutex_temp);
 		free(stringSize);
 		free(stringBlocks);
 

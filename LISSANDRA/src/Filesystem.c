@@ -582,7 +582,7 @@ t_list *BuscarKeyTemporales(int key, char *tabla) {
 			free(elementos);
 			}
 		}
-
+		fclose(file);
 		free(pathBlock);
 	}
 

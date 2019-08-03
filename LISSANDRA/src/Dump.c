@@ -2,7 +2,7 @@
  * Dump.c
  *
  *  Created on: 4 jun. 2019
- *      Author: utnso
+ *      Author: utnsofopen
  */
 #include "Dump.h"
 
@@ -58,7 +58,9 @@ void DumpearTabla(t_list *lista, char *nombre)
 	if (GetEstadoTabla(nombre) == 1)
 		return;
 	loggear(logger, LOG_LEVEL_INFO, "Dumpeando tabla: %s", nombre);
+	pthread_mutex_lock(&mutex_temp);
 	int numeroDump = GetContadorTmp(nombre);
+	pthread_mutex_unlock(&mutex_temp);
 	int longitudTabla = list_size(lista);
 	loggear(logger, LOG_LEVEL_INFO, "Longitud tabla %s es %d", nombre,
 			longitudTabla);
