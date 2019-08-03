@@ -96,6 +96,7 @@ void enviar_mensaje_journal(t_tipoSeeds *memoria) {
 		t_mensaje* mensaje = recibirMensaje(client_socket, logger);
 		if(mensaje == NULL) {
 			loggear(logger,LOG_LEVEL_ERROR,"No se pudo recibir mensaje");
+			return;
 		}
 		int insert_error = mensaje->header.error;
 		destruirMensaje(mensaje);
@@ -126,9 +127,10 @@ void remover_memoria(t_tipoSeeds* memoria) {
 				mem->numeroMemoria);
 		if (memoria->numeroMemoria == mem->numeroMemoria) {
 			posAsoc = i;
-			log_info(logger, "REMOVE | Memoria %d de memorias asociadas",
+			log_info(logger, "REMOVE | POS: %d Memoria %d de memorias asociadas",posAsoc,
 					memoria->numeroMemoria);
 			free(list_remove(mem_asociadas, posAsoc));
+			log_info(logger, "LIST REMOVE | Memoria Posicion %d de memorias asociadas",posAsoc);
 		}
 	}
 	pthread_mutex_unlock(&mutex_asociadas);
