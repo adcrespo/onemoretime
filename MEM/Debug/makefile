@@ -26,13 +26,13 @@ endif
 all: MEM
 
 dependents:
-	-cd /home/utnso/workspace/tp-2019-1c-One-more-time/Shared_Library/Debug && $(MAKE) clean all
+	-cd /home/utnso/workspace/projects/tp-2019-1c-one-more-time/Shared_Library/Debug && $(MAKE) clean all
 
 # Tool invocations
-MEM: $(OBJS) $(USER_OBJS) /home/utnso/workspace/tp-2019-1c-One-more-time/Shared_Library/Debug/libShared-Library.so
+MEM: $(OBJS) $(USER_OBJS) /home/utnso/workspace/projects/tp-2019-1c-one-more-time/Shared_Library/Debug/libShared-Library.so
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc -L"/home/utnso/workspace/tp-2019-1c-One-more-time/Shared_Library/Debug" -o "MEM" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc -L"/home/utnso/workspace/projects/tp-2019-1c-one-more-time/Shared_Library/Debug" -o "MEM" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
@@ -42,6 +42,6 @@ clean:
 	-@echo ' '
 
 .PHONY: all clean dependents
-/home/utnso/workspace/tp-2019-1c-One-more-time/Shared_Library/Debug/libShared-Library.so:
+/home/utnso/workspace/projects/tp-2019-1c-one-more-time/Shared_Library/Debug/libShared-Library.so:
 
 -include ../makefile.targets

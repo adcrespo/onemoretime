@@ -29,7 +29,7 @@ all: LISSANDRA
 LISSANDRA: $(OBJS) $(USER_OBJS)
 	@echo 'Building target: $@'
 	@echo 'Invoking: GCC C Linker'
-	gcc -L"/home/utnso/workspace/tp-2019-1c-One-more-time/Shared_Library/Debug" -o "LISSANDRA" $(OBJS) $(USER_OBJS) $(LIBS)
+	gcc -L"/home/utnso/workspace/projects/tp-2019-1c-one-more-time/Shared_Library/Debug" -o "LISSANDRA" $(OBJS) $(USER_OBJS) $(LIBS)
 	@echo 'Finished building target: $@'
 	@echo ' '
 
