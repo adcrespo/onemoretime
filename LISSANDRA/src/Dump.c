@@ -64,9 +64,6 @@ void DumpearTabla(t_list *lista, char *nombre)
 			longitudTabla);
 	char *temporal = string_from_format("%s%s/%d.tmp", rutaTablas, nombre,
 			numeroDump);
-	loggear(logger, LOG_LEVEL_INFO, "Creando archivo %s", temporal);
-	FILE *file = fopen(temporal, "w+");
-	free(temporal);
 
 	int bloqueActual = AgregarBloque();
 	char *rutaActual = string_from_format("%s%d.bin", rutaBloques,
@@ -110,6 +107,10 @@ void DumpearTabla(t_list *lista, char *nombre)
 				"Registro key: %d value: %s timestamp: %llu", registro->key,
 				registro->value, registro->timestamp);
 	}
+	pthread_mutex_lock(&mutex_temp);
+	loggear(logger, LOG_LEVEL_INFO, "Creando archivo %s", temporal);
+	FILE *file = fopen(temporal, "w+");
+	free(temporal);
 	char *sizeAEscribir = string_from_format("SIZE=%d\n", sizeTotal);
 	fputs(sizeAEscribir, file);
 	fputs("BLOCKS=[",file);
@@ -124,13 +125,17 @@ void DumpearTabla(t_list *lista, char *nombre)
 		}
 	}
 
+
 	fputs("]\n", file);
+	fflush(file);
+	fclose(file);
+	pthread_mutex_unlock(&mutex_temp);
 	free(sizeAEscribir);
 
 	if(bloques != NULL) list_destroy(bloques);
 	free(nombre);
 	free(rutaActual);
-	fclose(file);
+
 
 }
 

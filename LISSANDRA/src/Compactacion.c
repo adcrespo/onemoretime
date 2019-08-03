@@ -44,6 +44,7 @@ int process_compactacion(char* path_tabla)
 
 	//vamos guardando cada tmp en el array
 
+	pthread_mutex_lock(&mutex_temp);
 	if ((dir = opendir(rutaTabla)) == NULL) {
 		perror("openndir() error");
 	} else {
@@ -102,6 +103,8 @@ int process_compactacion(char* path_tabla)
 		free(rutaTmpc);
 		i++;
 	}
+
+	pthread_mutex_unlock(&mutex_temp);
 
 	//Por cada .tmpc:
 		//Analizar registro por registro y compararlos contra el .bin (en memoria)
@@ -341,6 +344,7 @@ int process_compactacion(char* path_tabla)
 
 		int disponibleActual = tamanio_bloques;
 
+		int nBloque = 0;
 		for (int z = 0; list_size(listaBinRegistro)> z; z++){
 			t_registro *registro = list_get(listaBinRegistro, z);
 			char *linea = string_new();
@@ -362,7 +366,6 @@ int process_compactacion(char* path_tabla)
 			int lenLinea = strlen(linea);
 			log_info(logger, "strlen de linea %s es %d", linea, lenLinea);
 
-			int nBloque = 0;
 			char *rutaActual;
 			if(lenLinea < disponibleActual)
 			{
