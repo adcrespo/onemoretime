@@ -17,7 +17,7 @@
 int solicitarPagina(char *tabla, unsigned long long timestamp) {
 	int paginaNueva = add_spa(tabla,1,timestamp);
 	if(paginaNueva<0) {
-		t_adm_tabla_frames_spa frame_reg = getPaginaMenorTimestamp();
+		t_adm_tabla_frames_spa frame_reg = getPaginaMenorTimestamp(tabla);
 		paginaNueva = frame_reg.pagina;
 		free(frame_reg.path_tabla);
 		if(paginaNueva<0) {
@@ -144,6 +144,8 @@ int proceso_insert(char* tabla, int clave, char* value, unsigned long long tstam
 		return 0;
 	}
 
+	loggear(logger,LOG_LEVEL_ERROR,"Slicitando pagina %s", tabla);
+
 	int paginaNueva = solicitarPagina(tabla, timestamp);
 	if(paginaNueva<0){
 		free(buffer);
@@ -152,6 +154,8 @@ int proceso_insert(char* tabla, int clave, char* value, unsigned long long tstam
 //		pthread_mutex_unlock(&journalingMutexInsert);
 		return paginaNueva;
 	}
+
+	loggear(logger,LOG_LEVEL_ERROR,"escribiendo pagina %s %d %d", tabla, paginaNueva, frame_spa_size);
 
 	escrito = escribir_bytes_spa(tabla,0,paginaNueva*frame_spa_size,frame_spa_size,buffer,1);
 	if(escrito<0){

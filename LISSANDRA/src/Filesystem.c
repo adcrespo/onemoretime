@@ -12,6 +12,7 @@ void *CrearFileSystem() {
 
 	rutaTablas = string_new();
 	string_append(&rutaTablas, lfs_conf.punto_montaje);
+	log_info(logger, "Punto montaje %s", lfs_conf.punto_montaje);
 	string_append(&rutaTablas, "Tables/");
 	CrearDirectorio(rutaTablas);
 	log_debug(logger, "Ruta de tablas: %s", rutaTablas);
@@ -227,7 +228,7 @@ void AlocarTabla(char *tabla, t_registro *registro) {
 	list_add(memtable, listaTabla);
 	list_add(listaTabla->lista, registro);
 	int a = list_size(memtable);
-	printf("Tamanio memtable :%d\n", a);
+//	printf("Tamanio memtable :%d\n", a);
 	free(nombre);
 
 }

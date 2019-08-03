@@ -307,6 +307,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 				remover_memoria(memoria);
 				free(tabla);
 				free(request);
+				close(cliente);
 				return -1;
 			}
 
@@ -335,6 +336,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 //				free (memoria);
 				free(tabla);
 				free(request);
+				close(cliente);
 				return 0;
 			}
 			
@@ -357,6 +359,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 						free (memoria);
 						free(tabla);
 						free(request);
+						close(cliente);
 						return -1;
 					}
 					cliente = conectar_a_memoria(memoria);
@@ -366,6 +369,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 						remover_memoria(memoria);
 						free(tabla);
 						free(request);
+						close(cliente);
 						return -1;
 					}
 
@@ -395,6 +399,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 //				free (memoria);
 				free(tabla);
 				free(request);
+				close(cliente);
 				return 0;
 			}
 //			int largo_buffer = resultado_req_select->header.longitud;
@@ -424,6 +429,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 			destruirMensaje(resultado_req_select);
 			free(reg);
 			free(buffer);
+			close(cliente);
 
 
 			break;
@@ -481,6 +487,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 				remover_memoria(memoria);
 				free(tabla);
 				free(request);
+				close(cliente);
 				return -1;
 			}
 
@@ -511,6 +518,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 				remover_memoria(memoria);
 //				free (memoria);
 				free(request);
+				close(cliente);
 				return 0;
 			}
 
@@ -533,6 +541,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 						free (memoria);
 						free(tabla);
 						free(request);
+						close(cliente);
 						return -1;
 					}
 					cliente = conectar_a_memoria(memoria);
@@ -542,6 +551,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 						remover_memoria(memoria);
 						free(tabla);
 						free(request);
+						close(cliente);
 						return -1;
 					}
 
@@ -572,6 +582,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 				remover_memoria(memoria);
 //				free (memoria);
 				free(request);
+				close(cliente);
 				return 0;
 			}
 			
@@ -586,6 +597,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 			t_finInsert = obtenerTimeStamp();
 			metric_insert.duracion += (t_finInsert - t_inicioInsert) / 1000;
 
+			close(cliente);
 			break;
 
 		case _create:;
@@ -621,6 +633,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 				log_info(logger, "PLANIFIC| CREATE - NO PUDO CONECTARSE A MEM.");
 				remover_memoria(memoria);
 				free(request);
+				close(cliente);
 				return -1;
 			}
 
@@ -645,6 +658,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 				remover_memoria(memoria);
 //				free (memoria);
 				free(request);
+				close(cliente);
 				return 0;
 			}
 			
@@ -665,6 +679,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 //			free (memoria);
 			free(req_create);
 			destruirMensaje(resultado_req_create);
+			close(cliente);
 
 			break;
 
@@ -699,12 +714,14 @@ int ejecutar_request(char* linea, int id_proceso) {
 					log_info(logger, "PLANIFIC| CREATE - NO PUDO CONECTARSE A MEM.");
 					remover_memoria(memoria);
 					free(request);
+					close(cliente);
 					return -1;
 				}
 
 
 				describe_global(cliente);
 				resultado = 0;
+				close(cliente);
 
 			} else {
 				log_info(logger, "PLANIFIC| DESCRIBE: %s", req_describe->nombreTabla);
@@ -738,6 +755,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 					remover_memoria(memoria);
 					free(tabla);
 					free(request);
+					close(cliente);
 					return -1;
 				}
 
@@ -763,6 +781,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 //					free (memoria);
 					free(tabla);
 					free(request);
+					close(cliente);
 					return 0;
 				}
 				
@@ -776,7 +795,10 @@ int ejecutar_request(char* linea, int id_proceso) {
 				free(tabla);
 				destruirMensaje(msg_describe);
 				free(buffer_describe);
+				close(cliente);
 			}
+
+
 
 			free(req_describe);
 
@@ -824,6 +846,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 				remover_memoria(memoria);
 				free(tabla);
 				free(request);
+				close(cliente);
 				return -1;
 			}
 
@@ -849,6 +872,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 //				free (memoria);
 				free(tabla);
 				free(request);
+				close(cliente);
 				return 0;
 			}
 			
@@ -871,6 +895,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 			free(tabla);
 			free(req_drop);
 			destruirMensaje(resultado_req_drop);
+			close(cliente);
 
 			break;
 
@@ -915,6 +940,7 @@ void* aplicar_algoritmo_rr() {
 //	return NULL;
 //	return (void*)EXIT_SUCCESS;
 //	return (void*)resultado;
+
 	pthread_exit(NULL);
 //	return NULL;
 }

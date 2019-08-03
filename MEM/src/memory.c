@@ -493,7 +493,7 @@ void dump_memory_spa(char* path_table) {
 	free(dump_total);
 }
 
-t_adm_tabla_frames_spa getPaginaMenorTimestamp() {
+t_adm_tabla_frames_spa getPaginaMenorTimestamp(char *pathTabla) {
 	t_adm_tabla_frames_spa frame_spa = {.path_tabla = string_new(),.pagina=-1};
 	unsigned long long timestamp = 0;
 	int i,j;
@@ -503,10 +503,13 @@ t_adm_tabla_frames_spa getPaginaMenorTimestamp() {
 		t_segmentos_spa* adm_table_seg = list_get(adm_table->seg_lista, 0);
 		for (j = 0; j < list_size(adm_table_seg->pag_lista); j++) {
 			t_paginas_spa* adm_table_pag = list_get(adm_table_seg->pag_lista,j);
-			if((timestamp==0 || adm_table_pag->timestamp < timestamp) && adm_table_pag->modificado == 0) {
+			if( string_equals_ignore_case(adm_table->path_tabla,pathTabla) &&
+					(timestamp==0 || adm_table_pag->timestamp < timestamp) && adm_table_pag->modificado == 0) {
 				string_append_with_format(&frame_spa.path_tabla,adm_table->path_tabla);
 				frame_spa.pagina = j;
 				timestamp = adm_table_pag->timestamp;
+				loggear(logger,LOG_LEVEL_ERROR,"devolviendo pagina %s %d",frame_spa.path_tabla , j);
+
 			}
 		}
 	}
