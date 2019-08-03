@@ -24,7 +24,9 @@ void *hiloGossiping() {
 	sleep(tiempo / 1000);
 
 	while (1) {
+		pthread_mutex_lock(&mutex_request);
 		processGossipingStruct(logger, LISTA_CONN, kernelGoss);
+		pthread_mutex_unlock(&mutex_request);
 		if (hay_memorias_disponibles()) {
 			log_info(logger, "GOSSIP| Memorias conectadas!");
 		}
@@ -44,14 +46,14 @@ void *inicializar_refresh() {
 
 	while (1) {
 		aplicar_tiempo_refresh();
-//		pthread_mutex_lock(&mutex_metadata);
+		pthread_mutex_lock(&mutex_request);
 		if (hay_memorias_disponibles()) {
 			log_info(logger, "REFRESH| Hay memoria disponible");
 			actualizar_metadata();
 		} else {
 			log_info(logger, "REFRESH| No Hay memoria disponible");
 		}
-//		pthread_mutex_unlock(&mutex_metadata);
+		pthread_mutex_unlock(&mutex_request);
 	}
 
 }

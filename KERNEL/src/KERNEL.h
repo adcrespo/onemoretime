@@ -34,19 +34,19 @@ pthread_t inotify;
 pthread_t thread_refresh;
 pthread_t thread_planificador;
 pthread_t thread_metricas;
-pthread_mutex_t mutex_metadata;
-pthread_mutex_t mutex_memoria_sc;
-pthread_mutex_t mutex_memoria_shc;
-pthread_mutex_t mutex_memoria_ev;
-pthread_mutex_t mutex_asociadas;
+//pthread_mutex_t mutex_metadata;
+//pthread_mutex_t mutex_memoria_sc;
+//pthread_mutex_t mutex_memoria_shc;
+//pthread_mutex_t mutex_memoria_ev;
+//pthread_mutex_t mutex_asociadas;
 
 pthread_mutex_t mutex_LISTA_CONN;
 
 // Listas planificacion
-pthread_mutex_t mutex_new;
-pthread_mutex_t mutex_ready;
-pthread_mutex_t mutex_exec;
-pthread_mutex_t mutex_exit;
+//pthread_mutex_t mutex_new;
+//pthread_mutex_t mutex_ready;
+//pthread_mutex_t mutex_exec;
+//pthread_mutex_t mutex_exit;
 pthread_mutex_t mutex_request;
 
 

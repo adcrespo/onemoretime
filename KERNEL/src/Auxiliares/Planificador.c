@@ -45,9 +45,9 @@ void crear_proceso(char* line,t_request* request) {
 	/* 2. Agregar a NEW */
 	log_info(logger, "PLANIFIC| Proceso %d generado", id_proceso);
 
-	pthread_mutex_lock(&mutex_new);
+//	pthread_mutex_lock(&mutex_new);
 	agregar_proceso(proceso, lista_new, &sem_new);
-	pthread_mutex_unlock(&mutex_new);
+//	pthread_mutex_unlock(&mutex_new);
 
 	log_info(logger, "PLANIFIC| Proceso %d agregado a NEW", id_proceso);
 
@@ -67,13 +67,13 @@ void crear_proceso(char* line,t_request* request) {
 	imprimir_pcb(proceso);
 
 	/* 4. Pasar PCB de NEW a READY */
-	pthread_mutex_lock(&mutex_new);
+//	pthread_mutex_lock(&mutex_new);
 	proceso = sacar_proceso(id_proceso, lista_new, &sem_new);
-	pthread_mutex_unlock(&mutex_new);
+//	pthread_mutex_unlock(&mutex_new);
 
-	pthread_mutex_lock(&mutex_ready);
+//	pthread_mutex_lock(&mutex_ready);
 	agregar_proceso(proceso, lista_ready, &sem_ready);
-	pthread_mutex_unlock(&mutex_ready);
+//	pthread_mutex_unlock(&mutex_ready);
 
 
 	log_info(logger, "PLANIFIC| Proceso %d de NEW a READY.", id_proceso);
@@ -140,7 +140,7 @@ t_tipoSeeds* obtener_memoria_random() {
 //	log_info(logger, "REFRESH| Numero Memoria: %d", memory->numeroMemoria);
 //	return memory;
 	int n;
-	pthread_mutex_lock(&mutex_memoria_ev);
+//	pthread_mutex_lock(&mutex_memoria_ev);
 	int size_ev = list_size(lista_criterio_ev);
 	t_tipoSeeds *memory;
 	if(size_ev == 0)
@@ -148,13 +148,13 @@ t_tipoSeeds* obtener_memoria_random() {
 		memory = malloc(sizeof(t_tipoSeeds));
 		memset(memory, 0x00, sizeof(t_tipoSeeds));
 		memory->numeroMemoria = -1;
-		pthread_mutex_unlock(&mutex_memoria_ev);
+//		pthread_mutex_unlock(&mutex_memoria_ev);
 		return memory;
 	}
 	n = rand() % size_ev;
 
 	memory = list_get(lista_criterio_ev, n);
-	pthread_mutex_unlock(&mutex_memoria_ev);
+//	pthread_mutex_unlock(&mutex_memoria_ev);
 	return memory;
 
 }
@@ -184,14 +184,14 @@ int procesar_pcb(t_pcb* pcb) {
 		// Si el request falla, se termina el proceso
 		if(resultado < 0) {
 
-			pthread_mutex_lock(&mutex_exec);
+//			pthread_mutex_lock(&mutex_exec);
 			sacar_proceso(pcb->id_proceso, lista_exec, &sem_exec);
-			pthread_mutex_unlock(&mutex_exec);
+//			pthread_mutex_unlock(&mutex_exec);
 			sem_post(&sem_multiprog);
 
-			pthread_mutex_lock(&mutex_exit);
+//			pthread_mutex_lock(&mutex_exit);
 			agregar_proceso(pcb, lista_exit, &sem_exit);
-			pthread_mutex_unlock(&mutex_exit);
+//			pthread_mutex_unlock(&mutex_exit);
 
 			log_info(logger, "PLANIFIC| Proceso %d pasa a EXIT", pcb->id_proceso);
 			//libero script
@@ -215,24 +215,24 @@ int procesar_pcb(t_pcb* pcb) {
 
 	// Saco proceso de EXEC y evaluo si finalizó o vuelve a READY
 
-	pthread_mutex_lock(&mutex_exec);
+//	pthread_mutex_lock(&mutex_exec);
 	sacar_proceso(pcb->id_proceso, lista_exec, &sem_exec);
-	pthread_mutex_unlock(&mutex_exec);
+//	pthread_mutex_unlock(&mutex_exec);
 
 	sem_post(&sem_multiprog);
 
 	if (pcb->program_counter == pcb->cantidad_request) {
 
-		pthread_mutex_lock(&mutex_exit);
+//		pthread_mutex_lock(&mutex_exit);
 		agregar_proceso(pcb, lista_exit, &sem_exit);
-		pthread_mutex_unlock(&mutex_exit);
+//		pthread_mutex_unlock(&mutex_exit);
 		log_info(logger, "PLANIFIC| Proceso %d pasa a EXIT", pcb->id_proceso);
 
 	} else {
 
-		pthread_mutex_lock(&mutex_ready);
+//		pthread_mutex_lock(&mutex_ready);
 		agregar_proceso(pcb, lista_ready, &sem_ready);
-		pthread_mutex_unlock(&mutex_ready);
+//		pthread_mutex_unlock(&mutex_ready);
 		log_info(logger, "PLANIFIC| Proceso %d vuelve a READY", pcb->id_proceso);
 
 	}
@@ -1053,9 +1053,9 @@ int ejecutar_request(char* linea, int id_proceso) {
 
 
 void* aplicar_algoritmo_rr() {
-	pthread_mutex_lock(&mutex_ready);
+//	pthread_mutex_lock(&mutex_ready);
 	t_pcb* pcb = sacar_proceso_rr(lista_ready);
-	pthread_mutex_unlock(&mutex_ready);
+//	pthread_mutex_unlock(&mutex_ready);
 
 	if (pcb == NULL) {
 		log_info(logger, "PLANIFIC| No se encontró el PCB");
@@ -1063,9 +1063,9 @@ void* aplicar_algoritmo_rr() {
 		log_info(logger, "PLANIFIC| Proceso %d removido", pcb->id_proceso);
 	}
 
-	pthread_mutex_lock(&mutex_exec);
+//	pthread_mutex_lock(&mutex_exec);
 	agregar_proceso(pcb, lista_exec, &sem_exec);
-	pthread_mutex_unlock(&mutex_exec);
+//	pthread_mutex_unlock(&mutex_exec);
 
 	imprimir_listas(); // SACAR
 

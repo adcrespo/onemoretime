@@ -48,9 +48,9 @@ void enviar_journal_sc() {
 //	memoria = obtener_memoria_lista(memoria_sc->numeroMemoria);
 	if (memoria_sc != NULL) {
 		//TODO: MUTEX
-		pthread_mutex_lock(&mutex_memoria_sc);
+//		pthread_mutex_lock(&mutex_memoria_sc);
 		enviar_mensaje_journal(memoria_sc);
-		pthread_mutex_unlock(&mutex_memoria_sc);
+//		pthread_mutex_unlock(&mutex_memoria_sc);
 	} else {
 		log_info(logger, "Memoria criterio SC no encontrada");
 	}
@@ -58,7 +58,7 @@ void enviar_journal_sc() {
 }
 
 void enviar_journal_shc() {
-	pthread_mutex_lock(&mutex_memoria_shc);
+//	pthread_mutex_lock(&mutex_memoria_shc);
 	int size_shc = list_size(lista_criterio_shc);
 //	pthread_mutex_unlock(&mutex_memoria_shc);
 	t_tipoSeeds *memoria;
@@ -68,11 +68,11 @@ void enviar_journal_shc() {
 //		pthread_mutex_unlock(&mutex_memoria_shc);
 		enviar_mensaje_journal(memoria);
 	}
-	pthread_mutex_unlock(&mutex_memoria_shc);
+//	pthread_mutex_unlock(&mutex_memoria_shc);
 }
 
 void enviar_journal_ev() {
-	pthread_mutex_lock(&mutex_memoria_ev);
+//	pthread_mutex_lock(&mutex_memoria_ev);
 	int size_ev = list_size(lista_criterio_ev);
 //	pthread_mutex_unlock(&mutex_memoria_ev);
 	t_tipoSeeds *memoria;
@@ -83,7 +83,7 @@ void enviar_journal_ev() {
 		enviar_mensaje_journal(memoria);
 
 	}
-	pthread_mutex_unlock(&mutex_memoria_ev);
+//	pthread_mutex_unlock(&mutex_memoria_ev);
 }
 
 void enviar_mensaje_journal(t_tipoSeeds *memoria) {
@@ -118,7 +118,7 @@ int conectar_a_memoria(t_tipoSeeds* memoria) {
 void remover_memoria(t_tipoSeeds* memoria) {
 
 	//Busco en mem_asociadas
-	pthread_mutex_lock(&mutex_asociadas);
+//	pthread_mutex_lock(&mutex_asociadas);
 	int size_asociadas = list_size(mem_asociadas)-1;
 	int posAsoc = 0;
 	for (int i = size_asociadas; i >= 0; i--) {
@@ -134,21 +134,21 @@ void remover_memoria(t_tipoSeeds* memoria) {
 			break;
 		}
 	}
-	pthread_mutex_unlock(&mutex_asociadas);
+//	pthread_mutex_unlock(&mutex_asociadas);
 
 	//Busco en SC
 	if(memoria_sc != NULL){
 		if (memoria->numeroMemoria == memoria_sc->numeroMemoria) {
-			pthread_mutex_lock(&mutex_memoria_sc);
+//			pthread_mutex_lock(&mutex_memoria_sc);
 			memoria_sc = NULL;
 			log_info(logger, "REMOVE | Memoria %d de memoria SC",
 					memoria->numeroMemoria);
-			pthread_mutex_unlock(&mutex_memoria_sc);
+//			pthread_mutex_unlock(&mutex_memoria_sc);
 		}
 	}
 
 	//Busco en SHC
-	pthread_mutex_lock(&mutex_memoria_shc);
+//	pthread_mutex_lock(&mutex_memoria_shc);
 	int size_shc = list_size(lista_criterio_shc)-1;
 	int posSHC = 0;
 	for (int i = size_shc; i >= 0; i--) {
@@ -164,10 +164,10 @@ void remover_memoria(t_tipoSeeds* memoria) {
 			break;
 		}
 	}
-	pthread_mutex_unlock(&mutex_memoria_shc);
+//	pthread_mutex_unlock(&mutex_memoria_shc);
 
 	//Busco en EC
-	pthread_mutex_lock(&mutex_memoria_ev);
+//	pthread_mutex_lock(&mutex_memoria_ev);
 	int size_ev = list_size(lista_criterio_ev)-1;
 	int posEC = 0;
 	for (int i = size_ev; i >= 0; i--) {
@@ -180,7 +180,7 @@ void remover_memoria(t_tipoSeeds* memoria) {
 			break;
 		}
 	}
-	pthread_mutex_unlock(&mutex_memoria_ev);
+//	pthread_mutex_unlock(&mutex_memoria_ev);
 
 }
 
