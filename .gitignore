@@ -1,7 +1,5 @@
 # Osqui
 language.settings.xml
-subdir.mk
-*.mk
 
 # Prerequisites
 *.d
