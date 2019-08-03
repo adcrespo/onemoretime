@@ -4,20 +4,29 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
-../src/KERNEL.c 
+../gossiping.c \
+../inotify.c \
+../parser.c \
+../shared.c 
 
 OBJS += \
-./src/KERNEL.o 
+./gossiping.o \
+./inotify.o \
+./parser.o \
+./shared.o 
 
 C_DEPS += \
-./src/KERNEL.d 
+./gossiping.d \
+./inotify.d \
+./parser.d \
+./shared.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
-src/%.o: ../src/%.c
+%.o: ../%.c
 	@echo 'Building file: $<'
 	@echo 'Invoking: GCC C Compiler'
-	gcc -I"/home/utnso/workspace/tp-2019-1c-One-more-time/Shared_Library" -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
+	gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"$(@:%.o=%.d)" -MT"$(@)" -o "$@" "$<"
 	@echo 'Finished building: $<'
 	@echo ' '
 

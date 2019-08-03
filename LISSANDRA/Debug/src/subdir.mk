@@ -4,13 +4,37 @@
 
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
-../src/KERNEL.c 
+../src/Compactacion.c \
+../src/Conexion.c \
+../src/Configuracion.c \
+../src/Consola.c \
+../src/Dump.c \
+../src/Error.c \
+../src/Filesystem.c \
+../src/Hilos.c \
+../src/LFS.c 
 
 OBJS += \
-./src/KERNEL.o 
+./src/Compactacion.o \
+./src/Conexion.o \
+./src/Configuracion.o \
+./src/Consola.o \
+./src/Dump.o \
+./src/Error.o \
+./src/Filesystem.o \
+./src/Hilos.o \
+./src/LFS.o 
 
 C_DEPS += \
-./src/KERNEL.d 
+./src/Compactacion.d \
+./src/Conexion.d \
+./src/Configuracion.d \
+./src/Consola.d \
+./src/Dump.d \
+./src/Error.d \
+./src/Filesystem.d \
+./src/Hilos.d \
+./src/LFS.d 
 
 
 # Each subdirectory must supply rules for building sources it contributes
