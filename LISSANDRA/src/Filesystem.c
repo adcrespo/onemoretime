@@ -402,6 +402,7 @@ t_registro* BuscarKey(t_select *selectMsg) {
 	//Escaneo temporales
 	t_list *listaTemp;
 	listaTemp = BuscarKeyTemporales(selectMsg->key, selectMsg->nombreTabla);
+
 	if (list_is_empty(listaTemp)) {
 		log_debug(logger, "No se encontraron registro en .tmp");
 		list_destroy(listaTemp);
@@ -512,7 +513,7 @@ t_list *BuscarKeyTemporales(int key, char *tabla) {
 	t_list *tempBlocksCollection = list_create();
 
 	//busco todos los bloques de los tmp
-	pthread_mutex_lock(&mutex_temp);
+//	pthread_mutex_lock(&mutex_temp);
 	while ((entry = readdir(dir)) != NULL) {
 		if (string_ends_with(entry->d_name, ".tmp")) {
 
@@ -536,7 +537,7 @@ t_list *BuscarKeyTemporales(int key, char *tabla) {
 	}
 
 	closedir(dir);
-	pthread_mutex_unlock(&mutex_temp);
+//	pthread_mutex_unlock(&mutex_temp);
 
 	//leo bloque por bloque y agrego registro si es la key buscada
 	int lenghtCollection = list_size(tempBlocksCollection);
@@ -1185,8 +1186,12 @@ char* descomponer_metadata(t_metadata *metadata, char *nombre) {
 	string_append(&buffer, ";");
 	string_append(&buffer, metadata->tipoConsistencia);
 	string_append(&buffer, ";");
-	string_append(&buffer, string_itoa(metadata->particiones));
+	char *particiones = string_itoa(metadata->particiones);
+	string_append(&buffer, particiones);
 	string_append(&buffer, ";");
-	string_append(&buffer, string_itoa(metadata->compactationTime));
+	char *compactationTiempo = string_itoa(metadata->compactationTime);
+	string_append(&buffer, compactationTiempo);
+	free(particiones);
+	free(compactationTiempo);
 	return buffer;
 }
