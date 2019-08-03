@@ -151,8 +151,12 @@ int procesar_comando(char *line) {
 
 	}
 
+	if(request->parametro1) free(request->parametro1);
+	if(request->parametro2) free(request->parametro2);
+	if(request->parametro3) free(request->parametro3);
+	if(request->parametro4) free(request->parametro4);
+	if(request) free(request);
 	free(linea_auxiliar);
-	free(request);
 	return 0;
 }
 
