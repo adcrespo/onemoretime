@@ -119,9 +119,9 @@ void remover_memoria(t_tipoSeeds* memoria) {
 
 	//Busco en mem_asociadas
 	pthread_mutex_lock(&mutex_asociadas);
-	int size_asociadas = list_size(mem_asociadas);
+	int size_asociadas = list_size(mem_asociadas)-1;
 	int posAsoc = 0;
-	for (int i = 0; size_asociadas > i; i++) {
+	for (int i = size_asociadas; i >= 0; i--) {
 		t_tipoSeeds *mem = list_get(mem_asociadas, i);
 		log_info(logger, "REMOVE | MEMORIAS ASOCIADAS %d",
 				mem->numeroMemoria);
@@ -131,6 +131,7 @@ void remover_memoria(t_tipoSeeds* memoria) {
 					memoria->numeroMemoria);
 			free(list_remove(mem_asociadas, posAsoc));
 			log_info(logger, "LIST REMOVE | Memoria Posicion %d de memorias asociadas",posAsoc);
+			break;
 		}
 	}
 	pthread_mutex_unlock(&mutex_asociadas);
@@ -148,9 +149,9 @@ void remover_memoria(t_tipoSeeds* memoria) {
 
 	//Busco en SHC
 	pthread_mutex_lock(&mutex_memoria_shc);
-	int size_shc = list_size(lista_criterio_shc);
+	int size_shc = list_size(lista_criterio_shc)-1;
 	int posSHC = 0;
-	for (int i = 0; size_shc > i; i++) {
+	for (int i = size_shc; i >= 0; i--) {
 		t_tipoSeeds *mem = list_get(lista_criterio_shc, i);
 		if (memoria->numeroMemoria == mem->numeroMemoria) {
 			//Si la encontro aca, remover del diccionario
@@ -160,21 +161,23 @@ void remover_memoria(t_tipoSeeds* memoria) {
 			//remueve de hashdictionary
 			remove_memoria_hashdictionary(memoria->numeroMemoria);
 			free(list_remove(lista_criterio_shc, posSHC));
+			break;
 		}
 	}
 	pthread_mutex_unlock(&mutex_memoria_shc);
 
 	//Busco en EC
 	pthread_mutex_lock(&mutex_memoria_ev);
-	int size_ev = list_size(lista_criterio_ev);
+	int size_ev = list_size(lista_criterio_ev)-1;
 	int posEC = 0;
-	for (int i = 0; size_ev > i; i++) {
+	for (int i = size_ev; i >= 0; i--) {
 		t_tipoSeeds *mem = list_get(lista_criterio_ev, i);
 		if (memoria->numeroMemoria == mem->numeroMemoria) {
 			posEC = i;
 			log_info(logger, "REMOVE | Memoria %d de memorias EC",
 					memoria->numeroMemoria);
 			free(list_remove(lista_criterio_ev, posEC));
+			break;
 		}
 	}
 	pthread_mutex_unlock(&mutex_memoria_ev);

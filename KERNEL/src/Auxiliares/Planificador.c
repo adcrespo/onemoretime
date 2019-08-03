@@ -307,7 +307,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 				remover_memoria(memoria);
 				free(tabla);
 				free(request);
-				close(cliente);
+//				close(cliente);
 				return -1;
 			}
 
@@ -369,7 +369,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 						remover_memoria(memoria);
 						free(tabla);
 						free(request);
-						close(cliente);
+//						close(cliente);
 						return -1;
 					}
 
@@ -487,7 +487,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 				remover_memoria(memoria);
 				free(tabla);
 				free(request);
-				close(cliente);
+//				close(cliente);
 				return -1;
 			}
 
@@ -551,7 +551,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 						remover_memoria(memoria);
 						free(tabla);
 						free(request);
-						close(cliente);
+//						close(cliente);
 						return -1;
 					}
 
@@ -633,7 +633,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 				log_info(logger, "PLANIFIC| CREATE - NO PUDO CONECTARSE A MEM.");
 				remover_memoria(memoria);
 				free(request);
-				close(cliente);
+//				close(cliente);
 				return -1;
 			}
 
@@ -714,7 +714,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 					log_info(logger, "PLANIFIC| CREATE - NO PUDO CONECTARSE A MEM.");
 					remover_memoria(memoria);
 					free(request);
-					close(cliente);
+//					close(cliente);
 					return -1;
 				}
 
@@ -755,7 +755,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 					remover_memoria(memoria);
 					free(tabla);
 					free(request);
-					close(cliente);
+//					close(cliente);
 					return -1;
 				}
 
@@ -846,7 +846,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 				remover_memoria(memoria);
 				free(tabla);
 				free(request);
-				close(cliente);
+//				close(cliente);
 				return -1;
 			}
 
