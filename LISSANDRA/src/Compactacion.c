@@ -77,6 +77,7 @@ int process_compactacion(char* path_tabla)
 		for (i = 0; 100 > i; i++) free(listasTmp[i]);
 		for (j = 0; 100 > j; j++) free(listasBin[j]);
 		free(rutaTabla);
+		pthread_mutex_unlock(&mutex_temp);
 		return -1;
 	}
 	while(!string_is_empty(listasTmp[i])){
