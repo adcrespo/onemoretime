@@ -156,7 +156,7 @@ void procesar(int n_descriptor, fd_set* set_master) {
 					selectMensaje->key, selectMensaje->nombreTabla);
 			t_registro *resultado = BuscarKey(selectMensaje);
 			aplicar_retardo();
-			if (resultado->key != -1) {
+			if (resultado != NULL && resultado->key != -1) {
 				enviarMensajeConError(lis, selectMsg, sizeof(t_registro),
 						resultado, n_descriptor, logger, mem, 0);
 			} else {
