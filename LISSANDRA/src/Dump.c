@@ -55,12 +55,11 @@ void RealizarDumpeo()
 
 void DumpearTabla(t_list *lista, char *nombre)
 {
-	if (GetEstadoTabla(nombre) == 1)
-		return;
+//	if (GetEstadoTabla(nombre) == 1)
+//		return;
 	loggear(logger, LOG_LEVEL_INFO, "Dumpeando tabla: %s", nombre);
 	pthread_mutex_lock(&mutex_temp);
 	int numeroDump = GetContadorTmp(nombre);
-	pthread_mutex_unlock(&mutex_temp);
 	int longitudTabla = list_size(lista);
 	loggear(logger, LOG_LEVEL_INFO, "Longitud tabla %s es %d", nombre,
 			longitudTabla);
@@ -109,7 +108,6 @@ void DumpearTabla(t_list *lista, char *nombre)
 				"Registro key: %d value: %s timestamp: %llu", registro->key,
 				registro->value, registro->timestamp);
 	}
-	pthread_mutex_lock(&mutex_temp);
 	loggear(logger, LOG_LEVEL_INFO, "Creando archivo %s", temporal);
 	FILE *file = fopen(temporal, "w+");
 	free(temporal);
