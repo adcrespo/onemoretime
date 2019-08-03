@@ -132,12 +132,14 @@ void remover_memoria(t_tipoSeeds* memoria) {
 	pthread_mutex_unlock(&mutex_asociadas);
 
 	//Busco en SC
-	if (memoria->numeroMemoria == memoria_sc->numeroMemoria) {
-		pthread_mutex_lock(&mutex_memoria_sc);
-		memoria_sc = NULL;
-		log_info(logger, "REMOVE | Memoria %d de memoria SC",
-				memoria->numeroMemoria);
-		pthread_mutex_unlock(&mutex_memoria_sc);
+	if(memoria_sc != NULL){
+		if (memoria->numeroMemoria == memoria_sc->numeroMemoria) {
+			pthread_mutex_lock(&mutex_memoria_sc);
+			memoria_sc = NULL;
+			log_info(logger, "REMOVE | Memoria %d de memoria SC",
+					memoria->numeroMemoria);
+			pthread_mutex_unlock(&mutex_memoria_sc);
+		}
 	}
 
 	//Busco en SHC
@@ -182,6 +184,10 @@ void remove_memoria_hashdictionary(int numeroMemoria) {
 		char *key = string_itoa(i);
 
 		int * memoria_dic = dictionary_get(hashdictionary, key);
+		if(memoria_dic == NULL){
+			free(key);
+			continue;
+		}
 		if (* memoria_dic == numeroMemoria) {
 			free(dictionary_remove(hashdictionary, key));
 			log_info(logger, "REMOVE| Memoria %d key %s de diccionario hash",

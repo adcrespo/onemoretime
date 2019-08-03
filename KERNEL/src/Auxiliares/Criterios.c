@@ -120,12 +120,13 @@ int agregar_memoria_a_criterio(int nro_memoria, char* criterio) {
 
 				list_add(lista_criterio_shc, memoriaSHC);
 				log_info(logger, "CRITERIO| Memoria %d asignada a %s.", nro_memoria, criterio);
+				resultado = 1;
 			} else {
 				log_info(logger, "CRITERIO| Memoria %d ya existe en %s.", nro_memoria, criterio);
 			}
 			pthread_mutex_unlock(&mutex_memoria_shc);
 
-			resultado = 1;
+
 			break;
 
 		case EC:
@@ -138,12 +139,13 @@ int agregar_memoria_a_criterio(int nro_memoria, char* criterio) {
 
 				list_add(lista_criterio_ev, memoriaEV);
 				log_info(logger, "CRITERIO| Memoria %d asignada a %s.", nro_memoria, criterio);
+				resultado = 1;
 			} else {
 				log_info(logger, "CRITERIO| Memoria %d ya existe en %s.", nro_memoria, criterio);
 			}
 			pthread_mutex_unlock(&mutex_memoria_ev);
 
-			resultado = 1;
+
 			break;
 
 		default:

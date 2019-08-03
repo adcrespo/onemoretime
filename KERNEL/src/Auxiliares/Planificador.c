@@ -270,6 +270,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 				t_finSelect = obtenerTimeStamp();
 //				log_info(logger, "PLANIFIC| SELECT: DURACION: %d segundos", t_finSelect - t_inicioSelect);
 				metric_select.duracion += (t_finSelect - t_inicioSelect) / 1000;
+				free(request);
 				return -1;
 			}
 
@@ -292,6 +293,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 				log_info(logger, "PLANIFIC| SELECT - MEMORIA: %d",memoria->numeroMemoria);
 				free (memoria);
 				free(tabla);
+				free(request);
 				return -1;
 			}
 			cliente = conectar_a_memoria(memoria);
@@ -299,8 +301,8 @@ int ejecutar_request(char* linea, int id_proceso) {
 			if(cliente < 0){
 				log_info(logger, "PLANIFIC| SELECT - NO PUDO CONECTARSE A MEM.");
 				remover_memoria(memoria);
-				free (memoria);
 				free(tabla);
+				free(request);
 				return -1;
 			}
 
@@ -328,6 +330,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 				remover_memoria(memoria);
 				free (memoria);
 				free(tabla);
+				free(request);
 				return 0;
 			}
 			
@@ -349,6 +352,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 						log_info(logger, "PLANIFIC| SELECT: POST-JOURNAL MEMORIA: %d",memoria->numeroMemoria);
 						free (memoria);
 						free(tabla);
+						free(request);
 						return -1;
 					}
 					cliente = conectar_a_memoria(memoria);
@@ -356,8 +360,8 @@ int ejecutar_request(char* linea, int id_proceso) {
 					if(cliente < 0){
 						log_info(logger, "PLANIFIC| SELECT POST-JOURNAL - NO PUDO CONECTARSE A MEM.");
 						remover_memoria(memoria);
-						free (memoria);
 						free(tabla);
+						free(request);
 						return -1;
 					}
 
@@ -386,6 +390,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 				remover_memoria(memoria);
 				free (memoria);
 				free(tabla);
+				free(request);
 				return 0;
 			}
 //			int largo_buffer = resultado_req_select->header.longitud;
@@ -433,6 +438,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 				metric_insert.contador++;
 				t_finInsert = obtenerTimeStamp();
 				metric_insert.duracion += (t_finInsert - t_inicioInsert) / 1000;
+				free(request);
 				return -1;
 			}
 
@@ -457,6 +463,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 				log_info(logger, "PLANIFIC| INSERT - MEMORIA: %d",memoria->numeroMemoria);
 				free (memoria);
 				free(tabla);
+				free(request);
 				return -1;
 			}
 
@@ -468,8 +475,8 @@ int ejecutar_request(char* linea, int id_proceso) {
 			if(cliente < 0){
 				log_info(logger, "PLANIFIC| INSERT - NO PUDO CONECTARSE A MEM.");
 				remover_memoria(memoria);
-				free (memoria);
 				free(tabla);
+				free(request);
 				return -1;
 			}
 
@@ -499,6 +506,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 				log_info(logger, "PLANIFIC| SELECT - NO SE PUDO CONECTAR MEMORIA: %d",memoria->numeroMemoria);
 				remover_memoria(memoria);
 				free (memoria);
+				free(request);
 				return 0;
 			}
 
@@ -520,6 +528,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 						log_info(logger, "PLANIFIC| INSERT: POST-JOURNAL MEMORIA: %d",memoria->numeroMemoria);
 						free (memoria);
 						free(tabla);
+						free(request);
 						return -1;
 					}
 					cliente = conectar_a_memoria(memoria);
@@ -527,8 +536,8 @@ int ejecutar_request(char* linea, int id_proceso) {
 					if(cliente < 0){
 						log_info(logger, "PLANIFIC| INSERT POST-JOURNAL - NO PUDO CONECTARSE A MEM.");
 						remover_memoria(memoria);
-						free (memoria);
 						free(tabla);
+						free(request);
 						return -1;
 					}
 
@@ -558,6 +567,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 				log_info(logger, "PLANIFIC| SELECT - NO SE PUDO CONECTAR MEMORIA: %d",memoria->numeroMemoria);
 				remover_memoria(memoria);
 				free (memoria);
+				free(request);
 				return 0;
 			}
 			
@@ -598,6 +608,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 			{
 				log_info(logger, "PLANIFIC| CREATE: MEMORIA: %d",memoria->numeroMemoria);
 				free (memoria);
+				free(request);
 				return -1;
 			}
 			cliente = conectar_a_memoria(memoria);
@@ -605,7 +616,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 			if(cliente < 0){
 				log_info(logger, "PLANIFIC| CREATE - NO PUDO CONECTARSE A MEM.");
 				remover_memoria(memoria);
-				free (memoria);
+				free(request);
 				return -1;
 			}
 
@@ -629,6 +640,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 				log_info(logger, "PLANIFIC| SELECT - NO SE PUDO CONECTAR MEMORIA: %d",memoria->numeroMemoria);
 				remover_memoria(memoria);
 				free (memoria);
+				free(request);
 				return 0;
 			}
 			
@@ -674,6 +686,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 				{
 					log_info(logger, "PLANIFIC| DESCRIBE: MEMORIA: %d",memoria->numeroMemoria);
 					free (memoria);
+					free(request);
 					return -1;
 				}
 				cliente = conectar_a_memoria(memoria);
@@ -681,7 +694,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 				if(cliente < 0){
 					log_info(logger, "PLANIFIC| CREATE - NO PUDO CONECTARSE A MEM.");
 					remover_memoria(memoria);
-					free (memoria);
+					free(request);
 					return -1;
 				}
 
@@ -699,6 +712,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 				tabla = buscar_tabla(request->parametro1);
 				if(tabla == NULL) {
 					log_info(logger, "PLANIFIC| DESCRIBE: La tabla no existe.");
+					free(request);
 					return -1;
 				}
 				int keyCualquiera=rand();
@@ -709,6 +723,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 					log_info(logger, "PLANIFIC| DESCRIBE: MEMORIA: %d",memoria->numeroMemoria);
 					free (memoria);
 					free(tabla);
+					free(request);
 					return -1;
 				}
 				log_info(logger, "PLANIFIC| DESCRIBE:  MEMORIA ASIGNADA: %d",memoria->numeroMemoria);
@@ -717,15 +732,15 @@ int ejecutar_request(char* linea, int id_proceso) {
 				if(cliente < 0){
 					log_info(logger, "PLANIFIC| INSERT POST-JOURNAL - NO PUDO CONECTARSE A MEM.");
 					remover_memoria(memoria);
-					free (memoria);
 					free(tabla);
+					free(request);
 					return -1;
 				}
 
 
 				log_info(logger, "PLANIFIC| DESCRIBE: Enviando a MEMORIA");
 				int resultado_mensaje_describe = enviarMensaje(kernel, describe, sizeof(t_describe), req_describe, cliente, logger, mem);
-
+				log_info(logger, "PLANIFIC| DESCRIBE: Resultado de enviar mensaje: %d", resultado_mensaje_describe);
 				//TODO: VER SI NO PUEDE MANDAR NADA A MEMORIA
 				/*if(resultado_mensaje_describe <1)
 				{
@@ -743,6 +758,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 					remover_memoria(memoria);
 					free (memoria);
 					free(tabla);
+					free(request);
 					return 0;
 				}
 				
@@ -770,6 +786,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 
 			if(tabla == NULL) {
 				log_info(logger, "PLANIFIC| DROP: La tabla no existe.");
+				free(request);
 				return -1;
 			}
 
@@ -792,6 +809,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 				log_info(logger, "PLANIFIC| DROP: MEMORIA: %d",memoria->numeroMemoria);
 				free (memoria);
 				free(tabla);
+				free(request);
 				return -1;
 			}
 			log_info(logger, "PLANIFIC| DROP: MEMORIA ASIGNADA: %d",memoria->numeroMemoria);
@@ -800,8 +818,8 @@ int ejecutar_request(char* linea, int id_proceso) {
 			if(cliente < 0){
 				log_info(logger, "PLANIFIC| INSERT POST-JOURNAL - NO PUDO CONECTARSE A MEM.");
 				remover_memoria(memoria);
-				free (memoria);
 				free(tabla);
+				free(request);
 				return -1;
 			}
 
@@ -826,6 +844,7 @@ int ejecutar_request(char* linea, int id_proceso) {
 				remover_memoria(memoria);
 				free (memoria);
 				free(tabla);
+				free(request);
 				return 0;
 			}
 			
@@ -858,6 +877,8 @@ int ejecutar_request(char* linea, int id_proceso) {
 	}
 
 	log_info(logger, "PLANIFIC| ***** RESULTADO: %d *****", resultado);
+
+	free(request);
 
 	return resultado;
 }
